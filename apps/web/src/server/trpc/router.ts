@@ -1,6 +1,6 @@
 // Re-export types from @nawhas/types to verify cross-package refs
 export type {} from '@nawhas/types';
-import { router, publicProcedure } from './trpc.js';
+import { router, publicProcedure } from './trpc';
 
 export const appRouter = router({
   health: publicProcedure.query(() => ({ status: 'ok' as const })),
