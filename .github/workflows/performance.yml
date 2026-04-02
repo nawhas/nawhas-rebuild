@@ -1,0 +1,36 @@
+# Performance Tests (k6)
+#
+# Triggered manually via workflow_dispatch or on a weekly schedule.
+# Runs k6 smoke tests against the local stack.
+
+name: Performance Tests (k6)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Target URL
+        required: false
+        default: http://localhost:3000
+  schedule:
+    - cron: "0 2 * * 1"  # Every Monday at 2am UTC
+
+jobs:
+  k6:
+    name: k6 Load Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start stack
+        run: docker compose up -d
+
+      - name: Wait for app
+        run: timeout 60 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+
+      - uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 smoke test
+        run: k6 run apps/web/perf/k6/scripts/smoke.js
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'http://localhost:3000' }}
