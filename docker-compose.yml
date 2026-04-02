@@ -78,6 +78,23 @@ services:
       timeout: 5s
       retries: 5
 
+  # E2E test runner — only starts with: docker compose --profile testing run --rm playwright
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    profiles:
+      - testing
+    working_dir: /app/apps/e2e
+    command: npx playwright test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - BASE_URL=http://web:3000
+      - DOCKER=true
+      - CI=${CI:-}
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
   typesense_data:
