@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc --build",
     "typecheck": "tsc --build --noEmit",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src"
   },
   "devDependencies": {
     "@nawhas/config": "workspace:*",

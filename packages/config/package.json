@@ -4,7 +4,7 @@
   "private": true,
   "files": [
     "tsconfig.base.json",
-    "eslint-base.js",
+    "eslint-base.mjs",
     "prettier.config.js"
   ]
 }

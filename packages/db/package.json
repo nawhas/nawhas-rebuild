@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc --build",
     "typecheck": "tsc --build --noEmit",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
