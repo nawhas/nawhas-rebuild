@@ -76,11 +76,9 @@ jobs:
 
       # Next.js collects page data for ISR routes (e.g. /reciters/[slug]) and runs
       # generateStaticParams against PostgreSQL — same as local `docker compose` dev.
+      # --wait blocks until the service healthcheck passes (see docker-compose.yml).
       - name: Start Postgres for static generation
-        run: docker compose up -d postgres
-
-      - name: Wait for Postgres
-        run: timeout 60 bash -c "until docker compose exec -T postgres pg_isready -U postgres; do sleep 2; done"
+        run: docker compose up -d --wait postgres
 
       - name: Apply database migrations
         run: pnpm --filter @nawhas/db db:migrate
@@ -154,6 +152,11 @@ jobs:
       - name: Wait for infrastructure
         run: timeout 60 bash -c "until docker compose exec -T postgres pg_isready -U postgres; do sleep 2; done"
 
+      - name: Apply database migrations
+        run: pnpm --filter @nawhas/db db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
+
       - name: Build production app
         run: pnpm run build
         env:
@@ -165,9 +168,11 @@ jobs:
           TYPESENSE_PROTOCOL: http
           TYPESENSE_API_KEY: nawhas-typesense-key
           S3_ENDPOINT: http://localhost:9000
-          S3_BUCKET: nawhas-audio
-          S3_ACCESS_KEY: minioadmin
-          S3_SECRET_KEY: minioadmin
+          S3_ACCESS_KEY_ID: minioadmin
+          S3_SECRET_ACCESS_KEY: minioadmin
+          S3_BUCKET_AUDIO: nawhas-audio
+          S3_BUCKET_IMAGES: nawhas-images
+          S3_PUBLIC_BASE_URL: http://localhost:9000/nawhas-audio
 
       - name: Start production server
         run: pnpm --filter @nawhas/web start &
@@ -180,9 +185,11 @@ jobs:
           TYPESENSE_PROTOCOL: http
           TYPESENSE_API_KEY: nawhas-typesense-key
           S3_ENDPOINT: http://localhost:9000
-          S3_BUCKET: nawhas-audio
-          S3_ACCESS_KEY: minioadmin
-          S3_SECRET_KEY: minioadmin
+          S3_ACCESS_KEY_ID: minioadmin
+          S3_SECRET_ACCESS_KEY: minioadmin
+          S3_BUCKET_AUDIO: nawhas-audio
+          S3_BUCKET_IMAGES: nawhas-images
+          S3_PUBLIC_BASE_URL: http://localhost:9000/nawhas-audio
 
       - name: Wait for app
         run: timeout 90 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
