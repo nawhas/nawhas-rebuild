@@ -8,9 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "lint": "eslint src app",
-    "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@nawhas/db": "workspace:*",
@@ -31,7 +29,6 @@
   "devDependencies": {
     "@nawhas/config": "workspace:*",
     "@next/eslint-plugin-next": "^16.2.2",
-    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.0.6",
     "@types/howler": "^2.2.12",
     "@types/react": "^19.0.8",
