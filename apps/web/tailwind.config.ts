@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         arabic: ['var(--font-noto-naskh-arabic)', 'serif'],
+        urdu: ['var(--font-noto-nastaliq-urdu)', 'serif'],
       },
     },
   },

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Noto_Naskh_Arabic } from 'next/font/google';
+import { Inter, Noto_Naskh_Arabic, Noto_Nastaliq_Urdu } from 'next/font/google';
 import './globals.css';
 import { SiteHeader } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
@@ -13,11 +13,19 @@ const inter = Inter({
   display: 'optional',
 });
 
-// Load Noto Naskh Arabic for RTL content blocks.
+// Load Noto Naskh Arabic for Arabic RTL content blocks.
 const notoNaskhArabic = Noto_Naskh_Arabic({
   subsets: ['arabic'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-noto-naskh-arabic',
+  display: 'optional',
+});
+
+// Load Noto Nastaliq Urdu for Urdu RTL content blocks (Nastaliq calligraphic style).
+const notoNastaliqUrdu = Noto_Nastaliq_Urdu({
+  subsets: ['arabic'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-noto-nastaliq-urdu',
   display: 'optional',
 });
 
@@ -52,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable}`}>
+    <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
       <body>
         <PageLayout header={<SiteHeader />} footer={<></>}>
           {children}

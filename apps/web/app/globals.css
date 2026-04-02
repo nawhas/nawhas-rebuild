@@ -7,6 +7,7 @@
    * -------------------------------------------------------------------------- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-arabic: var(--font-noto-naskh-arabic), ui-serif, Georgia, serif;
+  --font-urdu: var(--font-noto-nastaliq-urdu), ui-serif, Georgia, serif;
 
   /* --------------------------------------------------------------------------
    * Breakpoints — mobile-first
@@ -113,11 +114,19 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Arabic content — apply Arabic font and RTL direction */
-  [lang="ar"],
+  /* RTL direction — applies to any explicitly RTL content block */
   [dir="rtl"] {
-    font-family: var(--font-arabic);
     direction: rtl;
+  }
+
+  /* Arabic content — Noto Naskh Arabic */
+  [lang="ar"] {
+    font-family: var(--font-arabic);
+  }
+
+  /* Urdu content — Noto Nastaliq Urdu (Nastaliq calligraphic style) */
+  [lang="ur"] {
+    font-family: var(--font-urdu);
   }
 
   /* Focus ring — visible for keyboard users, hidden for mouse */
