@@ -1,3 +1,96 @@
 // Shared DTOs and interfaces for the Nawhas platform.
 // All types used across packages and apps should be defined here.
-export {};
+
+// ---------------------------------------------------------------------------
+// Pagination
+// ---------------------------------------------------------------------------
+
+export interface PaginatedResult<T> {
+  items: T[];
+  nextCursor: string | null;
+}
+
+export interface PaginationInput {
+  limit?: number;
+  cursor?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Lyrics
+// ---------------------------------------------------------------------------
+
+export interface LyricDTO {
+  id: string;
+  trackId: string;
+  language: string;
+  text: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ---------------------------------------------------------------------------
+// Reciters
+// ---------------------------------------------------------------------------
+
+export interface ReciterDTO {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ReciterWithAlbumsDTO extends ReciterDTO {
+  albums: AlbumDTO[];
+}
+
+// ---------------------------------------------------------------------------
+// Albums
+// ---------------------------------------------------------------------------
+
+export interface AlbumDTO {
+  id: string;
+  title: string;
+  slug: string;
+  reciterId: string;
+  year: number | null;
+  artworkUrl: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AlbumWithTracksDTO extends AlbumDTO {
+  tracks: TrackDTO[];
+}
+
+// ---------------------------------------------------------------------------
+// Tracks
+// ---------------------------------------------------------------------------
+
+export interface TrackDTO {
+  id: string;
+  title: string;
+  slug: string;
+  albumId: string;
+  trackNumber: number | null;
+  audioUrl: string | null;
+  duration: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TrackWithRelationsDTO extends TrackDTO {
+  reciter: ReciterDTO;
+  album: AlbumDTO;
+  lyrics: LyricDTO[];
+}
+
+// ---------------------------------------------------------------------------
+// Home / Featured
+// ---------------------------------------------------------------------------
+
+export interface FeaturedDTO {
+  reciters: ReciterDTO[];
+  albums: AlbumDTO[];
+  tracks: TrackDTO[];
+}

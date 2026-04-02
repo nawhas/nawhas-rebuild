@@ -15,3 +15,4 @@ export * from './users.js';
 export * from './sessions.js';
 export * from './accounts.js';
 export * from './verificationTokens.js';
+export * from './relations.js';

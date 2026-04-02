@@ -1,7 +1,11 @@
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import { db } from '@nawhas/db';
+import type { Database } from '@nawhas/db';
 
-export function createContext(_opts: FetchCreateContextFnOptions): Record<string, never> {
-  return {};
+export interface Context {
+  db: Database;
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>;
+export function createContext(_opts: FetchCreateContextFnOptions): Context {
+  return { db };
+}

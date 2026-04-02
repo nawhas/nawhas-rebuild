@@ -13,3 +13,6 @@ const client = postgres(connectionString);
 export const db = drizzle(client, { schema });
 
 export type Database = typeof db;
+
+// Re-export all schema tables, relations, and column types for use in app code.
+export * from './schema/index.js';
