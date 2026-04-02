@@ -31,8 +31,8 @@ export async function testPageAccessibility(
     path: require.resolve('axe-core/axe.js'),
   });
 
-  const results = await page.evaluate<AxeResults>(
-    async (axeOptions: { exclude?: string[]; rules?: Record<string, { enabled: boolean }> } | undefined) => {
+  const results = await page.evaluate<AxeResults, { exclude?: string[]; rules?: Record<string, { enabled: boolean }> }>(
+    async (axeOptions: { exclude?: string[]; rules?: Record<string, { enabled: boolean }> }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const axe = (window as any).axe;
       return new Promise<AxeResults>((resolve) => {
@@ -68,7 +68,7 @@ export async function testPageAccessibility(
         );
       });
     },
-    options
+    options ?? {}
   );
 
   return results;

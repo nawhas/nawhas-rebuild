@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: AlbumPageProps): Promise<Meta
   return buildMetadata({
     title: album.title,
     description: `Listen to ${album.title} by ${album.reciterName} on Nawhas.`,
-    image: album.artworkUrl ?? undefined,
+    ...(album.artworkUrl != null && { image: album.artworkUrl }),
   });
 }
 

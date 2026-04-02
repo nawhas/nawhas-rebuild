@@ -32,7 +32,7 @@ export function NavLinks({ links, className = '', onClick }: NavLinksProps): Rea
           <Link
             key={href}
             href={href}
-            onClick={onClick}
+            {...(onClick !== undefined && { onClick })}
             aria-current={isActive ? 'page' : undefined}
             className={`rounded px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 ${
               isActive

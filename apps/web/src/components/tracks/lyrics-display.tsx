@@ -7,7 +7,6 @@ import { UrduText } from '@/components/ui/urdu-text';
 
 /** Canonical display order for language tabs. */
 const LANGUAGE_ORDER = ['ar', 'ur', 'en', 'transliteration'] as const;
-type KnownLanguage = (typeof LANGUAGE_ORDER)[number];
 
 const LANGUAGE_LABELS: Record<string, string> = {
   ar: 'Arabic',
@@ -82,7 +81,6 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
     if (saved && availableLanguages.includes(saved)) {
       setActiveLanguage(saved);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleTabChange(lang: string): void {

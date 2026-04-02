@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { assertPageAccessible, testKeyboardNavigation } from './setup';
+import { assertPageAccessible, testKeyboardNavigation } from '../../__tests__/a11y/setup';
 
 /**
  * Accessibility Tests — Home Page

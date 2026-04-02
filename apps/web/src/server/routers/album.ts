@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, asc, count, desc, eq, gt, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 import { albums, reciters, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor, encodeAlbumCursor, decodeAlbumCursor } from '../lib/cursor';

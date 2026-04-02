@@ -21,9 +21,9 @@ vi.mock('next/link', () => ({
 }));
 
 // Mock the server action — tests control what it resolves to.
-const mockFetchMoreReciters = vi.fn<[string], Promise<PaginatedResult<ReciterDTO>>>();
+const mockFetchMoreReciters = vi.fn<(cursor: string) => Promise<PaginatedResult<ReciterDTO>>>();
 vi.mock('@/server/actions/reciters', () => ({
-  fetchMoreReciters: (...args: [string]) => mockFetchMoreReciters(...args),
+  fetchMoreReciters: (cursor: string) => mockFetchMoreReciters(cursor),
 }));
 
 function makeReciter(id: string, name: string): ReciterDTO {
