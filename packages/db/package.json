@@ -15,7 +15,7 @@
     "test": "vitest run",
     "typecheck": "tsc --build --noEmit",
     "lint": "eslint src",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "tsc --build && drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seed.ts"

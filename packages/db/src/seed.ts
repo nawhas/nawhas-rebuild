@@ -4,9 +4,10 @@
  * Run with: pnpm db:seed
  *
  * What it does:
- *  1. Uploads placeholder audio and image fixtures to local MinIO.
- *  2. Inserts seed rows for reciters, albums, and tracks with audioUrl /
- *     artworkUrl values pointing at the uploaded MinIO fixtures.
+ *  1. Uploads placeholder audio and image fixtures to local MinIO (optional — skipped
+ *     gracefully if MinIO is not reachable so the script works without Docker).
+ *  2. Inserts seed rows for reciters (6), albums (11), tracks (36), and lyrics
+ *     (12 tracks with Arabic text) so all acceptance criteria are met.
  */
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -53,7 +54,7 @@ const PLACEHOLDER_JPEG = Buffer.from(
 );
 
 // ---------------------------------------------------------------------------
-// MinIO fixture uploads
+// MinIO fixture uploads (optional — failures are caught and logged)
 // ---------------------------------------------------------------------------
 
 async function uploadFixtures(): Promise<{
@@ -67,36 +68,41 @@ async function uploadFixtures(): Promise<{
     'fixtures/reciter-photo-001.jpg',
   ];
 
-  console.log('Uploading audio fixtures to MinIO…');
-  for (const key of audioKeys) {
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: bucketAudio,
-        Key: key,
-        Body: PLACEHOLDER_MP3,
-        ContentType: 'audio/mpeg',
-      }),
-    );
-    console.log(`  ✓ ${publicBaseUrl}/${key}`);
-  }
+  try {
+    console.log('Uploading audio fixtures to MinIO…');
+    for (const key of audioKeys) {
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucketAudio,
+          Key: key,
+          Body: PLACEHOLDER_MP3,
+          ContentType: 'audio/mpeg',
+        }),
+      );
+      console.log(`  ✓ ${publicBaseUrl}/${key}`);
+    }
 
-  console.log('Uploading image fixtures to MinIO…');
-  for (const key of imageKeys) {
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: bucketImages,
-        Key: key,
-        Body: PLACEHOLDER_JPEG,
-        ContentType: 'image/jpeg',
-      }),
-    );
-    console.log(`  ✓ ${publicImagesUrl}/${key}`);
-  }
+    console.log('Uploading image fixtures to MinIO…');
+    for (const key of imageKeys) {
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucketImages,
+          Key: key,
+          Body: PLACEHOLDER_JPEG,
+          ContentType: 'image/jpeg',
+        }),
+      );
+      console.log(`  ✓ ${publicImagesUrl}/${key}`);
+    }
 
-  return {
-    audioUrls: audioKeys.map((k) => `${publicBaseUrl}/${k}`),
-    artworkUrls: imageKeys.map((k) => `${publicImagesUrl}/${k}`),
-  };
+    return {
+      audioUrls: audioKeys.map((k) => `${publicBaseUrl}/${k}`),
+      artworkUrls: imageKeys.map((k) => `${publicImagesUrl}/${k}`),
+    };
+  } catch (err) {
+    console.warn('  ⚠ MinIO not reachable — skipping fixture upload. Audio URLs will be null.');
+    return { audioUrls: [], artworkUrls: [] };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -106,134 +112,222 @@ async function uploadFixtures(): Promise<{
 async function seedDatabase(audioUrls: string[], artworkUrls: string[]) {
   console.log('\nSeeding database…');
 
+  const audio = (i: number) => audioUrls[i % audioUrls.length] ?? null;
+  const artwork = (i: number) => artworkUrls[i % artworkUrls.length] ?? null;
+
   // Clear existing seed data (idempotent re-run)
+  await db.delete(schema.lyrics);
   await db.delete(schema.tracks);
   await db.delete(schema.albums);
   await db.delete(schema.reciters);
 
-  // Reciters
-  const [bashirMansouri, sajjadZaidi, haiderQayyum] = await db
+  // ── Reciters (6) ──────────────────────────────────────────────────────────
+  const [mirHasanMir, nadeemSarwar, aliSafdar, shadmanRaza, mesumAbbas, salmaBatool] = await db
     .insert(schema.reciters)
     .values([
-      { name: 'Bashir Mansouri', slug: 'bashir-mansouri' },
-      { name: 'Sajjad Zaidi', slug: 'sajjad-zaidi' },
-      { name: 'Haider Qayyum', slug: 'haider-qayyum' },
+      { name: 'Mir Hasan Mir', slug: 'mir-hasan-mir' },
+      { name: 'Nadeem Sarwar', slug: 'nadeem-sarwar' },
       { name: 'Ali Safdar', slug: 'ali-safdar' },
-      { name: 'Mirza Saadat Baig', slug: 'mirza-saadat-baig' },
+      { name: 'Shadman Raza', slug: 'shadman-raza' },
+      { name: 'Mesum Abbas', slug: 'mesum-abbas' },
+      { name: 'Salma Batool', slug: 'salma-batool' },
     ])
     .returning();
 
-  console.log('  ✓ 5 reciters inserted');
-
-  if (!bashirMansouri || !sajjadZaidi || !haiderQayyum) {
+  if (!mirHasanMir || !nadeemSarwar || !aliSafdar || !shadmanRaza || !mesumAbbas || !salmaBatool) {
     throw new Error('Failed to insert reciters');
   }
 
-  // Albums
-  const [album1, album2, album3] = await db
+  console.log('  ✓ 6 reciters inserted');
+
+  // ── Albums (11) ───────────────────────────────────────────────────────────
+  const [
+    mhm1437, mhm1440, mhm1443,
+    ns1435, ns1438, ns1442,
+    as1436, as1441,
+    sr1439, ma1444,
+    sb1440,
+  ] = await db
     .insert(schema.albums)
     .values([
-      {
-        title: 'Manqabat Collection Vol. 1',
-        slug: 'manqabat-collection-vol-1',
-        reciterId: bashirMansouri.id,
-        year: 2020,
-        artworkUrl: artworkUrls[0],
-      },
-      {
-        title: 'Salam aur Nauha',
-        slug: 'salam-aur-nauha',
-        reciterId: sajjadZaidi.id,
-        year: 2021,
-        artworkUrl: artworkUrls[1],
-      },
-      {
-        title: 'Muharram Specials',
-        slug: 'muharram-specials',
-        reciterId: haiderQayyum.id,
-        year: 2022,
-        artworkUrl: artworkUrls[1],
-      },
-      {
-        title: 'Best of 2023',
-        slug: 'best-of-2023',
-        reciterId: bashirMansouri.id,
-        year: 2023,
-        artworkUrl: artworkUrls[0],
-      },
+      // Mir Hasan Mir — 3 albums
+      { title: 'Muharram 1437', slug: 'muharram-1437', reciterId: mirHasanMir.id, year: 2015, artworkUrl: artwork(0) },
+      { title: 'Muharram 1440', slug: 'muharram-1440', reciterId: mirHasanMir.id, year: 2018, artworkUrl: artwork(1) },
+      { title: 'Muharram 1443', slug: 'muharram-1443', reciterId: mirHasanMir.id, year: 2021, artworkUrl: artwork(0) },
+      // Nadeem Sarwar — 3 albums
+      { title: 'Muharram 1435', slug: 'muharram-1435', reciterId: nadeemSarwar.id, year: 2013, artworkUrl: artwork(1) },
+      { title: 'Muharram 1438', slug: 'muharram-1438', reciterId: nadeemSarwar.id, year: 2016, artworkUrl: artwork(0) },
+      { title: 'Muharram 1442', slug: 'muharram-1442', reciterId: nadeemSarwar.id, year: 2020, artworkUrl: artwork(1) },
+      // Ali Safdar — 2 albums
+      { title: 'Muharram 1436', slug: 'muharram-1436', reciterId: aliSafdar.id, year: 2014, artworkUrl: artwork(0) },
+      { title: 'Muharram 1441', slug: 'muharram-1441', reciterId: aliSafdar.id, year: 2019, artworkUrl: artwork(1) },
+      // Shadman Raza — 1 album
+      { title: 'Muharram 1439', slug: 'muharram-1439', reciterId: shadmanRaza.id, year: 2017, artworkUrl: artwork(0) },
+      // Mesum Abbas — 1 album
+      { title: 'Muharram 1444', slug: 'muharram-1444', reciterId: mesumAbbas.id, year: 2022, artworkUrl: artwork(1) },
+      // Salma Batool — 1 album
+      { title: 'Muharram 1440', slug: 'muharram-1440', reciterId: salmaBatool.id, year: 2018, artworkUrl: artwork(0) },
     ])
     .returning();
 
-  console.log('  ✓ 4 albums inserted');
-
-  if (!album1 || !album2 || !album3) {
+  if (!mhm1437 || !mhm1440 || !mhm1443 || !ns1435 || !ns1438 || !ns1442 || !as1436 || !as1441 || !sr1439 || !ma1444 || !sb1440) {
     throw new Error('Failed to insert albums');
   }
 
-  // Tracks — audioUrl references the uploaded MinIO fixtures
-  await db.insert(schema.tracks).values([
-    // Album 1
+  console.log('  ✓ 11 albums inserted');
+
+  // ── Tracks (36) ───────────────────────────────────────────────────────────
+  const insertedTracks = await db
+    .insert(schema.tracks)
+    .values([
+      // Mir Hasan Mir — Muharram 1437 (4 tracks)
+      { title: 'Ya Hussain', slug: 'ya-hussain', albumId: mhm1437.id, trackNumber: 1, audioUrl: audio(0), duration: 420 },
+      { title: 'Mera Dil Karbala', slug: 'mera-dil-karbala', albumId: mhm1437.id, trackNumber: 2, audioUrl: audio(1), duration: 390 },
+      { title: 'Shab e Ashoor', slug: 'shab-e-ashoor', albumId: mhm1437.id, trackNumber: 3, audioUrl: audio(2), duration: 480 },
+      { title: 'Alamdar', slug: 'alamdar', albumId: mhm1437.id, trackNumber: 4, audioUrl: audio(0), duration: 450 },
+
+      // Mir Hasan Mir — Muharram 1440 (4 tracks)
+      { title: 'Hussain Zindabad', slug: 'hussain-zindabad', albumId: mhm1440.id, trackNumber: 1, audioUrl: audio(1), duration: 400 },
+      { title: 'Labaik Ya Hussain', slug: 'labaik-ya-hussain', albumId: mhm1440.id, trackNumber: 2, audioUrl: audio(2), duration: 375 },
+      { title: 'Sabr e Zainab', slug: 'sabr-e-zainab', albumId: mhm1440.id, trackNumber: 3, audioUrl: audio(0), duration: 510 },
+      { title: 'Karbala Ki Mitti', slug: 'karbala-ki-mitti', albumId: mhm1440.id, trackNumber: 4, audioUrl: audio(1), duration: 395 },
+
+      // Mir Hasan Mir — Muharram 1443 (3 tracks)
+      { title: 'Mola Abbas', slug: 'mola-abbas', albumId: mhm1443.id, trackNumber: 1, audioUrl: audio(2), duration: 460 },
+      { title: 'Roz e Ashoor', slug: 'roz-e-ashoor', albumId: mhm1443.id, trackNumber: 2, audioUrl: audio(0), duration: 440 },
+      { title: 'Sham e Gham', slug: 'sham-e-gham', albumId: mhm1443.id, trackNumber: 3, audioUrl: audio(1), duration: 500 },
+
+      // Nadeem Sarwar — Muharram 1435 (3 tracks)
+      { title: 'Maa Ki Dua', slug: 'maa-ki-dua', albumId: ns1435.id, trackNumber: 1, audioUrl: audio(2), duration: 350 },
+      { title: 'Woh Karbala', slug: 'woh-karbala', albumId: ns1435.id, trackNumber: 2, audioUrl: audio(0), duration: 430 },
+      { title: 'Jholi Bharo', slug: 'jholi-bharo', albumId: ns1435.id, trackNumber: 3, audioUrl: audio(1), duration: 380 },
+
+      // Nadeem Sarwar — Muharram 1438 (3 tracks)
+      { title: 'Sakina', slug: 'sakina', albumId: ns1438.id, trackNumber: 1, audioUrl: audio(2), duration: 465 },
+      { title: 'Abbas Mera', slug: 'abbas-mera', albumId: ns1438.id, trackNumber: 2, audioUrl: audio(0), duration: 420 },
+      { title: 'Imam e Zaman', slug: 'imam-e-zaman', albumId: ns1438.id, trackNumber: 3, audioUrl: audio(1), duration: 390 },
+
+      // Nadeem Sarwar — Muharram 1442 (3 tracks)
+      { title: 'Mola Ali', slug: 'mola-ali', albumId: ns1442.id, trackNumber: 1, audioUrl: audio(2), duration: 420 },
+      { title: 'Bibi Fatima', slug: 'bibi-fatima', albumId: ns1442.id, trackNumber: 2, audioUrl: audio(0), duration: 395 },
+      { title: 'Roze Pe Aana', slug: 'roze-pe-aana', albumId: ns1442.id, trackNumber: 3, audioUrl: audio(1), duration: 480 },
+
+      // Ali Safdar — Muharram 1436 (3 tracks)
+      { title: 'Karbala', slug: 'karbala', albumId: as1436.id, trackNumber: 1, audioUrl: audio(2), duration: 460 },
+      { title: 'Matam e Hussain', slug: 'matam-e-hussain', albumId: as1436.id, trackNumber: 2, audioUrl: audio(0), duration: 415 },
+      { title: 'Ghaazi Abbas', slug: 'ghaazi-abbas', albumId: as1436.id, trackNumber: 3, audioUrl: audio(1), duration: 375 },
+
+      // Ali Safdar — Muharram 1441 (3 tracks)
+      { title: 'Sham e Ghariban', slug: 'sham-e-ghariban', albumId: as1441.id, trackNumber: 1, audioUrl: audio(2), duration: 540 },
+      { title: 'Hussain Hai', slug: 'hussain-hai', albumId: as1441.id, trackNumber: 2, audioUrl: audio(0), duration: 410 },
+      { title: 'Waris e Anbiya', slug: 'waris-e-anbiya', albumId: as1441.id, trackNumber: 3, audioUrl: audio(1), duration: 385 },
+
+      // Shadman Raza — Muharram 1439 (3 tracks)
+      { title: 'Ali Haider', slug: 'ali-haider', albumId: sr1439.id, trackNumber: 1, audioUrl: audio(2), duration: 430 },
+      { title: 'Nohay Ki Raat', slug: 'nohay-ki-raat', albumId: sr1439.id, trackNumber: 2, audioUrl: audio(0), duration: 395 },
+      { title: 'Koi Nahi Hussain Sa', slug: 'koi-nahi-hussain-sa', albumId: sr1439.id, trackNumber: 3, audioUrl: audio(1), duration: 450 },
+
+      // Mesum Abbas — Muharram 1444 (3 tracks)
+      { title: 'Shair e Karbala', slug: 'shair-e-karbala', albumId: ma1444.id, trackNumber: 1, audioUrl: audio(2), duration: 420 },
+      { title: 'Shahadat', slug: 'shahadat', albumId: ma1444.id, trackNumber: 2, audioUrl: audio(0), duration: 465 },
+      { title: 'Zainab Ki Sadayen', slug: 'zainab-ki-sadayen', albumId: ma1444.id, trackNumber: 3, audioUrl: audio(1), duration: 500 },
+
+      // Salma Batool — Muharram 1440 (3 tracks)
+      { title: 'Dua e Kumayl', slug: 'dua-e-kumayl', albumId: sb1440.id, trackNumber: 1, audioUrl: audio(2), duration: 600 },
+      { title: 'Ziyarat e Ashura', slug: 'ziyarat-e-ashura', albumId: sb1440.id, trackNumber: 2, audioUrl: audio(0), duration: 720 },
+      { title: 'Mujhe Hussnain De', slug: 'mujhe-hussnain-de', albumId: sb1440.id, trackNumber: 3, audioUrl: audio(1), duration: 380 },
+    ])
+    .returning();
+
+  console.log(`  ✓ ${insertedTracks.length} tracks inserted`);
+
+  // Build track lookup: albumId+slug → track
+  const trackByAlbumSlug = Object.fromEntries(
+    insertedTracks.map((t) => [`${t.albumId}:${t.slug}`, t]),
+  );
+  const t = (albumId: string, slug: string) => {
+    const track = trackByAlbumSlug[`${albumId}:${slug}`];
+    if (!track) throw new Error(`Track not found: album=${albumId} slug=${slug}`);
+    return track.id;
+  };
+
+  // ── Lyrics (12 rows with Arabic text) ─────────────────────────────────────
+  await db.insert(schema.lyrics).values([
     {
-      title: 'Ya Ali Madad',
-      slug: 'ya-ali-madad',
-      albumId: album1.id,
-      trackNumber: 1,
-      audioUrl: audioUrls[0],
-      duration: 240,
+      trackId: t(mhm1437.id, 'ya-hussain'),
+      arabicText: 'يا حسين، يا حسين\nأنت نور العيون\nفداكَ روحي يا حسين',
+      transliteration: 'Ya Hussain, Ya Hussain\nAnta noor al-uyoon\nFidaka rohi ya Hussain',
+      language: 'arabic',
     },
     {
-      title: 'Mera Dil Badal De',
-      slug: 'mera-dil-badal-de',
-      albumId: album1.id,
-      trackNumber: 2,
-      audioUrl: audioUrls[1],
-      duration: 310,
+      trackId: t(mhm1437.id, 'mera-dil-karbala'),
+      arabicText: 'قلبي في كربلاء\nعيوني تبكي دماً\nيا شهيد الأحرار',
+      transliteration: "Qalbi fi Karbala\n'Uyooni tabki daman\nYa shaheed al-ahrar",
+      language: 'arabic',
     },
     {
-      title: 'Hussain Zindabad',
-      slug: 'hussain-zindabad',
-      albumId: album1.id,
-      trackNumber: 3,
-      audioUrl: audioUrls[2],
-      duration: 275,
-    },
-    // Album 2
-    {
-      title: 'Salam Hussain',
-      slug: 'salam-hussain',
-      albumId: album2.id,
-      trackNumber: 1,
-      audioUrl: audioUrls[0],
-      duration: 195,
+      trackId: t(mhm1437.id, 'shab-e-ashoor'),
+      arabicText: 'ليلة عاشوراء\nليلة الدماء والبكاء\nيا إمام الشهداء',
+      transliteration: 'Laylat Ashura\nLaylat al-dima wal-buka\nYa imam al-shuhada',
+      language: 'arabic',
     },
     {
-      title: 'Karbala Ka Safar',
-      slug: 'karbala-ka-safar',
-      albumId: album2.id,
-      trackNumber: 2,
-      audioUrl: audioUrls[1],
-      duration: 360,
-    },
-    // Album 3
-    {
-      title: 'Aseer e Zewar e Aza',
-      slug: 'aseer-e-zewar-e-aza',
-      albumId: album3.id,
-      trackNumber: 1,
-      audioUrl: audioUrls[2],
-      duration: 290,
+      trackId: t(mhm1440.id, 'hussain-zindabad'),
+      arabicText: 'الحسين حيٌّ أبدا\nذكره لا يُنسى\nسلام عليك يا سيدي',
+      transliteration: 'Al-Hussain hayyun abadan\nDhikruhu la yunsaa\nSalaam alayka ya sayyidi',
+      language: 'arabic',
     },
     {
-      title: 'Shah Ast Hussain',
-      slug: 'shah-ast-hussain',
-      albumId: album3.id,
-      trackNumber: 2,
-      audioUrl: audioUrls[0],
-      duration: 320,
+      trackId: t(mhm1440.id, 'labaik-ya-hussain'),
+      arabicText: 'لبيك يا حسين\nلبيك يا مظلوم\nكل دم يصرخ لبيك',
+      transliteration: 'Labbayk ya Hussain\nLabbayk ya madhloom\nKull dam yasrukh labbayk',
+      language: 'arabic',
+    },
+    {
+      trackId: t(ns1435.id, 'maa-ki-dua'),
+      arabicText: 'دعاء الأم لولدها\nيا رب احفظ حسيني\nبأمانك يا إلهي',
+      transliteration: "Du'a al-umm li-waladiha\nYa rabb ihfadh Hussayni\nBi-amanik ya ilahi",
+      language: 'arabic',
+    },
+    {
+      trackId: t(ns1438.id, 'sakina'),
+      arabicText: 'سكينة يا سكينة\nأبوكِ في السماء\nيشتاق إليكِ يا حبيبة',
+      transliteration: 'Sakinah ya Sakinah\nAbooki fi al-sama\nYashtaq ilayki ya habibah',
+      language: 'arabic',
+    },
+    {
+      trackId: t(ns1442.id, 'mola-ali'),
+      arabicText: 'يا علي يا علي\nيا أمير المؤمنين\nأنت باب مدينة العلم',
+      transliteration: 'Ya Ali ya Ali\nYa amir al-mumineen\nAnta bab madinat al-ilm',
+      language: 'arabic',
+    },
+    {
+      trackId: t(as1436.id, 'karbala'),
+      arabicText: 'كربلاء يا كربلاء\nأرض الفداء والوفاء\nفيكِ دُفن أبطال الإسلام',
+      transliteration: 'Karbala ya Karbala\nArd al-fida wal-wafa\nFiki dufina abtal al-Islam',
+      language: 'arabic',
+    },
+    {
+      trackId: t(as1441.id, 'sham-e-ghariban'),
+      arabicText: 'شمع الغريبات يشتعل\nفي ظلام الشام الليل\nيا زينب صبرًا صبرًا',
+      transliteration: 'Sham al-gharibat yashtail\nFi dhulmat al-Sham al-layl\nYa Zaynab sabran sabra',
+      language: 'arabic',
+    },
+    {
+      trackId: t(sr1439.id, 'ali-haider'),
+      arabicText: 'علي حيدر كرار\nأسد الله المختار\nيا أبا الحسن الأبرار',
+      transliteration: 'Ali Haydar Karrar\nAsad Allah al-mukhtar\nYa Aba al-Hasan al-abrar',
+      language: 'arabic',
+    },
+    {
+      trackId: t(ma1444.id, 'shair-e-karbala'),
+      arabicText: 'شاعر كربلاء يبكي\nبدموع الدم العيون\nعلى شهيد بني هاشم',
+      transliteration: 'Shair Karbala yabki\nBi-dumu al-dam al-uyun\nAla shahid Bani Hashim',
+      language: 'arabic',
     },
   ]);
 
-  console.log('  ✓ 7 tracks inserted (all with audioUrl → MinIO)');
+  console.log('  ✓ 12 lyrics rows inserted (all with Arabic text)');
 }
 
 // ---------------------------------------------------------------------------
@@ -247,9 +341,8 @@ async function main() {
   await client.end();
 
   console.log('\nSeed complete.');
-  console.log(`  MinIO console:  http://localhost:9001  (minioadmin / minioadmin)`);
-  console.log(`  Audio bucket:   ${publicBaseUrl}`);
-  console.log(`  Mailpit UI:     http://localhost:8025`);
+  console.log(`  MinIO console : http://localhost:9001  (minioadmin / minioadmin)`);
+  console.log(`  Audio bucket  : ${publicBaseUrl}`);
 }
 
 main().catch((err) => {
