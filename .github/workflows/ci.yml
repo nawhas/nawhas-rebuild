@@ -113,9 +113,10 @@ jobs:
       - name: Start stack
         run: docker compose up -d
 
+      # Web container runs `pnpm install` then `next dev` on cold CI — often > 60s.
       - name: Wait for services
         run: |
-          timeout 60 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+          timeout 300 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
 
       - name: Run E2E tests
         run: docker compose --profile testing run --rm -e CI=true playwright

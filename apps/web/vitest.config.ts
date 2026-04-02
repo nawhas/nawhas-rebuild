@@ -10,6 +10,8 @@ export default defineConfig({
     },
   },
   test: {
+    // Playwright specs under src/tests/ use @playwright/test; Vitest must not load them.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/src/tests/**'],
     // Provide a dummy DATABASE_URL so @nawhas/db can be imported in unit tests
     // without a live Postgres connection. Tests that need a real DB should use
     // integration test setup instead.
