@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "tsc --build",
+    "test": "vitest run",
     "typecheck": "tsc --build --noEmit",
     "lint": "eslint src"
   },
