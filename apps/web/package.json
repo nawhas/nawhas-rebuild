@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:a11y": "axe --exit",
+    "test:a11y": "vitest run src/__tests__/accessibility.test.ts",
     "lint": "eslint src app",
     "typecheck": "tsc --noEmit"
   },
