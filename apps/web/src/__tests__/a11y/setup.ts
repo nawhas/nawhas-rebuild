@@ -13,6 +13,11 @@ interface ContrastIssue {
   text: string;
 }
 
+type AxePageOptions = {
+  exclude?: string[];
+  rules?: Record<string, { enabled: boolean }>;
+};
+
 /**
  * Inject axe-core into the page and run accessibility scan
  * @param page - Playwright page object
@@ -21,18 +26,15 @@ interface ContrastIssue {
  */
 export async function testPageAccessibility(
   page: Page,
-  options?: {
-    exclude?: string[];
-    rules?: Record<string, { enabled: boolean }>;
-  }
+  options?: AxePageOptions
 ): Promise<AxeResults> {
   // Inject axe-core script into the page
   await page.addScriptTag({
     path: require.resolve('axe-core/axe.js'),
   });
 
-  const results = await page.evaluate<AxeResults, { exclude?: string[]; rules?: Record<string, { enabled: boolean }> }>(
-    async (axeOptions: { exclude?: string[]; rules?: Record<string, { enabled: boolean }> }) => {
+  const results = await page.evaluate<AxeResults, AxePageOptions>(
+    async (axeOptions) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const axe = (window as any).axe;
       return new Promise<AxeResults>((resolve) => {

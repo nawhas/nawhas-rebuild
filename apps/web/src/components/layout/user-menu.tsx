@@ -57,7 +57,7 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
         .join('')
         .toUpperCase()
         .slice(0, 2)
-    : user.email.charAt(0).toUpperCase();
+    : (user.email?.[0] ?? '?').toUpperCase();
 
   return (
     <div ref={containerRef} className="relative">
