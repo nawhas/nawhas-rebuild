@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
+    "test:a11y": "vitest run src/__tests__/accessibility.test.ts",
     "lint": "eslint src app",
     "typecheck": "tsc --noEmit"
   },
@@ -30,11 +31,16 @@
     "@nawhas/config": "workspace:*",
     "@next/eslint-plugin-next": "^16.2.2",
     "@tailwindcss/postcss": "^4.0.6",
+    "@testing-library/react": "^16.0.1",
     "@types/howler": "^2.2.12",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
+    "axe-core": "^4.10.0",
+    "@types/jest-axe": "^3.5.9",
+    "jest-axe": "^10.0.0",
     "postcss": "^8.5.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.0"
   }
 }
