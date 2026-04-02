@@ -149,11 +149,44 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Start stack
-        run: docker compose up -d
+      - name: Start infrastructure
+        run: docker compose up -d postgres typesense minio
+
+      - name: Wait for infrastructure
+        run: timeout 60 bash -c "until docker compose exec -T postgres pg_isready -U postgres; do sleep 2; done"
+
+      - name: Build production app
+        run: pnpm run build
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
+          BETTER_AUTH_SECRET: lighthouse-ci-secret
+          BETTER_AUTH_URL: http://localhost:3000
+          TYPESENSE_HOST: localhost
+          TYPESENSE_PORT: "8108"
+          TYPESENSE_PROTOCOL: http
+          TYPESENSE_API_KEY: nawhas-typesense-key
+          S3_ENDPOINT: http://localhost:9000
+          S3_BUCKET: nawhas-audio
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
+
+      - name: Start production server
+        run: pnpm --filter @nawhas/web start &
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
+          BETTER_AUTH_SECRET: lighthouse-ci-secret
+          BETTER_AUTH_URL: http://localhost:3000
+          TYPESENSE_HOST: localhost
+          TYPESENSE_PORT: "8108"
+          TYPESENSE_PROTOCOL: http
+          TYPESENSE_API_KEY: nawhas-typesense-key
+          S3_ENDPOINT: http://localhost:9000
+          S3_BUCKET: nawhas-audio
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
 
       - name: Wait for app
-        run: timeout 60 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+        run: timeout 90 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
 
       - name: Run Lighthouse CI
         run: pnpm run perf:lighthouse
