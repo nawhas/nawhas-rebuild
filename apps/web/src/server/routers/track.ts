@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { and, asc, desc, eq } from 'drizzle-orm';
-import { albums, reciters, tracks } from '@nawhas/db';
+import { albums, lyrics as lyricsTable, reciters, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
 import type { TrackDTO, TrackWithRelationsDTO } from '@nawhas/types';
 
@@ -41,7 +41,7 @@ export const trackRouter = router({
             },
           },
           lyrics: {
-            orderBy: [asc(tracks.createdAt)],
+            orderBy: [asc(lyricsTable.language)],
           },
         },
       });

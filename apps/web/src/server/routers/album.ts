@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import { albums, reciters, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
-import { encodeCursor, decodeCursor } from '../lib/cursor';
+import { encodeCursor, decodeCursor, encodeAlbumCursor, decodeAlbumCursor } from '../lib/cursor';
 import type { AlbumDTO, AlbumWithTracksDTO, PaginatedResult } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
@@ -83,6 +83,15 @@ export const albumRouter = router({
 
   /**
    * Returns a paginated list of albums for a given reciter slug.
+   * Ordered by (year DESC NULLS FIRST, createdAt DESC, id ASC).
+   * Cursor encodes (year, createdAt, id); next-page condition:
+   *   If cursor year IS NULL:
+   *     (year IS NULL AND (createdAt < cursor_createdAt OR (createdAt = cursor_createdAt AND id > cursor_id)))
+   *     OR (year IS NOT NULL)
+   *   If cursor year IS NOT NULL:
+   *     (year < cursor_year)
+   *     OR (year = cursor_year AND createdAt < cursor_createdAt)
+   *     OR (year = cursor_year AND createdAt = cursor_createdAt AND id > cursor_id)
    */
   listByReciter: publicProcedure
     .input(
@@ -104,10 +113,25 @@ export const albumRouter = router({
 
       const cursorWhere = input.cursor
         ? (() => {
-            const { createdAt, id } = decodeCursor(input.cursor);
+            const { year, createdAt, id } = decodeAlbumCursor(input.cursor);
+            if (year === null) {
+              // NULL years sort first (NULLS FIRST in DESC); next items are remaining
+              // null-year rows or any non-null year row.
+              return or(
+                and(
+                  isNull(albums.year),
+                  or(
+                    lt(albums.createdAt, createdAt),
+                    and(eq(albums.createdAt, createdAt), gt(albums.id, id)),
+                  ),
+                ),
+                isNotNull(albums.year),
+              );
+            }
             return or(
-              lt(albums.createdAt, createdAt),
-              and(eq(albums.createdAt, createdAt), gt(albums.id, id)),
+              lt(albums.year, year),
+              and(eq(albums.year, year), lt(albums.createdAt, createdAt)),
+              and(eq(albums.year, year), eq(albums.createdAt, createdAt), gt(albums.id, id)),
             );
           })()
         : undefined;
@@ -127,7 +151,9 @@ export const albumRouter = router({
       const items = hasMore ? rows.slice(0, limit) : rows;
       const lastItem = items[items.length - 1];
       const nextCursor =
-        hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
+        hasMore && lastItem
+          ? encodeAlbumCursor(lastItem.year, lastItem.createdAt, lastItem.id)
+          : null;
 
       return { items, nextCursor };
     }),
