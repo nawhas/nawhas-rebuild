@@ -86,6 +86,22 @@ export interface TrackWithRelationsDTO extends TrackDTO {
 }
 
 // ---------------------------------------------------------------------------
+// Auth / Users
+// ---------------------------------------------------------------------------
+
+export interface UserDTO {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
+
+export interface SessionDTO {
+  user: UserDTO;
+  expiresAt: Date;
+}
+
+// ---------------------------------------------------------------------------
 // Home / Featured
 // ---------------------------------------------------------------------------
 

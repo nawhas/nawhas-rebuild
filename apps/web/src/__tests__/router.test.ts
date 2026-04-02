@@ -12,7 +12,7 @@ const stubDb = {} as unknown as Database;
 
 describe('appRouter', () => {
   it('health procedure returns { status: "ok" }', async () => {
-    const caller = createCaller({ db: stubDb });
+    const caller = createCaller({ db: stubDb, session: null, user: null });
     const result = await caller.health();
     expect(result).toEqual({ status: 'ok' });
   });
