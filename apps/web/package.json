@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1022.0",
+    "@aws-sdk/s3-request-presigner": "^3.1022.0",
     "@nawhas/db": "workspace:*",
     "@nawhas/types": "workspace:*",
     "@tanstack/react-query": "^5.65.1",
@@ -33,11 +35,11 @@
     "@tailwindcss/postcss": "^4.0.6",
     "@testing-library/react": "^16.0.1",
     "@types/howler": "^2.2.12",
+    "@types/jest-axe": "^3.5.9",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
     "axe-core": "^4.10.0",
-    "@types/jest-axe": "^3.5.9",
     "jest-axe": "^10.0.0",
     "postcss": "^8.5.1",
     "typescript": "^5.7.3",

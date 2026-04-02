@@ -9,6 +9,7 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "test:e2e": "docker compose --profile testing run --rm playwright",
+    "db:seed": "pnpm --filter @nawhas/db db:seed",
     "perf:lighthouse": "lhci autorun",
     "perf:k6": "k6 run apps/web/perf/k6/scripts/smoke.js"
   },
