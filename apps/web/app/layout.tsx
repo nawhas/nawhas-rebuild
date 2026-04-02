@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, Noto_Naskh_Arabic } from 'next/font/google';
 import './globals.css';
+import { SiteHeader } from '@/components/layout/header';
+import { PageLayout } from '@/components/layout/page-layout';
 
 // Load Inter for primary UI text.
 // display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
@@ -51,7 +53,11 @@ export default function RootLayout({
 }): React.JSX.Element {
   return (
     <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable}`}>
-      <body>{children}</body>
+      <body>
+        <PageLayout header={<SiteHeader />} footer={<></>}>
+          {children}
+        </PageLayout>
+      </body>
     </html>
   );
 }
