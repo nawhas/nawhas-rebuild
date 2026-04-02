@@ -110,35 +110,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Start stack
         run: docker compose up -d
 
-      - name: Wait for Postgres
-        run: timeout 120 bash -c "until docker compose exec -T postgres pg_isready -U postgres; do sleep 2; done"
-
-      # Fresh CI volumes have an empty DB; RSC pages hit Drizzle and return 5xx without schema.
-      # `curl -sf` treats 5xx as failure, so the wait step would spin until timeout (looked like "app not starting").
-      - name: Apply database migrations
-        run: pnpm --filter @nawhas/db db:migrate
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
-
-      # Web runs `pnpm install` then `next dev` inside the container — allow several minutes on cold CI.
+      # Web container: frozen pnpm install (cold anonymous volume) + db:migrate + next dev — often >5 min on CI.
+      # Migrations run inside the web container after install so schema matches the process serving :3000.
       - name: Wait for web
         run: |
-          timeout 300 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+          timeout 900 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
 
       - name: Run E2E tests
         run: docker compose --profile testing run --rm -e CI=true playwright
