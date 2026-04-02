@@ -28,10 +28,11 @@
   },
   "devDependencies": {
     "@nawhas/config": "workspace:*",
+    "@next/eslint-plugin-next": "^16.2.2",
+    "@tailwindcss/postcss": "^4.0.6",
     "@types/howler": "^2.2.12",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
-    "@tailwindcss/postcss": "^4.0.6",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.1",
     "typescript": "^5.7.3"
