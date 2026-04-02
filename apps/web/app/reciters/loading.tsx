@@ -1,13 +1,5 @@
 import { Container } from '@/components/layout/container';
-
-function SkeletonCard(): React.JSX.Element {
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-lg p-4">
-      <div aria-hidden="true" className="h-16 w-16 animate-pulse rounded-full bg-gray-200" />
-      <div aria-hidden="true" className="h-4 w-20 animate-pulse rounded bg-gray-200" />
-    </div>
-  );
-}
+import { ReciterCardSkeleton } from '@/components/ui/reciter-card-skeleton';
 
 export default function RecitersLoading(): React.JSX.Element {
   return (
@@ -20,7 +12,7 @@ export default function RecitersLoading(): React.JSX.Element {
         >
           {Array.from({ length: 24 }, (_, i) => (
             <li key={i}>
-              <SkeletonCard />
+              <ReciterCardSkeleton />
             </li>
           ))}
         </ul>
