@@ -7,9 +7,12 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "perf:lighthouse": "lhci autorun",
+    "perf:k6": "k6 run apps/web/perf/k6/scripts/smoke.js"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "eslint": "^10.1.0",
     "turbo": "^2.3.3",
     "typescript-eslint": "^8.58.0",
