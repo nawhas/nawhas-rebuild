@@ -3,9 +3,9 @@ services:
   web:
     image: node:20-alpine
     working_dir: /app
-    # Install workspace deps, apply Drizzle migrations (fresh volumes have no tables), then dev.
-    # Matches local "relation does not exist" fixes without a second pnpm install in another container.
-    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db db:migrate && pnpm --filter @nawhas/web dev"
+    # Install workspace deps, build the @nawhas/db package (dist/ is gitignored so must be compiled
+    # before next dev imports it), apply Drizzle migrations, then start the dev server.
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build && pnpm --filter @nawhas/db db:migrate && pnpm --filter @nawhas/web dev"
     ports:
       - "3000:3000"
     volumes:
