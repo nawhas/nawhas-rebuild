@@ -26,8 +26,7 @@ export function RegisterForm(): React.JSX.Element {
       return;
     }
 
-    router.push('/');
-    router.refresh();
+    router.push(`/check-email?email=${encodeURIComponent(email)}`);
   }
 
   return (
