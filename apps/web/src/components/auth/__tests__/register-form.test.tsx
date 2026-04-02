@@ -65,7 +65,7 @@ describe('RegisterForm', () => {
     });
   });
 
-  it('redirects to / on successful registration', async () => {
+  it('redirects to /check-email on successful registration', async () => {
     render(<RegisterForm />);
 
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
@@ -74,7 +74,9 @@ describe('RegisterForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(mockPush).toHaveBeenCalledWith(
+        '/check-email?email=ali%40example.com',
+      );
     });
   });
 

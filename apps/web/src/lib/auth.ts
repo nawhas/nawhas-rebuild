@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db, users, sessions, accounts, verificationTokens } from '@nawhas/db';
-import { sendVerificationEmail } from './email';
+import { sendVerificationEmail, sendPasswordResetEmail } from './email';
 
 export const auth = betterAuth({
   secret: process.env['BETTER_AUTH_SECRET'],
@@ -18,6 +18,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async (data) => {
+      await sendPasswordResetEmail({
+        to: data.user.email,
+        name: data.user.name,
+        resetUrl: data.url,
+      });
+    },
   },
   emailVerification: {
     sendOnSignUp: true,

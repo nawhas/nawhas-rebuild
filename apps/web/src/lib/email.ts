@@ -14,6 +14,46 @@ function createTransport(): nodemailer.Transporter {
 
 const FROM = process.env['SMTP_FROM'] ?? 'noreply@nawhas.com';
 
+export async function sendPasswordResetEmail(params: {
+  to: string;
+  name: string;
+  resetUrl: string;
+}): Promise<void> {
+  const transport = createTransport();
+  await transport.sendMail({
+    from: FROM,
+    to: params.to,
+    subject: 'Reset your Nawhas.com password',
+    text: [
+      `Hi ${params.name},`,
+      '',
+      'We received a request to reset your password. Click the link below to choose a new password:',
+      '',
+      params.resetUrl,
+      '',
+      'This link expires in 1 hour.',
+      '',
+      'If you did not request a password reset, you can ignore this email — your password will not be changed.',
+    ].join('\n'),
+    html: `
+      <p>Hi ${params.name},</p>
+      <p>We received a request to reset your password. Click the button below to choose a new password:</p>
+      <p>
+        <a href="${params.resetUrl}"
+           style="display:inline-block;padding:10px 20px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-weight:500">
+          Reset password
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:14px">This link expires in 1 hour.</p>
+      <p style="color:#6b7280;font-size:14px">
+        If the button doesn't work, copy and paste this URL into your browser:<br/>
+        <a href="${params.resetUrl}" style="color:#374151">${params.resetUrl}</a>
+      </p>
+      <p style="color:#9ca3af;font-size:12px">If you did not request a password reset, you can ignore this email — your password will not be changed.</p>
+    `,
+  });
+}
+
 export async function sendVerificationEmail(params: {
   to: string;
   name: string;

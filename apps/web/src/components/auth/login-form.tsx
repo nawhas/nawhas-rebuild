@@ -57,9 +57,17 @@ export function LoginForm({ callbackUrl }: LoginFormProps): React.JSX.Element {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <input
             id="password"
             type="password"
