@@ -1,5 +1,10 @@
 import type { Config } from 'drizzle-kit';
 
+const dbUrl = process.env['DATABASE_URL'];
+if (!dbUrl) {
+  throw new Error('DATABASE_URL environment variable is required but not set');
+}
+
 const config: Config = {
   // Point at the compiled JS output so drizzle-kit resolves modules correctly.
   // Run `pnpm build` (or `pnpm db:generate`, which does it automatically) before
@@ -8,7 +13,7 @@ const config: Config = {
   out: './src/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env['DATABASE_URL'] ?? '',
+    url: dbUrl,
   },
 };
 

@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { reciters } from './reciters.js';
 
 export const albums = pgTable(
@@ -16,5 +16,8 @@ export const albums = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique('albums_reciter_slug_unique').on(t.reciterId, t.slug)],
+  (t) => [
+    unique('albums_reciter_slug_unique').on(t.reciterId, t.slug),
+    index('albums_reciter_id_idx').on(t.reciterId),
+  ],
 );

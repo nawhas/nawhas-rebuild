@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { tracks } from './tracks.js';
 
 /**
@@ -24,5 +24,8 @@ export const lyrics = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique('lyrics_track_language_unique').on(t.trackId, t.language)],
+  (t) => [
+    unique('lyrics_track_language_unique').on(t.trackId, t.language),
+    index('lyrics_track_id_idx').on(t.trackId),
+  ],
 );
