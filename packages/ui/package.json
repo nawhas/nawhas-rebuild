@@ -15,6 +15,10 @@
     "typecheck": "tsc --build --noEmit",
     "lint": "eslint src"
   },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
   "devDependencies": {
     "@nawhas/config": "workspace:*",
     "typescript": "^5.7.3"

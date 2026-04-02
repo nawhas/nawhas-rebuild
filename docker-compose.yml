@@ -1,3 +1,4 @@
+# FOR LOCAL DEVELOPMENT ONLY
 services:
   web:
     image: node:20-alpine
