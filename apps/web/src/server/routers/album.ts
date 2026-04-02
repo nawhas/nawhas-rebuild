@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, isNotNull, isNull, lt, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 import { albums, reciters, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor, encodeAlbumCursor, decodeAlbumCursor } from '../lib/cursor';
-import type { AlbumDTO, AlbumWithTracksDTO, PaginatedResult } from '@nawhas/types';
+import type { AlbumDTO, AlbumListItemDTO, AlbumWithTracksDTO, PaginatedResult } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -11,6 +11,7 @@ const MAX_LIMIT = 100;
 export const albumRouter = router({
   /**
    * Returns a paginated list of albums ordered by creation date (newest first).
+   * Joins with reciters for the reciter name/slug and subquery-counts tracks.
    * Cursor encodes (createdAt, id); next page satisfies:
    *   (created_at < cursor_created_at) OR (created_at = cursor_created_at AND id > cursor_id)
    */
@@ -21,7 +22,7 @@ export const albumRouter = router({
         cursor: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }): Promise<PaginatedResult<AlbumDTO>> => {
+    .query(async ({ ctx, input }): Promise<PaginatedResult<AlbumListItemDTO>> => {
       const limit = input.limit;
 
       const where = input.cursor
@@ -35,8 +36,21 @@ export const albumRouter = router({
         : undefined;
 
       const rows = await ctx.db
-        .select()
+        .select({
+          id: albums.id,
+          title: albums.title,
+          slug: albums.slug,
+          reciterId: albums.reciterId,
+          year: albums.year,
+          artworkUrl: albums.artworkUrl,
+          createdAt: albums.createdAt,
+          updatedAt: albums.updatedAt,
+          reciterName: reciters.name,
+          reciterSlug: reciters.slug,
+          trackCount: sql<number>`(SELECT COUNT(*) FROM ${tracks} WHERE ${tracks.albumId} = ${albums.id})`,
+        })
         .from(albums)
+        .innerJoin(reciters, eq(albums.reciterId, reciters.id))
         .where(where)
         .orderBy(desc(albums.createdAt), asc(albums.id))
         .limit(limit + 1);
@@ -47,7 +61,7 @@ export const albumRouter = router({
       const nextCursor =
         hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
 
-      return { items, nextCursor };
+      return { items: items.map((r) => ({ ...r, trackCount: Number(r.trackCount) })), nextCursor };
     }),
 
   /**

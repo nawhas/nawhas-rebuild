@@ -63,6 +63,16 @@ export interface AlbumWithTracksDTO extends AlbumDTO {
   tracks: TrackDTO[];
 }
 
+/**
+ * Extended album DTO used in listing pages where reciter name and track count
+ * are pre-fetched via a JOIN to avoid N+1 queries.
+ */
+export interface AlbumListItemDTO extends AlbumDTO {
+  reciterName: string;
+  reciterSlug: string;
+  trackCount: number;
+}
+
 // ---------------------------------------------------------------------------
 // Tracks
 // ---------------------------------------------------------------------------
