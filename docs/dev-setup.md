@@ -86,31 +86,11 @@ View all captured emails at **http://localhost:8025**.
 
 Emails appear here as soon as the app sends them (registration confirmation, password reset, etc.).
 
-### Environment variables (dev defaults)
+### Environment variables
 
-```env
-SMTP_HOST=localhost
-SMTP_PORT=1025
-SMTP_USER=
-SMTP_PASS=
-SMTP_FROM=noreply@nawhas.com
-SMTP_SECURE=false
-```
+SMTP settings are pre-configured in `docker-compose.yml` for the `web` service. If running outside Docker, copy the `SMTP_*` variables from `.env.example`.
 
-These are already set in `docker-compose.yml` for the `web` service. Copy from `.env.example` if running outside Docker.
-
-### Switching to production SMTP
-
-Replace the SMTP vars with your real provider credentials:
-
-```env
-SMTP_HOST=smtp.postmarkapp.com
-SMTP_PORT=587
-SMTP_USER=<api-token>
-SMTP_PASS=<api-token>
-SMTP_FROM=noreply@nawhas.com
-SMTP_SECURE=true
-```
+For production, replace the SMTP variables in your `.env.local` with your real provider credentials (host, port, user, password, etc.).
 
 ---
 

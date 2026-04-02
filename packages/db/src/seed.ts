@@ -99,7 +99,7 @@ async function uploadFixtures(): Promise<{
       audioUrls: audioKeys.map((k) => `${publicBaseUrl}/${k}`),
       artworkUrls: imageKeys.map((k) => `${publicImagesUrl}/${k}`),
     };
-  } catch (err) {
+  } catch {
     console.warn('  ⚠ MinIO not reachable — skipping fixture upload. Audio URLs will be null.');
     return { audioUrls: [], artworkUrls: [] };
   }
