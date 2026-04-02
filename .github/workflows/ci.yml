@@ -74,8 +74,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Next.js collects page data for ISR routes (e.g. /reciters/[slug]) and runs
+      # generateStaticParams against PostgreSQL — same as local `docker compose` dev.
+      - name: Start Postgres for static generation
+        run: docker compose up -d postgres
+
+      - name: Wait for Postgres
+        run: timeout 60 bash -c "until docker compose exec -T postgres pg_isready -U postgres; do sleep 2; done"
+
+      - name: Apply database migrations
+        run: pnpm --filter @nawhas/db db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
+
       - name: Build
         run: pnpm run build
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
+          BETTER_AUTH_SECRET: ci-build-secret-not-for-production
+          BETTER_AUTH_URL: http://localhost:3000
 
   docker-build:
     name: Docker Build
