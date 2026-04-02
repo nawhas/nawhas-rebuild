@@ -251,83 +251,50 @@ async function seedDatabase(audioUrls: string[], artworkUrls: string[]) {
     return track.id;
   };
 
-  // ── Lyrics (12 rows with Arabic text) ─────────────────────────────────────
+  // ── Lyrics — row-per-language model ──────────────────────────────────────
+  // Each Arabic track gets two rows: one 'ar' row and one 'transliteration' row.
+  // language uses ISO 639-1 codes; 'transliteration' is a convention for Latin-script.
   await db.insert(schema.lyrics).values([
-    {
-      trackId: t(mhm1437.id, 'ya-hussain'),
-      arabicText: 'يا حسين، يا حسين\nأنت نور العيون\nفداكَ روحي يا حسين',
-      transliteration: 'Ya Hussain, Ya Hussain\nAnta noor al-uyoon\nFidaka rohi ya Hussain',
-      language: 'arabic',
-    },
-    {
-      trackId: t(mhm1437.id, 'mera-dil-karbala'),
-      arabicText: 'قلبي في كربلاء\nعيوني تبكي دماً\nيا شهيد الأحرار',
-      transliteration: "Qalbi fi Karbala\n'Uyooni tabki daman\nYa shaheed al-ahrar",
-      language: 'arabic',
-    },
-    {
-      trackId: t(mhm1437.id, 'shab-e-ashoor'),
-      arabicText: 'ليلة عاشوراء\nليلة الدماء والبكاء\nيا إمام الشهداء',
-      transliteration: 'Laylat Ashura\nLaylat al-dima wal-buka\nYa imam al-shuhada',
-      language: 'arabic',
-    },
-    {
-      trackId: t(mhm1440.id, 'hussain-zindabad'),
-      arabicText: 'الحسين حيٌّ أبدا\nذكره لا يُنسى\nسلام عليك يا سيدي',
-      transliteration: 'Al-Hussain hayyun abadan\nDhikruhu la yunsaa\nSalaam alayka ya sayyidi',
-      language: 'arabic',
-    },
-    {
-      trackId: t(mhm1440.id, 'labaik-ya-hussain'),
-      arabicText: 'لبيك يا حسين\nلبيك يا مظلوم\nكل دم يصرخ لبيك',
-      transliteration: 'Labbayk ya Hussain\nLabbayk ya madhloom\nKull dam yasrukh labbayk',
-      language: 'arabic',
-    },
-    {
-      trackId: t(ns1435.id, 'maa-ki-dua'),
-      arabicText: 'دعاء الأم لولدها\nيا رب احفظ حسيني\nبأمانك يا إلهي',
-      transliteration: "Du'a al-umm li-waladiha\nYa rabb ihfadh Hussayni\nBi-amanik ya ilahi",
-      language: 'arabic',
-    },
-    {
-      trackId: t(ns1438.id, 'sakina'),
-      arabicText: 'سكينة يا سكينة\nأبوكِ في السماء\nيشتاق إليكِ يا حبيبة',
-      transliteration: 'Sakinah ya Sakinah\nAbooki fi al-sama\nYashtaq ilayki ya habibah',
-      language: 'arabic',
-    },
-    {
-      trackId: t(ns1442.id, 'mola-ali'),
-      arabicText: 'يا علي يا علي\nيا أمير المؤمنين\nأنت باب مدينة العلم',
-      transliteration: 'Ya Ali ya Ali\nYa amir al-mumineen\nAnta bab madinat al-ilm',
-      language: 'arabic',
-    },
-    {
-      trackId: t(as1436.id, 'karbala'),
-      arabicText: 'كربلاء يا كربلاء\nأرض الفداء والوفاء\nفيكِ دُفن أبطال الإسلام',
-      transliteration: 'Karbala ya Karbala\nArd al-fida wal-wafa\nFiki dufina abtal al-Islam',
-      language: 'arabic',
-    },
-    {
-      trackId: t(as1441.id, 'sham-e-ghariban'),
-      arabicText: 'شمع الغريبات يشتعل\nفي ظلام الشام الليل\nيا زينب صبرًا صبرًا',
-      transliteration: 'Sham al-gharibat yashtail\nFi dhulmat al-Sham al-layl\nYa Zaynab sabran sabra',
-      language: 'arabic',
-    },
-    {
-      trackId: t(sr1439.id, 'ali-haider'),
-      arabicText: 'علي حيدر كرار\nأسد الله المختار\nيا أبا الحسن الأبرار',
-      transliteration: 'Ali Haydar Karrar\nAsad Allah al-mukhtar\nYa Aba al-Hasan al-abrar',
-      language: 'arabic',
-    },
-    {
-      trackId: t(ma1444.id, 'shair-e-karbala'),
-      arabicText: 'شاعر كربلاء يبكي\nبدموع الدم العيون\nعلى شهيد بني هاشم',
-      transliteration: 'Shair Karbala yabki\nBi-dumu al-dam al-uyun\nAla shahid Bani Hashim',
-      language: 'arabic',
-    },
+    // mhm1437 — ya-hussain
+    { trackId: t(mhm1437.id, 'ya-hussain'), language: 'ar', text: 'يا حسين، يا حسين\nأنت نور العيون\nفداكَ روحي يا حسين' },
+    { trackId: t(mhm1437.id, 'ya-hussain'), language: 'transliteration', text: 'Ya Hussain, Ya Hussain\nAnta noor al-uyoon\nFidaka rohi ya Hussain' },
+    // mhm1437 — mera-dil-karbala
+    { trackId: t(mhm1437.id, 'mera-dil-karbala'), language: 'ar', text: 'قلبي في كربلاء\nعيوني تبكي دماً\nيا شهيد الأحرار' },
+    { trackId: t(mhm1437.id, 'mera-dil-karbala'), language: 'transliteration', text: "Qalbi fi Karbala\n'Uyooni tabki daman\nYa shaheed al-ahrar" },
+    // mhm1437 — shab-e-ashoor
+    { trackId: t(mhm1437.id, 'shab-e-ashoor'), language: 'ar', text: 'ليلة عاشوراء\nليلة الدماء والبكاء\nيا إمام الشهداء' },
+    { trackId: t(mhm1437.id, 'shab-e-ashoor'), language: 'transliteration', text: 'Laylat Ashura\nLaylat al-dima wal-buka\nYa imam al-shuhada' },
+    // mhm1440 — hussain-zindabad
+    { trackId: t(mhm1440.id, 'hussain-zindabad'), language: 'ar', text: 'الحسين حيٌّ أبدا\nذكره لا يُنسى\nسلام عليك يا سيدي' },
+    { trackId: t(mhm1440.id, 'hussain-zindabad'), language: 'transliteration', text: 'Al-Hussain hayyun abadan\nDhikruhu la yunsaa\nSalaam alayka ya sayyidi' },
+    // mhm1440 — labaik-ya-hussain
+    { trackId: t(mhm1440.id, 'labaik-ya-hussain'), language: 'ar', text: 'لبيك يا حسين\nلبيك يا مظلوم\nكل دم يصرخ لبيك' },
+    { trackId: t(mhm1440.id, 'labaik-ya-hussain'), language: 'transliteration', text: 'Labbayk ya Hussain\nLabbayk ya madhloom\nKull dam yasrukh labbayk' },
+    // ns1435 — maa-ki-dua
+    { trackId: t(ns1435.id, 'maa-ki-dua'), language: 'ar', text: 'دعاء الأم لولدها\nيا رب احفظ حسيني\nبأمانك يا إلهي' },
+    { trackId: t(ns1435.id, 'maa-ki-dua'), language: 'transliteration', text: "Du'a al-umm li-waladiha\nYa rabb ihfadh Hussayni\nBi-amanik ya ilahi" },
+    // ns1438 — sakina
+    { trackId: t(ns1438.id, 'sakina'), language: 'ar', text: 'سكينة يا سكينة\nأبوكِ في السماء\nيشتاق إليكِ يا حبيبة' },
+    { trackId: t(ns1438.id, 'sakina'), language: 'transliteration', text: 'Sakinah ya Sakinah\nAbooki fi al-sama\nYashtaq ilayki ya habibah' },
+    // ns1442 — mola-ali
+    { trackId: t(ns1442.id, 'mola-ali'), language: 'ar', text: 'يا علي يا علي\nيا أمير المؤمنين\nأنت باب مدينة العلم' },
+    { trackId: t(ns1442.id, 'mola-ali'), language: 'transliteration', text: 'Ya Ali ya Ali\nYa amir al-mumineen\nAnta bab madinat al-ilm' },
+    // as1436 — karbala
+    { trackId: t(as1436.id, 'karbala'), language: 'ar', text: 'كربلاء يا كربلاء\nأرض الفداء والوفاء\nفيكِ دُفن أبطال الإسلام' },
+    { trackId: t(as1436.id, 'karbala'), language: 'transliteration', text: 'Karbala ya Karbala\nArd al-fida wal-wafa\nFiki dufina abtal al-Islam' },
+    // as1441 — sham-e-ghariban
+    { trackId: t(as1441.id, 'sham-e-ghariban'), language: 'ar', text: 'شمع الغريبات يشتعل\nفي ظلام الشام الليل\nيا زينب صبرًا صبرًا' },
+    { trackId: t(as1441.id, 'sham-e-ghariban'), language: 'transliteration', text: 'Sham al-gharibat yashtail\nFi dhulmat al-Sham al-layl\nYa Zaynab sabran sabra' },
+    // sr1439 — ali-haider
+    { trackId: t(sr1439.id, 'ali-haider'), language: 'ar', text: 'علي حيدر كرار\nأسد الله المختار\nيا أبا الحسن الأبرار' },
+    { trackId: t(sr1439.id, 'ali-haider'), language: 'transliteration', text: 'Ali Haydar Karrar\nAsad Allah al-mukhtar\nYa Aba al-Hasan al-abrar' },
+    // ma1444 — shair-e-karbala
+    { trackId: t(ma1444.id, 'shair-e-karbala'), language: 'ar', text: 'شاعر كربلاء يبكي\nبدموع الدم العيون\nعلى شهيد بني هاشم' },
+    { trackId: t(ma1444.id, 'shair-e-karbala'), language: 'transliteration', text: 'Shair Karbala yabki\nBi-dumu al-dam al-uyun\nAla shahid Bani Hashim' },
   ]);
 
-  console.log('  ✓ 12 lyrics rows inserted (all with Arabic text)');
+  // 12 tracks × 2 rows each (ar + transliteration) = 24 rows
+  console.log('  ✓ 24 lyrics rows inserted (12 Arabic + 12 transliteration)');
 }
 
 // ---------------------------------------------------------------------------

@@ -1,4 +1,3 @@
-CREATE TYPE "public"."language" AS ENUM('arabic', 'urdu', 'english');--> statement-breakpoint
 CREATE TABLE "reciters" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
@@ -38,13 +37,11 @@ CREATE TABLE "tracks" (
 CREATE TABLE "lyrics" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"track_id" uuid NOT NULL,
-	"arabic_text" text,
-	"urdu_text" text,
-	"english_text" text,
-	"transliteration" text,
-	"language" "language" NOT NULL,
+	"language" text NOT NULL,
+	"text" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "lyrics_track_language_unique" UNIQUE("track_id","language")
 );
 --> statement-breakpoint
 CREATE TABLE "user" (

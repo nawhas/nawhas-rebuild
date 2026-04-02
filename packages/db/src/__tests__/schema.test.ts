@@ -15,7 +15,6 @@ describe('@nawhas/db schema barrel', () => {
     expect(schema.albums).toBeDefined();
     expect(schema.tracks).toBeDefined();
     expect(schema.lyrics).toBeDefined();
-    expect(schema.languageEnum).toBeDefined();
   });
 
   it('exports all Better Auth tables', async () => {
@@ -43,13 +42,16 @@ describe('@nawhas/db schema barrel', () => {
     expect(cols).toContain('duration');
   });
 
-  it('lyrics table has all four content variant columns', async () => {
+  it('lyrics table uses row-per-language model with language and text columns', async () => {
     const { lyrics } = await import('../schema/index.js');
     const cols = Object.keys(lyrics);
-    expect(cols).toContain('arabicText');
-    expect(cols).toContain('urduText');
-    expect(cols).toContain('englishText');
-    expect(cols).toContain('transliteration');
+    expect(cols).toContain('trackId');
     expect(cols).toContain('language');
+    expect(cols).toContain('text');
+    // Old hardcoded language columns must not exist
+    expect(cols).not.toContain('arabicText');
+    expect(cols).not.toContain('urduText');
+    expect(cols).not.toContain('englishText');
+    expect(cols).not.toContain('transliteration');
   });
 });
