@@ -1,0 +1,10 @@
+{
+  "name": "@nawhas/config",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "tsconfig.base.json",
+    "eslint-base.mjs",
+    "prettier.config.js"
+  ]
+}

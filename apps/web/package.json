@@ -1,0 +1,40 @@
+{
+  "name": "@nawhas/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "lint": "eslint src app",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nawhas/db": "workspace:*",
+    "@nawhas/types": "workspace:*",
+    "@tanstack/react-query": "^5.65.1",
+    "@trpc/client": "^11.0.0",
+    "@trpc/react-query": "^11.0.0",
+    "@trpc/server": "^11.0.0",
+    "better-auth": "^1.2.5",
+    "howler": "^2.2.4",
+    "next": "^15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.6",
+    "typesense": "^2.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@nawhas/config": "workspace:*",
+    "@next/eslint-plugin-next": "^16.2.2",
+    "@tailwindcss/postcss": "^4.0.6",
+    "@types/howler": "^2.2.12",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "typescript": "^5.7.3"
+  }
+}

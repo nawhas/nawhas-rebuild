@@ -1,0 +1,23 @@
+{
+  "name": "@nawhas/types",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "typecheck": "tsc --build --noEmit",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@nawhas/config": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,105 @@
+# FOR LOCAL DEVELOPMENT ONLY
+services:
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @nawhas/web dev"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/.next
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
+      - BETTER_AUTH_SECRET=change-me-in-production-use-a-long-random-secret
+      - BETTER_AUTH_URL=http://localhost:3000
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_API_KEY=nawhas-typesense-key
+      - S3_ENDPOINT=http://minio:9000
+      - S3_BUCKET=nawhas-audio
+      - S3_ACCESS_KEY=minioadmin
+      - S3_SECRET_KEY=minioadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+      typesense:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: nawhas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  typesense:
+    image: typesense/typesense:26.0
+    ports:
+      - "8108:8108"
+    environment:
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: nawhas-typesense-key
+    volumes:
+      - typesense_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8108'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-28T09-55-16Z
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # E2E test runner — only starts with: docker compose --profile testing run --rm playwright
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    profiles:
+      - testing
+    working_dir: /app
+    # Install deps fresh inside the container so pnpm symlinks resolve correctly.
+    # The host's node_modules use symlinks into .pnpm virtual store which breaks
+    # when /app/node_modules is masked by the anonymous volume below.
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/e2e test:e2e"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/e2e/node_modules
+    environment:
+      - BASE_URL=http://web:3000
+      - DOCKER=true
+      - CI=${CI:-}
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  typesense_data:
+  minio_data:
