@@ -3,7 +3,7 @@ import { and, asc, count, desc, eq, gt, isNotNull, isNull, lt, or, sql } from 'd
 import { albums, reciters, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor, encodeAlbumCursor, decodeAlbumCursor } from '../lib/cursor';
-import type { AlbumDTO, AlbumListItemDTO, AlbumWithTracksDTO, PaginatedResult } from '@nawhas/types';
+import type { AlbumDetailDTO, AlbumDTO, AlbumListItemDTO, AlbumWithTracksDTO, PaginatedResult } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -93,6 +93,43 @@ export const albumRouter = router({
       });
 
       return album ?? null;
+    }),
+
+  /**
+   * Returns a single album by its own slug (global lookup), including ordered tracks
+   * and the reciter's name and slug for display and linking purposes.
+   */
+  getDetail: publicProcedure
+    .input(z.object({ slug: z.string().min(1) }))
+    .query(async ({ ctx, input }): Promise<AlbumDetailDTO | null> => {
+      const rows = await ctx.db
+        .select({
+          id: albums.id,
+          title: albums.title,
+          slug: albums.slug,
+          reciterId: albums.reciterId,
+          year: albums.year,
+          artworkUrl: albums.artworkUrl,
+          createdAt: albums.createdAt,
+          updatedAt: albums.updatedAt,
+          reciterName: reciters.name,
+          reciterSlug: reciters.slug,
+        })
+        .from(albums)
+        .innerJoin(reciters, eq(albums.reciterId, reciters.id))
+        .where(eq(albums.slug, input.slug))
+        .limit(1);
+
+      const albumRow = rows[0];
+      if (!albumRow) return null;
+
+      const albumTracks = await ctx.db
+        .select()
+        .from(tracks)
+        .where(eq(tracks.albumId, albumRow.id))
+        .orderBy(asc(tracks.trackNumber), asc(tracks.createdAt));
+
+      return { ...albumRow, tracks: albumTracks };
     }),
 
   /**
