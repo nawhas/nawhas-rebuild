@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, cleanup, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { MobileSearchOverlay } from '../mobile-search-overlay';
 import type { AutocompleteDTO } from '@nawhas/types';
 

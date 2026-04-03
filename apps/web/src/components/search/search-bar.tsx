@@ -62,7 +62,6 @@ export function SearchBar() {
     isPending,
     hasResults,
     groupedSections,
-    flatItems,
     listboxId,
     activeOptionId,
     handleChange,

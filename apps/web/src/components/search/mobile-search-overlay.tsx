@@ -42,7 +42,6 @@ export function MobileSearchOverlay(): React.JSX.Element {
     activeOptionId,
     handleChange,
     handleKeyDown: hookKeyDown,
-    closeDropdown,
     reset,
   } = useSearchAutocomplete();
 
