@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth-client';
@@ -20,9 +20,17 @@ interface MobileNavProps {
 export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   function close(): void {
     setOpen(false);
+  }
+
+  function handleMenuKeyDown(e: React.KeyboardEvent<HTMLDivElement>): void {
+    if (e.key === 'Escape') {
+      close();
+      triggerRef.current?.focus();
+    }
   }
 
   async function handleSignOut(): Promise<void> {
@@ -35,6 +43,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
   return (
     <div className="md:hidden">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
@@ -70,6 +79,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
           id="mobile-menu"
           role="navigation"
           aria-label="Mobile navigation"
+          onKeyDown={handleMenuKeyDown}
           className="absolute inset-x-0 top-16 z-40 border-b border-gray-200 bg-white px-4 pb-4 pt-2 shadow-md"
         >
           <NavLinks links={links} className="flex flex-col" onClick={close} />
