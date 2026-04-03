@@ -49,13 +49,11 @@ test.describe('Audio playback — player bar', () => {
     // and the Zustand player store — survive the route change.
     await page.getByRole('link', { name: 'Browse Reciters' }).click();
     await page.waitForURL('**/reciters');
-    // Re-resolve after soft navigation — PlayerBar uses aria-hidden when no track;
-    // includeHidden avoids a flaky zero-match while the store is still settled.
-    const playerAfterNav = page.getByRole('region', {
-      name: 'Audio player',
-      includeHidden: true,
-    });
-    await expect(playerAfterNav.getByRole('button', { name: 'Pause' })).toBeVisible();
+    // DOM-scoped: the player region sets aria-hidden when no track, which hides
+    // descendants from getByRole; after navigation, wait for the Pause control again.
+    await expect(
+      page.locator('[aria-label="Audio player"] button[aria-label="Pause"]'),
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
 

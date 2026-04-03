@@ -16,7 +16,6 @@
  */
 
 import { test as base, expect } from '../fixtures/seed';
-import type { SeedData } from '../fixtures/seed';
 import postgres from 'postgres';
 import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
 

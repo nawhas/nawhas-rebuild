@@ -54,13 +54,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // recurse through middleware. Stays in Edge runtime — no Node.js imports needed.
   try {
     const sessionUrl = buildGetSessionUrl(request);
-    const origin = request.nextUrl.origin;
-    const host = request.headers.get('host') ?? request.nextUrl.host;
     const sessionRes = await fetch(sessionUrl.href, {
       headers: {
         Cookie: request.headers.get('cookie') ?? '',
-        Origin: origin,
-        Host: host,
+        Origin: request.nextUrl.origin,
       },
     });
     const sessionData = sessionRes.ok
