@@ -295,7 +295,7 @@ test.describe('Autocomplete', () => {
     await input.fill(searchData.track.title.slice(0, 4));
 
     const listbox = page.locator('[role="listbox"]');
-    await expect(listbox).toBeVisible({ timeout: 600 });
+    await expect(listbox).toBeVisible();
     await expect(listbox).toContainText(searchData.track.title);
   });
 });
@@ -316,7 +316,7 @@ test.describe('Keyboard navigation — desktop search bar', () => {
     await input.fill(searchData.track.title.slice(0, 4));
 
     const listbox = page.locator('[role="listbox"]');
-    await expect(listbox).toBeVisible({ timeout: 600 });
+    await expect(listbox).toBeVisible();
 
     // Arrow down to first option
     await page.keyboard.press('ArrowDown');
@@ -337,7 +337,7 @@ test.describe('Keyboard navigation — desktop search bar', () => {
     await input.fill(searchData.track.title.slice(0, 4));
 
     const listbox = page.locator('[role="listbox"]');
-    await expect(listbox).toBeVisible({ timeout: 600 });
+    await expect(listbox).toBeVisible();
 
     await page.keyboard.press('Escape');
     await expect(listbox).not.toBeVisible();
