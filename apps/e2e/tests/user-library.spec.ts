@@ -18,6 +18,7 @@
 import { test as base, expect } from '../fixtures/seed';
 import type { SeedData } from '../fixtures/seed';
 import postgres from 'postgres';
+import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
@@ -129,7 +130,7 @@ async function signIn(
   await page.goto('/login');
   await page.fill('#email', user.email);
   await page.fill('#password', user.password);
-  await page.click('button[type="submit"]');
+  await clickLoginSubmitAndWaitForAuth(page);
   await expect(page).toHaveURL('/', { timeout: 15_000 });
 }
 
@@ -312,7 +313,7 @@ test.describe('Account — Delete Account', () => {
       await page.goto('/login');
       await page.fill('#email', email);
       await page.fill('#password', password);
-      await page.click('button[type="submit"]');
+      await clickLoginSubmitAndWaitForAuth(page);
       await expect(page).toHaveURL('/', { timeout: 15_000 });
 
       // Navigate to settings / account danger zone
@@ -324,7 +325,7 @@ test.describe('Account — Delete Account', () => {
       await deleteButton.click();
 
       // Modal is now open — fill in the password to confirm identity
-      await expect(page.getByRole('dialog')).toBeVisible();
+      await expect(page.getByRole('dialog', { name: /Delete your account/i })).toBeVisible();
       await page.fill('#delete-password', password);
 
       // Click the final "Delete account" submit button inside the modal

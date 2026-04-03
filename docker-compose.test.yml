@@ -22,6 +22,8 @@ services:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas_test
       - BETTER_AUTH_URL=http://nawhas.test:3000
       - BETTER_AUTH_TRUSTED_ORIGINS=http://nawhas.test:3000,http://localhost:3000
+      # Align client auth baseURL with browser origin in E2E (matches BETTER_AUTH_URL).
+      - NEXT_PUBLIC_APP_URL=http://nawhas.test:3000
     networks:
       default:
         aliases:

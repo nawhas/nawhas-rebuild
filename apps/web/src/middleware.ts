@@ -7,6 +7,23 @@ import type { NextRequest } from 'next/server';
  */
 const PROTECTED_PATHS = ['/admin', '/library', '/history', '/profile', '/settings'];
 
+function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
+  const loginUrl = new URL('/login', request.url);
+  loginUrl.searchParams.set('callbackUrl', pathname);
+  return NextResponse.redirect(loginUrl);
+}
+
+/**
+ * Resolve get-session via loopback so Edge middleware does not depend on Docker DNS
+ * for the public hostname (e.g. nawhas.test). Preserve Host / Origin so Better Auth
+ * sees the same virtual host as the browser.
+ */
+function buildGetSessionUrl(request: NextRequest): URL {
+  const u = request.nextUrl;
+  const loopbackPort = u.port || (u.protocol === 'https:' ? '443' : '80');
+  return new URL('/api/auth/get-session', `http://127.0.0.1:${loopbackPort}`);
+}
+
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
@@ -24,10 +41,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Better Auth stores the session token in a cookie named 'better-auth.session_token'
   const sessionToken = request.cookies.get('better-auth.session_token');
 
-  if (!sessionToken) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('callbackUrl', pathname);
-    return NextResponse.redirect(loginUrl);
+  if (!sessionToken?.value) {
+    return redirectToLogin(request, pathname);
   }
 
   // Cookie present — validate the actual session by calling the auth endpoint.
@@ -38,25 +53,27 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // /api/auth is excluded from the middleware matcher so this fetch does not
   // recurse through middleware. Stays in Edge runtime — no Node.js imports needed.
   try {
-    const sessionUrl = new URL('/api/auth/get-session', request.url);
+    const sessionUrl = buildGetSessionUrl(request);
+    const origin = request.nextUrl.origin;
+    const host = request.headers.get('host') ?? request.nextUrl.host;
     const sessionRes = await fetch(sessionUrl.href, {
       headers: {
         Cookie: request.headers.get('cookie') ?? '',
-        Origin: new URL(request.url).origin,
+        Origin: origin,
+        Host: host,
       },
     });
     const sessionData = sessionRes.ok
       ? (await sessionRes.json() as { user?: unknown } | null)
       : null;
     if (!sessionData?.user) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
+      return redirectToLogin(request, pathname);
     }
   } catch {
-    // If validation fails (e.g. auth service unreachable), pass through and let
-    // ProtectedLayout handle the auth check as a fallback.
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    // Session probe failed (network, cold start). Do not next() into protected
+    // RSC — ProtectedLayout would redirect with callbackUrl=/ when x-pathname
+    // is missing. Send user to login with the correct callback instead.
+    return redirectToLogin(request, pathname);
   }
 
   return NextResponse.next({ request: { headers: requestHeaders } });

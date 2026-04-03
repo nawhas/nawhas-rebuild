@@ -12,6 +12,7 @@
 
 import { test as base, expect } from '@playwright/test';
 import postgres from 'postgres';
+import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
@@ -150,7 +151,7 @@ test.describe('Login — happy path', () => {
     await page.goto('/login');
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
-    await page.click('button[type="submit"]');
+    await clickLoginSubmitAndWaitForAuth(page);
 
     await expect(page).toHaveURL('/', { timeout: 10_000 });
   });
@@ -162,7 +163,7 @@ test.describe('Login — happy path', () => {
     await page.goto('/login');
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
-    await page.click('button[type="submit"]');
+    await clickLoginSubmitAndWaitForAuth(page);
 
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 
@@ -188,7 +189,7 @@ test.describe('Logout', () => {
     await page.goto('/login');
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
-    await page.click('button[type="submit"]');
+    await clickLoginSubmitAndWaitForAuth(page);
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 
     // Open user menu

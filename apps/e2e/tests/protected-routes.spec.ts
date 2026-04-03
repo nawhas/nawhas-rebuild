@@ -18,6 +18,7 @@
 
 import { test as base, expect } from '@playwright/test';
 import postgres from 'postgres';
+import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
@@ -158,7 +159,7 @@ test.describe('Protected routes — post-login redirect', () => {
 
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
-    await page.click('button[type="submit"]');
+    await clickLoginSubmitAndWaitForAuth(page);
 
     // After login the user should land on the original destination
     await expect(page).toHaveURL('/library/tracks', { timeout: 15_000 });
@@ -172,7 +173,7 @@ test.describe('Protected routes — post-login redirect', () => {
 
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
-    await page.click('button[type="submit"]');
+    await clickLoginSubmitAndWaitForAuth(page);
 
     await expect(page).toHaveURL('/history', { timeout: 15_000 });
   });
@@ -190,7 +191,7 @@ test.describe('Protected routes — authenticated access', () => {
     await page.goto('/login');
     await page.fill('#email', user.email);
     await page.fill('#password', user.password);
-    await page.click('button[type="submit"]');
+    await clickLoginSubmitAndWaitForAuth(page);
     await expect(page).toHaveURL('/', { timeout: 15_000 });
   }
 
