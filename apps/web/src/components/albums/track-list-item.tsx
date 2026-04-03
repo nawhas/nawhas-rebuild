@@ -4,6 +4,8 @@ import Link from 'next/link';
 import type { TrackDTO } from '@nawhas/types';
 import { usePlayerStore, selectCurrentTrack, selectIsPlaying } from '@/store/player';
 import { TrackPlayButton } from '@/components/player/track-play-button';
+import { SaveButton } from '@/components/SaveButton';
+import { LikeButton } from '@/components/LikeButton';
 
 function AddToQueueIcon(): React.JSX.Element {
   return (
@@ -68,6 +70,16 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
           />
         )}
       </Link>
+
+      {/* Save + Like — visible on hover */}
+      <SaveButton
+        trackId={track.id}
+        className="opacity-0 hover:bg-gray-100 focus:opacity-100 group-hover:opacity-100"
+      />
+      <LikeButton
+        trackId={track.id}
+        className="opacity-0 hover:bg-gray-100 focus:opacity-100 group-hover:opacity-100"
+      />
 
       {/* Add to queue — visible on hover */}
       <button

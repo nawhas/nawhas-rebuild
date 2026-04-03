@@ -11,6 +11,7 @@ import {
   selectDuration,
   selectVolume,
 } from '@/store/player';
+import { SaveButton } from '@/components/SaveButton';
 
 function ExpandIcon(): React.JSX.Element {
   return (
@@ -260,6 +261,15 @@ export function PlayerBar(): React.JSX.Element {
             <ExpandIcon />
           </span>
         </button>
+
+        {/* Save button — visible when a track is loaded */}
+        {currentTrack && (
+          <SaveButton
+            key={currentTrack.id}
+            trackId={currentTrack.id}
+            className="shrink-0"
+          />
+        )}
 
         {/* Playback controls — centred */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
