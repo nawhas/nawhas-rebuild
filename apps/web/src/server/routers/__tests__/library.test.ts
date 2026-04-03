@@ -19,7 +19,6 @@ import {
   createTestDb,
   isDbAvailable,
   makeLibraryCaller,
-  makeAuthCtx,
   type TestDb,
 } from './helpers';
 import { createCallerFactory } from '../../trpc/trpc';

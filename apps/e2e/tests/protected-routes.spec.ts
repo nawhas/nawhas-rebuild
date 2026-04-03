@@ -205,7 +205,9 @@ test.describe('Protected routes — authenticated access', () => {
 
 const googleOAuthEnabled = process.env['GOOGLE_OAUTH_ENABLED'] === 'true';
 
-test.describe.skipIf(!googleOAuthEnabled)('Social OAuth — Google', () => {
+test.describe('Social OAuth — Google', () => {
+  test.skip(!googleOAuthEnabled, 'GOOGLE_OAUTH_ENABLED is not set — Google OAuth tests skipped');
+
   test('Google OAuth sign-in button is present on the login page', async ({ page }) => {
     await page.goto('/login');
     const googleButton = page.getByRole('button', { name: /Continue with Google|Sign in with Google/i });

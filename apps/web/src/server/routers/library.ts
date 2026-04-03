@@ -8,24 +8,6 @@ import type { PaginatedResult, SavedTrackDTO, TrackDTO } from '@nawhas/types';
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
-/**
- * Maps a tracks row to TrackDTO.
- */
-function toTrackDTO(row: typeof tracks.$inferSelect): TrackDTO {
-  return {
-    id: row.id,
-    title: row.title,
-    slug: row.slug,
-    albumId: row.albumId,
-    trackNumber: row.trackNumber,
-    audioUrl: row.audioUrl,
-    youtubeId: row.youtubeId,
-    duration: row.duration,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-}
-
 export const libraryRouter = router({
   /**
    * Save a track to the authenticated user's library (idempotent upsert).
