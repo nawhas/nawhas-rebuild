@@ -12,6 +12,7 @@ import {
   selectVolume,
 } from '@/store/player';
 import { SaveButton } from '@/components/SaveButton';
+import { useListeningHistory } from '@/hooks/use-listening-history';
 
 function ExpandIcon(): React.JSX.Element {
   return (
@@ -144,6 +145,9 @@ export function PlayerBar(): React.JSX.Element {
   const setVolume = usePlayerStore((s) => s.setVolume);
   const toggleQueue = usePlayerStore((s) => s.toggleQueue);
   const openMobileOverlay = usePlayerStore((s) => s.openMobileOverlay);
+
+  // Record listening history whenever the current track changes.
+  useListeningHistory();
 
   // Global keyboard shortcuts — Space, ← and → — only when a track is active.
   useEffect(() => {
