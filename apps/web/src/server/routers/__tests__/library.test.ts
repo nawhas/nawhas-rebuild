@@ -160,7 +160,7 @@ describe.skipIf(!dbAvailable)('Library Router', () => {
 
     it('unsaving a track that is not saved does not throw', async () => {
       const caller = makeLibraryCaller(db, USER_ID);
-      await expect(caller.unsave({ trackId: trackId3 })).resolves.toBeDefined();
+      await expect(caller.unsave({ trackId: trackId3 })).resolves.toBeUndefined();
     });
   });
 
