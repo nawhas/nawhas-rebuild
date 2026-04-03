@@ -100,6 +100,6 @@ export async function syncTrack(id: string): Promise<void> {
 // Delete a document from any collection
 // ---------------------------------------------------------------------------
 
-export async function deleteDocument(collection: string, id: string): Promise<void> {
+export async function deleteDocument(collection: COLLECTIONS, id: string): Promise<void> {
   await typesenseClient.collections(collection).documents(id).delete();
 }
