@@ -49,7 +49,6 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
         className={`min-w-0 flex-1 truncate text-sm font-medium focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 ${
           isCurrentlyPlaying ? 'text-gray-900' : 'text-gray-900 hover:text-gray-700'
         }`}
-        aria-label={`${track.title}${track.duration != null ? `, ${formatDuration(track.duration)}` : ''}`}
         tabIndex={0}
       >
         {track.title}
