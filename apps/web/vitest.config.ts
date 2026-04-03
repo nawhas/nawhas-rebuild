@@ -21,6 +21,13 @@ export default defineConfig({
     //   then create the test user: CREATE USER test WITH PASSWORD 'test' and grant access.
     env: {
       DATABASE_URL: 'postgresql://test:test@localhost:5432/nawhas_test',
+      // Typesense env vars required by lib/typesense/client.ts at module load time.
+      // Any test that transitively imports the search router needs these set.
+      // Integration tests against a real Typesense instance may override them.
+      TYPESENSE_HOST: 'localhost',
+      TYPESENSE_PORT: '8108',
+      TYPESENSE_PROTOCOL: 'http',
+      TYPESENSE_API_KEY: 'nawhas-typesense-key',
     },
     // Use jsdom for component tests that need a DOM environment.
     // Individual test files may override with @vitest-environment node.

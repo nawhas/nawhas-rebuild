@@ -130,3 +130,66 @@ export interface FeaturedDTO {
   albums: AlbumDTO[];
   tracks: TrackDTO[];
 }
+
+// ---------------------------------------------------------------------------
+// Search
+// ---------------------------------------------------------------------------
+
+export interface SearchHighlightDTO {
+  field: string;
+  snippet: string;
+}
+
+/** Reciter as stored in Typesense — lightweight, no timestamps. */
+export interface ReciterSearchItemDTO {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/** Album as stored in Typesense — includes denormalized reciter name. */
+export interface AlbumSearchItemDTO {
+  id: string;
+  title: string;
+  slug: string;
+  reciterId: string;
+  reciterName: string;
+  year: number | null;
+  artworkUrl: string | null;
+}
+
+/** Track as stored in Typesense — includes denormalized album and reciter data. */
+export interface TrackSearchItemDTO {
+  id: string;
+  title: string;
+  slug: string;
+  trackNumber: number | null;
+  albumId: string;
+  albumTitle: string;
+  albumSlug: string;
+  reciterId: string;
+  reciterName: string;
+  reciterSlug: string;
+}
+
+/** A single search hit with type discriminator and highlight snippets. */
+export type SearchHitDTO =
+  | { type: 'reciter'; item: ReciterSearchItemDTO; highlights: SearchHighlightDTO[] }
+  | { type: 'album'; item: AlbumSearchItemDTO; highlights: SearchHighlightDTO[] }
+  | { type: 'track'; item: TrackSearchItemDTO; highlights: SearchHighlightDTO[] };
+
+/** Paginated result set returned by search.query. */
+export interface SearchResultDTO {
+  hits: SearchHitDTO[];
+  found: number;
+  page: number;
+  totalPages: number;
+  perPage: number;
+}
+
+/** Grouped autocomplete response with per-item highlight snippets. */
+export interface AutocompleteDTO {
+  reciters: Array<ReciterSearchItemDTO & { highlights: SearchHighlightDTO[] }>;
+  albums: Array<AlbumSearchItemDTO & { highlights: SearchHighlightDTO[] }>;
+  tracks: Array<TrackSearchItemDTO & { highlights: SearchHighlightDTO[] }>;
+}
