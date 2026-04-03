@@ -15,7 +15,7 @@ const SUFFIX = Date.now();
 const RECITER_SLUG = `album-test-reciter-${SUFFIX}`;
 const ALBUM_SLUG = `album-test-album-${SUFFIX}`;
 
-beforeAll(async function() {
+beforeAll(async function (this: { skip: () => void }) {
   if (!await isDbAvailable()) {
     return this.skip();
   }

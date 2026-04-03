@@ -70,7 +70,7 @@ function createTestAuth(testDb: TestDb) {
   });
 }
 
-beforeAll(async function() {
+beforeAll(async function (this: { skip: () => void }) {
   if (!await isDbAvailable()) {
     return this.skip();
   }

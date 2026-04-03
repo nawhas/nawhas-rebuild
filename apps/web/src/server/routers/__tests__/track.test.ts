@@ -17,7 +17,7 @@ const TRACK_SLUG = `track-test-track-${SUFFIX}`;
 // Second track without lyrics to test the no-lyrics path.
 const TRACK_NO_LYRICS_SLUG = `track-test-no-lyrics-${SUFFIX}`;
 
-beforeAll(async function() {
+beforeAll(async function (this: { skip: () => void }) {
   if (!await isDbAvailable()) {
     return this.skip();
   }

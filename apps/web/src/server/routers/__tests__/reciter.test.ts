@@ -12,7 +12,7 @@ const seededReciterIds: string[] = [];
 // Unique suffix prevents collisions with other test runs.
 const SUFFIX = Date.now();
 
-beforeAll(async function() {
+beforeAll(async function (this: { skip: () => void }) {
   if (!await isDbAvailable()) {
     return this.skip();
   }

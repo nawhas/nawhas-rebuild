@@ -11,7 +11,7 @@ const seededReciterIds: string[] = [];
 const seededAlbumIds: string[] = [];
 const seededTrackIds: string[] = [];
 
-beforeAll(async function() {
+beforeAll(async function (this: { skip: () => void }) {
   if (!await isDbAvailable()) {
     return this.skip();
   }
