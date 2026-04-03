@@ -16,6 +16,7 @@ import { albumRouter } from '../album';
 import { trackRouter } from '../track';
 import { libraryRouter } from '../library';
 import { likesRouter } from '../likes';
+import { historyRouter } from '../history';
 
 export type TestDb = PostgresJsDatabase<typeof schema>;
 
@@ -76,6 +77,10 @@ export function makeLibraryCaller(db: TestDb, userId: string) {
 
 export function makeLikesCaller(db: TestDb, userId: string) {
   return createCallerFactory(likesRouter)(makeAuthCtx(db, userId));
+}
+
+export function makeHistoryCaller(db: TestDb, userId: string) {
+  return createCallerFactory(historyRouter)(makeAuthCtx(db, userId));
 }
 
 export function makeAuthCtx(db: TestDb, userId: string) {
