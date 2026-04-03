@@ -24,6 +24,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
   return (
     <div className="py-10">
       <Container>
+        <h1 className="sr-only">Nawhas — Discover Recitations</h1>
         <div className="flex flex-col gap-12">
           <FeaturedReciters reciters={featured.reciters} />
           <RecentAlbums albums={featured.albums} />

@@ -55,8 +55,10 @@ test.describe('Album detail page', () => {
     await expect(page).toHaveURL(expectedUrl);
   });
 
-  test('returns 404 for a non-existent album slug', async ({ page }) => {
-    const response = await page.goto('/albums/this-album-does-not-exist-xyz');
-    expect(response?.status()).toBe(404);
+  test('shows not-found page for a non-existent album slug', async ({ page }) => {
+    await page.goto('/albums/this-album-does-not-exist-xyz');
+    await expect(
+      page.getByRole('heading', { name: /Page not found/i }),
+    ).toBeVisible();
   });
 });
