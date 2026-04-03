@@ -24,7 +24,7 @@ export { expect };
 export interface SeedData {
   reciter: { id: string; name: string; slug: string };
   album: { id: string; title: string; slug: string; year: number };
-  track: { id: string; title: string; slug: string };
+  track: { id: string; title: string; slug: string; audioUrl: string; youtubeId: string };
 }
 
 async function insertSeedData(): Promise<SeedData> {
@@ -52,11 +52,23 @@ async function insertSeedData(): Promise<SeedData> {
     if (!album) throw new Error('Failed to insert album');
 
     // Track — unique per (album_id, slug)
-    const [track] = await sql<{ id: string; title: string; slug: string }[]>`
-      INSERT INTO tracks (id, title, slug, album_id, track_number)
-      VALUES (gen_random_uuid(), 'Test Track E2E', 'test-track-e2e', ${album.id}, 1)
-      ON CONFLICT (album_id, slug) DO UPDATE SET title = EXCLUDED.title
-      RETURNING id, title, slug
+    // audio_url points to the MinIO test fixture; youtube_id is a stable test video ID.
+    const [track] = await sql<{ id: string; title: string; slug: string; audio_url: string; youtube_id: string }[]>`
+      INSERT INTO tracks (id, title, slug, album_id, track_number, audio_url, youtube_id)
+      VALUES (
+        gen_random_uuid(),
+        'Test Track E2E',
+        'test-track-e2e',
+        ${album.id},
+        1,
+        'http://localhost:9000/nawhas-audio/fixtures/track-001.mp3',
+        'dQw4w9WgXcQ'
+      )
+      ON CONFLICT (album_id, slug) DO UPDATE SET
+        title = EXCLUDED.title,
+        audio_url = EXCLUDED.audio_url,
+        youtube_id = EXCLUDED.youtube_id
+      RETURNING id, title, slug, audio_url, youtube_id
     `;
 
     if (!track) throw new Error('Failed to insert track');
@@ -73,7 +85,13 @@ async function insertSeedData(): Promise<SeedData> {
     return {
       reciter: { id: reciter.id, name: reciter.name, slug: reciter.slug },
       album: { id: album.id, title: album.title, slug: album.slug, year: album.year },
-      track: { id: track.id, title: track.title, slug: track.slug },
+      track: {
+        id: track.id,
+        title: track.title,
+        slug: track.slug,
+        audioUrl: track.audio_url,
+        youtubeId: track.youtube_id,
+      },
     };
   } finally {
     await sql.end();
