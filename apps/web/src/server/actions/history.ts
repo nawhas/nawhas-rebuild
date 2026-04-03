@@ -25,3 +25,25 @@ export async function recordPlay(trackId: string): Promise<void> {
   if (!caller) return;
   await caller.history.record({ trackId });
 }
+
+/**
+ * Server action: fetch the next page of listening history.
+ * Used by the HistoryList client component for "Load More".
+ */
+export async function fetchMoreHistoryEntries(
+  cursor: string,
+): Promise<import('@nawhas/types').PaginatedResult<import('@nawhas/types').ListenHistoryEntryDTO>> {
+  const caller = await getAuthenticatedCaller();
+  if (!caller) return { items: [], nextCursor: null };
+  return caller.history.list({ limit: 20, cursor });
+}
+
+/**
+ * Server action: clear all listening history for the authenticated user.
+ * Silently no-ops if the user is not authenticated.
+ */
+export async function clearHistory(): Promise<void> {
+  const caller = await getAuthenticatedCaller();
+  if (!caller) return;
+  await caller.history.clear();
+}

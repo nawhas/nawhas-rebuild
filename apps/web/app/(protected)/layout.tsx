@@ -19,9 +19,11 @@ export default async function ProtectedLayout({
   const sessionData = await auth.api.getSession({ headers: reqHeaders });
 
   if (!sessionData) {
-    // Redirect to login — after sign-in the user lands back on the protected page.
-    // We use a fixed path here; individual pages can append their own callbackUrl.
-    redirect('/login?callbackUrl=/library/tracks');
+    // Redirect to login. Middleware already injects callbackUrl for edge cases;
+    // this server-side guard provides a safe fallback for direct RSC invocations.
+    const nextUrl = reqHeaders.get('next-url');
+    const callbackPath = nextUrl ? new URL(nextUrl).pathname : '/';
+    redirect(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
   }
 
   return <>{children}</>;

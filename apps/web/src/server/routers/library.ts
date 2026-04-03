@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, inArray, lt, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, inArray, lt, or } from 'drizzle-orm';
 import { tracks, userSavedTracks } from '@nawhas/db';
 import { router, protectedProcedure } from '../trpc/trpc';
 import { decodeCursor, encodeCursor } from '../lib/cursor';
@@ -168,5 +168,16 @@ export const libraryRouter = router({
       .orderBy(asc(userSavedTracks.savedAt), asc(userSavedTracks.trackId));
 
     return rows;
+  }),
+
+  /**
+   * Returns the total number of tracks saved to the authenticated user's library.
+   */
+  count: protectedProcedure.query(async ({ ctx }): Promise<number> => {
+    const [row] = await ctx.db
+      .select({ value: count() })
+      .from(userSavedTracks)
+      .where(eq(userSavedTracks.userId, ctx.user.id));
+    return row?.value ?? 0;
   }),
 });
