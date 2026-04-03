@@ -61,7 +61,7 @@ export default function RootLayout({
 }): React.JSX.Element {
   return (
     <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <PageLayout header={<SiteHeader />} footer={<></>}>
           {children}
         </PageLayout>
