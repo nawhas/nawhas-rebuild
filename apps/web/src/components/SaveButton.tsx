@@ -21,6 +21,8 @@ interface SaveButtonProps {
   trackId: string;
   /** Pre-fetched save state from the server. If omitted, fetched on mount for authenticated users. */
   initialSaved?: boolean;
+  /** Called after a successful (or optimistic) state change. Receives the new saved state. */
+  onSavedChange?: (saved: boolean) => void;
   className?: string;
 }
 
@@ -33,7 +35,7 @@ interface SaveButtonProps {
  *
  * Client Component — requires interaction and auth session.
  */
-export function SaveButton({ trackId, initialSaved, className = '' }: SaveButtonProps): React.JSX.Element {
+export function SaveButton({ trackId, initialSaved, onSavedChange, className = '' }: SaveButtonProps): React.JSX.Element {
   const { data: session, isPending: sessionLoading } = useSession();
   const [isSaved, setIsSaved] = useState(initialSaved ?? false);
   const [stateLoaded, setStateLoaded] = useState(initialSaved !== undefined);
@@ -66,6 +68,7 @@ export function SaveButton({ trackId, initialSaved, className = '' }: SaveButton
     }
     const nextSaved = !isSaved;
     setIsSaved(nextSaved); // optimistic update
+    onSavedChange?.(nextSaved);
     startTransition(async () => {
       try {
         if (nextSaved) {
@@ -75,6 +78,7 @@ export function SaveButton({ trackId, initialSaved, className = '' }: SaveButton
         }
       } catch {
         setIsSaved(!nextSaved); // roll back on error
+        onSavedChange?.(!nextSaved);
       }
     });
   }

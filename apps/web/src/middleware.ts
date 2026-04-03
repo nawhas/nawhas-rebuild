@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
  * Routes that require authentication.
  * Add patterns here as protected features are built out.
  */
-const PROTECTED_PATHS = ['/admin'];
+const PROTECTED_PATHS = ['/admin', '/library'];
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;

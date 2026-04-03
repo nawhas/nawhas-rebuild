@@ -44,3 +44,24 @@ export async function getIsSaved(trackId: string): Promise<boolean> {
   if (!caller) return false;
   return caller.library.isSaved({ trackId });
 }
+
+/**
+ * Server action: fetch the next page of saved tracks.
+ * Used by the LibraryTracksList client component for "Load More".
+ */
+export async function fetchMoreLibraryTracks(
+  cursor: string,
+): Promise<import('@nawhas/types').PaginatedResult<import('@nawhas/types').SavedTrackDTO>> {
+  const caller = await getAuthenticatedCaller();
+  if (!caller) return { items: [], nextCursor: null };
+  return caller.library.list({ limit: 20, cursor });
+}
+
+/**
+ * Server action: get all saved tracks for queue injection.
+ */
+export async function playAllLibraryTracks(): Promise<import('@nawhas/types').TrackDTO[]> {
+  const caller = await getAuthenticatedCaller();
+  if (!caller) return [];
+  return caller.library.playAll();
+}
