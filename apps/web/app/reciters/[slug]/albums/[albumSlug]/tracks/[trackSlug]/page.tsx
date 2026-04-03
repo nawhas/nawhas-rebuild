@@ -5,6 +5,7 @@ import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { TrackHeader } from '@/components/tracks/track-header';
+import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
 import { buildMetadata } from '@/lib/metadata';
 
@@ -79,12 +80,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
       <Container size="md">
         <TrackHeader track={track} />
 
-        {/* Reserved space for the audio player bar — M2 will wire this up */}
-        <div
-          aria-hidden="true"
-          className="mt-2 h-14 rounded-lg border-2 border-dashed border-gray-200"
-          role="presentation"
-        />
+        <TrackDetailPlayButton track={track} />
 
         {track.lyrics.length > 0 && (
           <div className="mt-10">

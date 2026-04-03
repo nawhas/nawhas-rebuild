@@ -6,6 +6,7 @@ import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { AlbumHeader } from '@/components/albums/album-header';
 import { TrackList } from '@/components/albums/track-list';
+import { PlayAllButton } from '@/components/player/play-all-button';
 import { buildMetadata } from '@/lib/metadata';
 
 // ISR: revalidate every hour.
@@ -58,6 +59,9 @@ export default async function AlbumPage({ params }: AlbumPageProps): Promise<Rea
     <main id="main-content" className="py-10">
       <Container>
         <AlbumHeader album={album} />
+        <div className="mt-4 flex justify-start">
+          <PlayAllButton tracks={album.tracks} />
+        </div>
         <div className="mt-8">
           <TrackList
             tracks={album.tracks}
