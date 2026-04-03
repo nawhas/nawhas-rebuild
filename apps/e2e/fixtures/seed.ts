@@ -7,11 +7,17 @@
  * Usage: import { test, expect } from '@/fixtures/seed' in any spec file.
  *
  * Data inserted per test run:
- *   - 1 reciter  (slug: test-reciter-e2e)
- *   - 1 album    (slug: test-album-e2e, year: 2024)
- *   - 1 track    (slug: test-track-e2e, track number: 1, with audioUrl + youtubeId)
- *   - 1 track    (slug: test-track-2-e2e, track number: 2, audio only — for queue tests)
+ *   - 1 reciter  (slug: test-reciter-e2e-{workerIndex})
+ *   - 1 album    (slug: test-album-e2e-{workerIndex}, year: 2024)
+ *   - 1 track    (slug: test-track-e2e-{workerIndex}, track number: 1, with audioUrl + youtubeId)
+ *   - 1 track    (slug: test-track-2-e2e-{workerIndex}, track number: 2, audio only — for queue tests)
  *   - 2 lyric rows on track 1: Arabic ('ar') + English ('en')
+ *
+ * Slugs are scoped per Playwright worker to prevent data conflicts when
+ * workers run in parallel (workers: 4 in CI).
+ *
+ * Audio requests are intercepted via page.route() and fulfilled with a
+ * minimal silent MP3 buffer so tests never wait on real MinIO I/O.
  */
 
 import { test as base, expect } from '@playwright/test';
@@ -19,6 +25,26 @@ import postgres from 'postgres';
 
 const DATABASE_URL =
   process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
+
+/**
+ * Minimal MPEG1 Layer3 128kbps 44100Hz frame (48 bytes).
+ * Browsers treat this as a near-zero-duration audio clip; Howler.js fires
+ * onend almost immediately, which is required for the auto-advance queue test.
+ */
+const PLACEHOLDER_MP3 = Buffer.from(
+  'fffb9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  'hex',
+);
+
+/**
+ * MinIO public base URL — differs between local dev (localhost) and Docker CI
+ * (minio service name) because the browser inside the Playwright container
+ * cannot reach the host-mapped port via localhost.
+ */
+const MINIO_BASE_URL =
+  process.env['DOCKER'] === 'true'
+    ? 'http://minio:9000/nawhas-audio'
+    : 'http://localhost:9000/nawhas-audio';
 
 export { expect };
 
@@ -29,14 +55,15 @@ export interface SeedData {
   track2: { id: string; title: string; slug: string };
 }
 
-async function insertSeedData(): Promise<SeedData> {
+async function insertSeedData(workerIndex: number): Promise<SeedData> {
   const sql = postgres(DATABASE_URL);
+  const w = workerIndex;
 
   try {
-    // Reciter — idempotent via ON CONFLICT
+    // Reciter — idempotent via ON CONFLICT; slug scoped to worker
     const [reciter] = await sql<{ id: string; name: string; slug: string }[]>`
       INSERT INTO reciters (id, name, slug)
-      VALUES (gen_random_uuid(), 'Test Reciter E2E', 'test-reciter-e2e')
+      VALUES (gen_random_uuid(), 'Test Reciter E2E', ${'test-reciter-e2e-' + w})
       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
       RETURNING id, name, slug
     `;
@@ -46,7 +73,7 @@ async function insertSeedData(): Promise<SeedData> {
     // Album — unique per (reciter_id, slug)
     const [album] = await sql<{ id: string; title: string; slug: string; year: number }[]>`
       INSERT INTO albums (id, title, slug, reciter_id, year)
-      VALUES (gen_random_uuid(), 'Test Album E2E', 'test-album-e2e', ${reciter.id}, 2024)
+      VALUES (gen_random_uuid(), 'Test Album E2E', ${'test-album-e2e-' + w}, ${reciter.id}, 2024)
       ON CONFLICT (reciter_id, slug) DO UPDATE SET title = EXCLUDED.title
       RETURNING id, title, slug, year
     `;
@@ -54,16 +81,15 @@ async function insertSeedData(): Promise<SeedData> {
     if (!album) throw new Error('Failed to insert album');
 
     // Track — unique per (album_id, slug)
-    // audio_url points to the MinIO test fixture; youtube_id is a stable test video ID.
     const [track] = await sql<{ id: string; title: string; slug: string; audio_url: string; youtube_id: string }[]>`
       INSERT INTO tracks (id, title, slug, album_id, track_number, audio_url, youtube_id)
       VALUES (
         gen_random_uuid(),
         'Test Track E2E',
-        'test-track-e2e',
+        ${'test-track-e2e-' + w},
         ${album.id},
         1,
-        'http://localhost:9000/nawhas-audio/fixtures/track-001.mp3',
+        ${MINIO_BASE_URL + '/fixtures/track-001.mp3'},
         'dQw4w9WgXcQ'
       )
       ON CONFLICT (album_id, slug) DO UPDATE SET
@@ -90,10 +116,10 @@ async function insertSeedData(): Promise<SeedData> {
       VALUES (
         gen_random_uuid(),
         'Test Track 2 E2E',
-        'test-track-2-e2e',
+        ${'test-track-2-e2e-' + w},
         ${album.id},
         2,
-        'http://localhost:9000/nawhas-audio/fixtures/track-002.mp3'
+        ${MINIO_BASE_URL + '/fixtures/track-002.mp3'}
       )
       ON CONFLICT (album_id, slug) DO UPDATE SET
         title = EXCLUDED.title,
@@ -133,8 +159,22 @@ async function deleteSeedData(reciterId: string): Promise<void> {
 type Fixtures = { seedData: SeedData };
 
 export const test = base.extend<Fixtures>({
-  seedData: async ({}, use) => {
-    const data = await insertSeedData();
+  // Override the built-in page fixture to intercept audio requests.
+  // This prevents tests from waiting on real MinIO I/O and ensures
+  // consistent behaviour regardless of network conditions.
+  page: async ({ page }, use) => {
+    await page.route('**/*.mp3', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'audio/mpeg',
+        body: PLACEHOLDER_MP3,
+      }),
+    );
+    await use(page);
+  },
+
+  seedData: async ({}, use, testInfo) => {
+    const data = await insertSeedData(testInfo.workerIndex);
     await use(data);
     await deleteSeedData(data.reciter.id);
   },
