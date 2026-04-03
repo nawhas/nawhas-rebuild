@@ -15,6 +15,7 @@ cd "$SCRIPT_DIR"
 #   ./dev -T up -d         → base + test overlay (test mode)
 #   ./dev -T db:seed       → seed nawhas_test
 #   ./dev -T logs web -f   → tail web logs in test stack
+#   ./dev down             → always uses all compose files (see cmd_down)
 #
 # test:e2e always uses the test overlay regardless of this flag.
 
@@ -63,8 +64,8 @@ Docker Compose pass-through
   Examples:
     ./dev up -d              Start base dev stack
     ./dev -T up -d           Start test stack (creates nawhas_test DB)
-    ./dev down               Stop base stack
-    ./dev -T down            Stop test stack
+    ./dev down               Stop all stacks (base + test + CI compose files; testing profile)
+    ./dev -T down            Same as ./dev down (-T does not limit teardown)
     ./dev exec web bash      Shell into web container
     ./dev logs web -f        Tail web logs
     ./dev ps
@@ -83,6 +84,19 @@ check_hosts() {
     echo "Warning: nawhas.test is not in /etc/hosts."
     echo "  Add it with: echo '127.0.0.1 nawhas.test' | sudo tee -a /etc/hosts"
   fi
+}
+
+# All local compose overlays (same project name); used by cmd_down so one command
+# tears down dev, test, and CI-shaped stacks regardless of which files were used for up.
+ALL_COMPOSE_FILES=(
+  -f docker-compose.yml
+  -f docker-compose.test.yml
+  -f docker-compose.ci.yml
+)
+
+cmd_down() {
+  require_docker
+  docker compose "${ALL_COMPOSE_FILES[@]}" --profile testing down "$@"
 }
 
 # ── Commands ─────────────────────────────────────────────────────────────────
@@ -167,6 +181,7 @@ case "$COMMAND" in
   test)         cmd_test ;;
   test:e2e:ui)  cmd_test_e2e_ui ;;
   test:e2e)     cmd_test_e2e "$@" ;;
+  down)         cmd_down "$@" ;;
   --help|-h|"") usage ;;
   *)
     # Pass through to docker compose using the active compose files.
