@@ -37,6 +37,12 @@ services:
       default:
         aliases:
           - nawhas.test
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -143,7 +149,8 @@ services:
       - CI=${CI:-}
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
 volumes:
   postgres_data:

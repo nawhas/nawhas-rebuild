@@ -45,7 +45,8 @@ interface TrackDoc {
 }
 
 // Fields searched on tracks — matches the tracks collection schema (NAW-113).
-const TRACK_QUERY_BY = 'title,albumTitle,reciterName';
+// Includes all lyrics fields so Arabic/Urdu/transliteration search works.
+const TRACK_QUERY_BY = 'title,albumTitle,reciterName,lyrics_ar,lyrics_ur,lyrics_en,lyrics_fr,lyrics_transliteration';
 
 // Below this many results Typesense attempts typo-correction;
 // 1 = always try typos even when a match exists (important for Arabic/Urdu).
