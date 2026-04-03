@@ -6,6 +6,7 @@ import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { TrackHeader } from '@/components/tracks/track-header';
 import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
+import { MediaToggle } from '@/components/tracks/media-toggle';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
 import { buildMetadata } from '@/lib/metadata';
 
@@ -80,7 +81,11 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
       <Container size="md">
         <TrackHeader track={track} />
 
-        <TrackDetailPlayButton track={track} />
+        {track.youtubeId ? (
+          <MediaToggle track={track} />
+        ) : (
+          <TrackDetailPlayButton track={track} />
+        )}
 
         {track.lyrics.length > 0 && (
           <div className="mt-10">
