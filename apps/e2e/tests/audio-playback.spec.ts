@@ -1,82 +1,122 @@
 /**
- * E2E Tests — Audio Playback & Queue
+ * E2E Tests — Audio Playback & Queue (NAW-100)
  *
  * Covers all acceptance criteria for NAW-100.
  *
- * STATUS: Tests are scaffolded as todo pending the following implementation tickets:
- *   - NAW-94: Howler.js audio engine integration
- *   - NAW-95: Persistent player bar UI (desktop)
- *   - NAW-97: Play buttons on track/album cards and pages
- *   - NAW-98: Queue management UI
- *   - NAW-99: YouTube embed on track detail page
- *
- * Once those tickets are merged, replace each test.todo() with a full
- * implementation using the same semantic-selector patterns as the rest of
- * the E2E suite (getByRole, getByLabel — no data-testid).
- *
- * Seed note: the seed fixture now includes audioUrl and youtubeId on the
- * test track (track-001.mp3 on MinIO + youtubeId 'dQw4w9WgXcQ').
- * For Next/Previous tests a second seed track will be needed — add it to
- * the seed fixture at that time.
+ * Queue-panel test ("add to queue appears in queue panel") remains as
+ * test.todo() pending NAW-98 (queue management UI).
  */
 
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/seed';
+
+type SeedParam = Parameters<Parameters<typeof test>[2]>[0]['seedData'];
+
+function albumUrl(seedData: Pick<SeedParam, 'album'>): string {
+  return `/albums/${seedData.album.slug}`;
+}
+
+function trackUrl(seedData: Pick<SeedParam, 'reciter' | 'album' | 'track'>): string {
+  return `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
+}
 
 // ---------------------------------------------------------------------------
 // Player bar — appearance & persistence
 // ---------------------------------------------------------------------------
 
 test.describe('Audio playback — player bar', () => {
-  /**
-   * NAW-95 + NAW-97 required.
-   * Steps: navigate to album detail → click Play on the seeded track → assert
-   * a persistent player bar region is visible.
-   * Expected selector: page.getByRole('region', { name: /now playing/i })
-   */
-  test.todo('playing a track from the album detail page causes the player bar to appear');
+  test('playing a track from the album detail page causes the player bar to appear', async ({
+    page,
+    seedData,
+  }) => {
+    await page.goto(albumUrl(seedData));
 
-  /**
-   * NAW-95 + NAW-97 required.
-   * Steps: play a track on album detail → navigate to /reciters → assert
-   * the player bar is still visible after navigation.
-   */
-  test.todo('player bar persists after navigating to another page');
+    await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
+
+    // The player bar shows a Pause button once playback starts
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+  });
+
+  test('player bar persists after navigating to another page', async ({ page, seedData }) => {
+    await page.goto(albumUrl(seedData));
+    await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
+
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+
+    // Navigate away; the player lives in the root layout so it must survive
+    await page.goto('/reciters');
+    await expect(playerBar).toBeVisible();
+  });
 });
 
 // ---------------------------------------------------------------------------
-// Player bar — transport controls
+// Transport controls
 // ---------------------------------------------------------------------------
 
 test.describe('Audio playback — transport controls', () => {
-  /**
-   * NAW-94 + NAW-95 required.
-   * Steps: play a track → click the Play/Pause button → assert isPlaying
-   * state toggles (aria-label changes between "Pause" and "Play").
-   */
-  test.todo('Play/Pause button toggles playback state');
+  test('Play/Pause button toggles playback state', async ({ page, seedData }) => {
+    await page.goto(albumUrl(seedData));
+    await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
-  /**
-   * NAW-95 required. Needs a second track in the queue.
-   * Steps: play album (2+ tracks) → click Next → assert player shows next
-   * track title.
-   */
-  test.todo('Next button advances to the next track in the queue');
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
 
-  /**
-   * NAW-95 required. Needs a second track in the queue.
-   * Steps: play album (2+ tracks) → advance to track 2 → click Previous →
-   * assert player shows track 1.
-   */
-  test.todo('Previous button goes to the previous track in the queue');
+    // Track is playing — Pause visible
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
 
-  /**
-   * NAW-95 required.
-   * Steps: play a track → interact with the seek slider → assert the
-   * seek bar position (aria-valuenow) reflects the new value.
-   * Expected selector: page.getByRole('slider', { name: /seek/i })
-   */
-  test.todo('seek bar reflects updated position after interaction');
+    // Pause → Play
+    await playerBar.getByRole('button', { name: 'Pause' }).click();
+    await expect(playerBar.getByRole('button', { name: 'Play' })).toBeVisible();
+
+    // Play → Pause
+    await playerBar.getByRole('button', { name: 'Play' }).click();
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+  });
+
+  test('Next button advances to the next track in the queue', async ({ page, seedData }) => {
+    // Use Play All to load both seed tracks into the queue
+    await page.goto(albumUrl(seedData));
+    await page.getByRole('button', { name: 'Play All' }).click();
+
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar).toContainText(seedData.track.title);
+
+    await playerBar.getByRole('button', { name: 'Next track' }).click();
+
+    await expect(playerBar).toContainText(seedData.track2.title);
+  });
+
+  test('Previous button returns to the previous track in the queue', async ({
+    page,
+    seedData,
+  }) => {
+    await page.goto(albumUrl(seedData));
+    await page.getByRole('button', { name: 'Play All' }).click();
+
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+
+    // Advance to track 2
+    await playerBar.getByRole('button', { name: 'Next track' }).click();
+    await expect(playerBar).toContainText(seedData.track2.title);
+
+    // Go back to track 1
+    await playerBar.getByRole('button', { name: 'Previous track' }).click();
+    await expect(playerBar).toContainText(seedData.track.title);
+  });
+
+  test('seek bar reflects updated position after interaction', async ({ page, seedData }) => {
+    await page.goto(albumUrl(seedData));
+    await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
+
+    const seekSlider = page.getByRole('slider', { name: 'Seek' });
+    await expect(seekSlider).toBeVisible();
+    await expect(seekSlider).toHaveAttribute('aria-valuemin', '0');
+
+    // Seek to 5 seconds; position must move away from 0
+    await seekSlider.fill('5');
+    await expect(seekSlider).not.toHaveAttribute('aria-valuenow', '0');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -84,21 +124,23 @@ test.describe('Audio playback — transport controls', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Audio playback — queue', () => {
-  /**
-   * NAW-97 + NAW-98 required.
-   * Steps: navigate to album detail → click "Play All" → assert player bar
-   * appears and queue panel shows all album tracks.
-   * Expected selector: page.getByRole('button', { name: /play all/i })
-   */
-  test.todo('"Play All" on the album page populates the queue and begins playback');
+  test('"Play All" on the album page populates the queue and begins playback', async ({
+    page,
+    seedData,
+  }) => {
+    await page.goto(albumUrl(seedData));
 
-  /**
-   * NAW-97 + NAW-98 required.
-   * Steps: navigate to album detail → click "Add to queue" on the seeded
-   * track → open queue panel → assert the track appears in the list.
-   * Expected selector: page.getByRole('button', { name: /add to queue/i })
-   */
-  test.todo('adding a track via "Add to queue" makes it appear in the queue panel');
+    await page.getByRole('button', { name: 'Play All' }).click();
+
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+    await expect(playerBar).toContainText(seedData.track.title);
+  });
+
+  // NAW-98 (queue management UI) is still in progress — implement when it lands
+  test('adding a track via "Add to queue" makes it appear in the queue panel', async () => {
+    test.skip(true, 'NAW-98 (queue management UI) not yet complete');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -106,18 +148,53 @@ test.describe('Audio playback — queue', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Audio playback — YouTube embed', () => {
-  /**
-   * NAW-99 required.
-   * Steps: navigate to track detail for a track with youtubeId → assert a
-   * "Video" (or "YouTube") tab is visible alongside the audio tab.
-   * Expected selector: page.getByRole('tab', { name: /video/i })
-   */
-  test.todo('track with a youtubeId shows a YouTube embed tab on the track detail page');
+  test('track with a youtubeId shows a YouTube embed tab on the track detail page', async ({
+    page,
+    seedData,
+  }) => {
+    // Block the iframe network request — we only need to check the src attribute
+    await page.route('**/*youtube*', (route) => route.abort());
 
-  /**
-   * NAW-94 + NAW-99 required.
-   * Steps: play the track (audio starts) → click the YouTube tab → assert
-   * audio is paused (Play button label changes to "Play" / aria-pressed=false).
-   */
-  test.todo('switching to the YouTube tab pauses audio playback');
+    await page.goto(trackUrl(seedData));
+
+    // Media toggle must show both Listen and Watch tabs
+    const tabList = page.getByRole('tablist', { name: 'Media player options' });
+    await expect(tabList).toBeVisible();
+
+    const listenTab = page.getByRole('tab', { name: 'Listen' });
+    const watchTab = page.getByRole('tab', { name: 'Watch' });
+    await expect(listenTab).toBeVisible();
+    await expect(watchTab).toBeVisible();
+
+    // Listen is selected by default
+    await expect(listenTab).toHaveAttribute('aria-selected', 'true');
+
+    // Switch to Watch — panel must contain an iframe pointing at the seeded youtubeId
+    await watchTab.click();
+    await expect(watchTab).toHaveAttribute('aria-selected', 'true');
+
+    const watchPanel = page.locator('#panel-watch');
+    await expect(watchPanel).toBeVisible();
+    await expect(watchPanel.locator('iframe')).toHaveAttribute(
+      'src',
+      new RegExp(seedData.track.youtubeId),
+    );
+  });
+
+  test('switching to the YouTube tab pauses audio playback', async ({ page, seedData }) => {
+    await page.route('**/*youtube*', (route) => route.abort());
+
+    await page.goto(trackUrl(seedData));
+
+    // Start audio from the track detail play button
+    await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
+
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+
+    // Switch to Watch tab — audio must pause
+    await page.getByRole('tab', { name: 'Watch' }).click();
+
+    await expect(playerBar.getByRole('button', { name: 'Play' })).toBeVisible();
+  });
 });
