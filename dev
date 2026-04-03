@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# ── Helpers ─────────────────────────────────────────────────────────────────
+
+usage() {
+  cat <<EOF
+Usage: ./dev <command> [options]
+
+Development
+  up                Start the full development stack
+  down              Stop containers
+  restart           Restart the web service
+  logs [service]    Tail logs (default: web)
+  shell [service]   Shell into a container (default: web)
+
+Database
+  db:migrate        Run migrations
+  db:seed           Seed fixture data
+  db:reset          Drop, migrate, and seed
+
+Code quality
+  build             Production build
+  lint              Run ESLint
+  typecheck         TypeScript type check
+
+Testing
+  test              Run unit tests (vitest)
+  test:e2e          Run E2E tests (Docker)
+  test:e2e:ui       Run E2E tests (interactive UI)
+  test:e2e --ci     Run E2E tests with CI overrides
+EOF
+}
+
+require_docker() {
+  if ! docker info > /dev/null 2>&1; then
+    echo "Error: Docker is not running. Please start Docker and try again." >&2
+    exit 1
+  fi
+}
+
+check_hosts() {
+  if ! grep -q "nawhas.test" /etc/hosts 2>/dev/null; then
+    echo "Warning: nawhas.test is not in /etc/hosts."
+    echo "  Add it with: echo '127.0.0.1 nawhas.test' | sudo tee -a /etc/hosts"
+  fi
+}
+
+# ── Commands ─────────────────────────────────────────────────────────────────
+
+cmd_up() {
+  require_docker
+  check_hosts
+  docker compose up -d
+}
+
+cmd_down() {
+  require_docker
+  docker compose down
+}
+
+cmd_restart() {
+  require_docker
+  docker compose restart web
+}
+
+cmd_logs() {
+  require_docker
+  local service="${1:-web}"
+  docker compose logs -f "$service"
+}
+
+cmd_shell() {
+  require_docker
+  local service="${1:-web}"
+  docker compose exec "$service" sh
+}
+
+cmd_db_migrate() {
+  require_docker
+  docker compose exec web pnpm --filter @nawhas/db db:migrate
+}
+
+cmd_db_seed() {
+  require_docker
+  docker compose exec web pnpm --filter @nawhas/db db:seed
+}
+
+cmd_db_reset() {
+  require_docker
+  docker compose exec web sh -c "pnpm --filter @nawhas/db db:drop && pnpm --filter @nawhas/db db:migrate && pnpm --filter @nawhas/db db:seed"
+}
+
+cmd_build() {
+  require_docker
+  docker compose exec web pnpm --filter @nawhas/web build
+}
+
+cmd_lint() {
+  pnpm run lint
+}
+
+cmd_typecheck() {
+  pnpm run typecheck
+}
+
+cmd_test() {
+  pnpm run test
+}
+
+cmd_test_e2e() {
+  require_docker
+  check_hosts
+  local ci_flag=""
+  for arg in "$@"; do
+    if [[ "$arg" == "--ci" ]]; then
+      ci_flag="-f docker-compose.ci.yml"
+    fi
+  done
+  # shellcheck disable=SC2086
+  docker compose -f docker-compose.yml -f docker-compose.test.yml $ci_flag --profile testing run --rm playwright
+}
+
+cmd_test_e2e_ui() {
+  check_hosts
+  pnpm --filter @nawhas/e2e test:e2e:ui
+}
+
+# ── Dispatch ─────────────────────────────────────────────────────────────────
+
+COMMAND="${1:-}"
+shift || true
+
+case "$COMMAND" in
+  up)           cmd_up ;;
+  down)         cmd_down ;;
+  restart)      cmd_restart ;;
+  logs)         cmd_logs "$@" ;;
+  shell)        cmd_shell "$@" ;;
+  db:migrate)   cmd_db_migrate ;;
+  db:seed)      cmd_db_seed ;;
+  db:reset)     cmd_db_reset ;;
+  build)        cmd_build ;;
+  lint)         cmd_lint ;;
+  typecheck)    cmd_typecheck ;;
+  test)         cmd_test ;;
+  test:e2e:ui)  cmd_test_e2e_ui ;;
+  test:e2e)     cmd_test_e2e "$@" ;;
+  --help|-h|"") usage ;;
+  *)
+    echo "Error: unknown command '$COMMAND'" >&2
+    echo "" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
