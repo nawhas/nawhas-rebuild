@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { inArray } from 'drizzle-orm';
 import { reciters, albums, tracks } from '@nawhas/db';
-import { createTestDb, makeAlbumCaller, type TestDb } from './helpers';
+import { createTestDb, isDbAvailable, makeAlbumCaller, type TestDb } from './helpers';
 
 let db: TestDb;
 let close: () => Promise<void>;
@@ -15,7 +15,10 @@ const SUFFIX = Date.now();
 const RECITER_SLUG = `album-test-reciter-${SUFFIX}`;
 const ALBUM_SLUG = `album-test-album-${SUFFIX}`;
 
-beforeAll(async () => {
+beforeAll(async function() {
+  if (!await isDbAvailable()) {
+    return this.skip();
+  }
   ({ db, close } = createTestDb());
 
   const [r] = await db
@@ -44,6 +47,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (!close) return;
   if (seededReciterIds.length > 0) {
     await db.delete(reciters).where(inArray(reciters.id, seededReciterIds));
   }

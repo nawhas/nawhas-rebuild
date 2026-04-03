@@ -135,6 +135,7 @@ services:
       - BASE_URL=http://web:3000
       - DOCKER=true
       - CI=${CI:-}
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
     depends_on:
       - web
 

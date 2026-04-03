@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { inArray } from 'drizzle-orm';
 import { reciters, albums } from '@nawhas/db';
-import { createTestDb, makeReciterCaller, type TestDb } from './helpers';
+import { createTestDb, isDbAvailable, makeReciterCaller, type TestDb } from './helpers';
 
 let db: TestDb;
 let close: () => Promise<void>;
@@ -12,7 +12,10 @@ const seededReciterIds: string[] = [];
 // Unique suffix prevents collisions with other test runs.
 const SUFFIX = Date.now();
 
-beforeAll(async () => {
+beforeAll(async function() {
+  if (!await isDbAvailable()) {
+    return this.skip();
+  }
   ({ db, close } = createTestDb());
 
   const rows = await db
@@ -44,6 +47,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (!close) return;
   if (seededReciterIds.length > 0) {
     await db.delete(reciters).where(inArray(reciters.id, seededReciterIds));
   }

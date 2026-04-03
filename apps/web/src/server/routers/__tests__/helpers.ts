@@ -24,6 +24,24 @@ export function createTestDb(): { db: TestDb; close: () => Promise<void> } {
   return { db, close: () => client.end() };
 }
 
+/**
+ * Returns true if the configured database is reachable.
+ * Used in integration-test beforeAll to skip gracefully when
+ * the Quality CI job runs without Postgres (--no-deps).
+ */
+export async function isDbAvailable(): Promise<boolean> {
+  const url = process.env['DATABASE_URL'] ?? 'postgresql://test:test@localhost:5432/nawhas_test';
+  const client = postgres(url, { max: 1, connect_timeout: 3 });
+  try {
+    await client`SELECT 1`;
+    return true;
+  } catch {
+    return false;
+  } finally {
+    await client.end();
+  }
+}
+
 function makeCtx(db: TestDb) {
   return { db: db as unknown as Database, session: null, user: null };
 }

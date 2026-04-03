@@ -15,7 +15,7 @@ import { eq, inArray, like } from 'drizzle-orm';
 import { betterAuth, APIError } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { users, sessions, accounts, verificationTokens } from '@nawhas/db';
-import { createTestDb, type TestDb } from './helpers';
+import { createTestDb, isDbAvailable, type TestDb } from './helpers';
 
 // ─── Unique suffix to avoid collisions across parallel test runs ─────────────
 const SUFFIX = Date.now();
@@ -70,12 +70,16 @@ function createTestAuth(testDb: TestDb) {
   });
 }
 
-beforeAll(async () => {
+beforeAll(async function() {
+  if (!await isDbAvailable()) {
+    return this.skip();
+  }
   ({ db, close } = createTestDb());
   auth = createTestAuth(db);
 });
 
 afterAll(async () => {
+  if (!close) return;
   if (createdUserIds.length > 0) {
     // Sessions and accounts cascade-delete when user is deleted.
     await db.delete(users).where(inArray(users.id, createdUserIds));

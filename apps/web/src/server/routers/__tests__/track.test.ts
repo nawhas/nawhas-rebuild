@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { inArray } from 'drizzle-orm';
 import { reciters, albums, tracks, lyrics } from '@nawhas/db';
-import { createTestDb, makeTrackCaller, type TestDb } from './helpers';
+import { createTestDb, isDbAvailable, makeTrackCaller, type TestDb } from './helpers';
 
 let db: TestDb;
 let close: () => Promise<void>;
@@ -17,7 +17,10 @@ const TRACK_SLUG = `track-test-track-${SUFFIX}`;
 // Second track without lyrics to test the no-lyrics path.
 const TRACK_NO_LYRICS_SLUG = `track-test-no-lyrics-${SUFFIX}`;
 
-beforeAll(async () => {
+beforeAll(async function() {
+  if (!await isDbAvailable()) {
+    return this.skip();
+  }
   ({ db, close } = createTestDb());
 
   const [r] = await db
@@ -49,6 +52,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (!close) return;
   if (seededReciterIds.length > 0) {
     await db.delete(reciters).where(inArray(reciters.id, seededReciterIds));
   }

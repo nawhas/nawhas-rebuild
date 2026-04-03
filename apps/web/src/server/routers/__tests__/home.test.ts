@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { reciters, albums, tracks } from '@nawhas/db';
-import { createTestDb, makeHomeCaller, type TestDb } from './helpers';
+import { createTestDb, isDbAvailable, makeHomeCaller, type TestDb } from './helpers';
 
 let db: TestDb;
 let close: () => Promise<void>;
@@ -11,7 +11,10 @@ const seededReciterIds: string[] = [];
 const seededAlbumIds: string[] = [];
 const seededTrackIds: string[] = [];
 
-beforeAll(async () => {
+beforeAll(async function() {
+  if (!await isDbAvailable()) {
+    return this.skip();
+  }
   ({ db, close } = createTestDb());
 
   // Seed 2 reciters, each with 1 album and 1 track.
@@ -47,6 +50,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (!close) return;
   // Cascade deletes handle tracks/albums when reciters are removed.
   if (seededReciterIds.length > 0) {
     const { inArray } = await import('drizzle-orm');
