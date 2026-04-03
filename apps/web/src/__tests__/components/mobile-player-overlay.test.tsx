@@ -110,12 +110,19 @@ describe('MobilePlayerOverlay — controls', () => {
     expect(screen.getByText('Nohay Title')).toBeDefined();
   });
 
-  it('close button calls closeMobileOverlay', () => {
+  it('collapse button (chevron) calls closeMobileOverlay', () => {
     const track = makeTrack();
     usePlayerStore.setState({ currentTrack: track, isMobileOverlayOpen: true });
     render(<MobilePlayerOverlay />);
-    const closeButtons = screen.getAllByRole('button', { name: /Close player/i });
-    fireEvent.click(closeButtons[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse player' }));
+    expect(usePlayerStore.getState().isMobileOverlayOpen).toBe(false);
+  });
+
+  it('close button (X) calls closeMobileOverlay', () => {
+    const track = makeTrack();
+    usePlayerStore.setState({ currentTrack: track, isMobileOverlayOpen: true });
+    render(<MobilePlayerOverlay />);
+    fireEvent.click(screen.getByRole('button', { name: 'Close player' }));
     expect(usePlayerStore.getState().isMobileOverlayOpen).toBe(false);
   });
 

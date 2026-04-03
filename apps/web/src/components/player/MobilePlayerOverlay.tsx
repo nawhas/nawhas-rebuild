@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   usePlayerStore,
   selectCurrentTrack,
@@ -159,6 +159,20 @@ export function MobilePlayerOverlay(): React.JSX.Element {
 
   const isVisible = isOpen && currentTrack !== null;
 
+  // Focus management: move focus into dialog on open, restore on close (WCAG 2.1 AA SC 2.4.3)
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isVisible) {
+      triggerRef.current = document.activeElement as HTMLElement;
+      closeButtonRef.current?.focus();
+    } else {
+      triggerRef.current?.focus();
+      triggerRef.current = null;
+    }
+  }, [isVisible]);
+
   return (
     <div
       role="dialog"
@@ -183,11 +197,12 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           <div className="h-1 w-10 rounded-full bg-gray-300" />
         </div>
 
-        {/* Collapse button */}
+        {/* Collapse button — first focusable element, receives focus on open */}
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={closeMobileOverlay}
-          aria-label="Close player"
+          aria-label="Collapse player"
           className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
           tabIndex={isVisible ? 0 : -1}
         >
