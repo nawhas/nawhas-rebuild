@@ -114,8 +114,13 @@ jobs:
           docker save mcr.microsoft.com/playwright:v1.59.1-noble \
             -o /tmp/playwright-cache/playwright.tar
 
+      # Start with the test overlay so postgres runs the init-test-db.sh script on
+      # its first boot (creates nawhas_test). Starting without the overlay first and
+      # then re-applying it via `./dev test:e2e` causes Docker to recreate the
+      # postgres container after its data dir is already initialised — init scripts
+      # only run on a fresh data dir, so nawhas_test would never be created.
       - name: Start stack
-        run: ./dev up -d
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
 
       # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
       # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;

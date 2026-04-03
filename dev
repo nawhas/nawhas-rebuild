@@ -67,7 +67,9 @@ cmd_db_reset() {
 
 cmd_build() {
   require_docker
-  docker compose exec web pnpm --filter @nawhas/web build
+  # Build @nawhas/types first so its dist/ declarations exist before next build
+  # type-checks. Without this, TypeScript resolves @nawhas/types imports as `any`.
+  docker compose exec web sh -c "pnpm --filter @nawhas/types build && pnpm --filter @nawhas/web build"
 }
 
 cmd_lint() {
