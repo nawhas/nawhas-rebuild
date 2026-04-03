@@ -137,9 +137,72 @@ test.describe('Audio playback — queue', () => {
     await expect(playerBar).toContainText(seedData.track.title);
   });
 
-  // NAW-98 (queue management UI) is still in progress — implement when it lands
-  test('adding a track via "Add to queue" makes it appear in the queue panel', async () => {
-    test.skip(true, 'NAW-98 (queue management UI) not yet complete');
+  test('adding a track via "Add to queue" makes it appear in the queue panel', async ({
+    page,
+    seedData,
+  }) => {
+    await page.goto(albumUrl(seedData));
+
+    // Start playing track 1 so the player bar is visible
+    await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+
+    // Add track 2 to the queue from the album track list
+    await page.getByRole('button', { name: `Add ${seedData.track2.title} to queue` }).click();
+
+    // Open the queue panel
+    await playerBar.getByRole('button', { name: 'Open queue' }).click();
+
+    // Panel should open and contain track 2
+    const queuePanel = page.getByRole('dialog', { name: 'Playback queue' });
+    await expect(queuePanel).toBeVisible();
+    await expect(queuePanel).toContainText(seedData.track2.title);
+  });
+
+  test('dragging a queue item changes its position in the queue', async ({ page, seedData }) => {
+    await page.goto(albumUrl(seedData));
+
+    // Load both seed tracks via Play All
+    await page.getByRole('button', { name: 'Play All' }).click();
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
+
+    // Open the queue panel
+    await playerBar.getByRole('button', { name: 'Open queue' }).click();
+    const queuePanel = page.getByRole('dialog', { name: 'Playback queue' });
+    await expect(queuePanel).toBeVisible();
+
+    const queueList = page.locator('ol[aria-label="Queue tracks"]');
+    const firstItem = queueList.locator('li').first();
+    const secondItem = queueList.locator('li').nth(1);
+
+    // Initial order: track 1, track 2
+    await expect(firstItem).toContainText(seedData.track.title);
+    await expect(secondItem).toContainText(seedData.track2.title);
+
+    // Drag track 2 up to the first position
+    await secondItem.dragTo(firstItem);
+
+    // Order must be reversed after drag
+    await expect(queueList.locator('li').first()).toContainText(seedData.track2.title);
+    await expect(queueList.locator('li').nth(1)).toContainText(seedData.track.title);
+  });
+
+  test('track auto-advances to the next track in the queue when playback ends', async ({
+    page,
+    seedData,
+  }) => {
+    await page.goto(albumUrl(seedData));
+
+    // Load both tracks via Play All — first track plays immediately
+    await page.getByRole('button', { name: 'Play All' }).click();
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar).toContainText(seedData.track.title);
+
+    // The MinIO seed fixture uses minimal MP3s (< 1 s) so the onend callback
+    // fires quickly. Allow up to 15 s for the auto-advance to happen.
+    await expect(playerBar).toContainText(seedData.track2.title, { timeout: 15000 });
   });
 });
 
