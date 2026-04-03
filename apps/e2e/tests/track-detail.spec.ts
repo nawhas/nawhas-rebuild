@@ -106,10 +106,12 @@ test.describe('Track detail page', () => {
     await expect(englishPanel).toContainText('Ya Hussain');
   });
 
-  test('returns 404 for a non-existent track slug', async ({ page, seedData }) => {
-    const response = await page.goto(
+  test('shows not-found page for a non-existent track slug', async ({ page, seedData }) => {
+    await page.goto(
       `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/this-track-does-not-exist-xyz`,
     );
-    expect(response?.status()).toBe(404);
+    await expect(
+      page.getByRole('heading', { name: /Page not found/i }),
+    ).toBeVisible();
   });
 });

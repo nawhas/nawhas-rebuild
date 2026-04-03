@@ -49,8 +49,10 @@ test.describe('Reciter profile page', () => {
     ).toBeVisible();
   });
 
-  test('returns 404 for a non-existent reciter slug', async ({ page }) => {
-    const response = await page.goto('/reciters/this-reciter-does-not-exist-xyz');
-    expect(response?.status()).toBe(404);
+  test('shows not-found page for a non-existent reciter slug', async ({ page }) => {
+    await page.goto('/reciters/this-reciter-does-not-exist-xyz');
+    await expect(
+      page.getByRole('heading', { name: /Page not found/i }),
+    ).toBeVisible();
   });
 });
