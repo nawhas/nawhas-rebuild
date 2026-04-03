@@ -6,29 +6,30 @@
  * client object is initialised; no network connection is made.
  *
  * The "ensureCollections()" suite is an integration test that requires a
- * running Typesense instance. It is automatically skipped when
- * TYPESENSE_HOST and TYPESENSE_API_KEY are not set in the environment so
- * that the CI quality job (which runs without services) stays green.
+ * running Typesense instance. It is gated behind TYPESENSE_INTEGRATION=true
+ * so that it is skipped in CI (which uses `--no-deps` and has no Typesense).
  *
- * Run with services:
- *   TYPESENSE_HOST=localhost TYPESENSE_PORT=8108 TYPESENSE_PROTOCOL=http \
- *   TYPESENSE_API_KEY=nawhas-typesense-key pnpm --filter web test src/__tests__/lib/typesense.test.ts
+ * NOTE: vitest.config.ts already injects TYPESENSE_HOST/TYPESENSE_API_KEY via
+ * test.env for every test that transitively imports the search router, so we
+ * cannot use those vars as a guard — they are always set. Use the explicit
+ * opt-in flag instead.
+ *
+ * Run integration suite locally:
+ *   TYPESENSE_INTEGRATION=true pnpm --filter web test src/__tests__/lib/typesense.test.ts
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-// Capture whether live credentials were explicitly provided BEFORE applying
-// defaults, so the integration suite can self-skip when they are absent.
-const hasTypesense =
-  Boolean(process.env['TYPESENSE_HOST']) && Boolean(process.env['TYPESENSE_API_KEY']);
-
-// Apply defaults so the client unit tests can import the module without errors.
-process.env.TYPESENSE_HOST = process.env.TYPESENSE_HOST ?? 'localhost';
-process.env.TYPESENSE_PORT = process.env.TYPESENSE_PORT ?? '8108';
-process.env.TYPESENSE_PROTOCOL = process.env.TYPESENSE_PROTOCOL ?? 'http';
-process.env.TYPESENSE_API_KEY = process.env.TYPESENSE_API_KEY ?? 'nawhas-typesense-key';
+// Gate the integration suite behind an explicit opt-in flag.
+// vitest.config.ts already provides TYPESENSE_HOST/API_KEY for all tests, so
+// those vars cannot be used as a presence check — TYPESENSE_INTEGRATION=true
+// must be set deliberately to run tests that require a live Typesense instance.
+const hasTypesense = process.env['TYPESENSE_INTEGRATION'] === 'true';
 
 const describeIntegration = hasTypesense ? describe : describe.skip;
+
+// vitest.config.ts injects TYPESENSE_HOST/PORT/PROTOCOL/API_KEY via test.env —
+// no manual defaults are needed here.
 
 import { typesenseClient, TYPESENSE_SEARCH_API_KEY } from '@/lib/typesense/client';
 import { COLLECTIONS, ensureCollections } from '@/lib/typesense/collections';
