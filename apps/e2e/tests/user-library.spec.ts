@@ -86,7 +86,10 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
       // Use native fetch for API calls — worker fixtures can't access request fixture
       const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Origin': baseUrl,
+        },
         body: JSON.stringify({ name, email, password }),
       });
 
@@ -97,7 +100,9 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
       // Verify email via Mailpit
       const message = await pollForEmail(email);
       const verificationUrl = await extractVerificationUrl(message.ID);
-      await fetch(toVerificationFetchUrl(verificationUrl));
+      await fetch(toVerificationFetchUrl(verificationUrl), {
+        headers: { 'Origin': baseUrl },
+      });
 
       await use({ email, password, name });
 
@@ -280,7 +285,10 @@ test.describe('Account — Delete Account', () => {
 
     const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Origin': baseUrl,
+      },
       body: JSON.stringify({ name: 'Delete Me User', email, password }),
     });
     if (!registerRes.ok) {
@@ -290,7 +298,9 @@ test.describe('Account — Delete Account', () => {
     // Verify email
     const message = await pollForEmail(email);
     const verificationUrl = await extractVerificationUrl(message.ID);
-    await fetch(toVerificationFetchUrl(verificationUrl));
+    await fetch(toVerificationFetchUrl(verificationUrl), {
+      headers: { 'Origin': baseUrl },
+    });
 
     // Use a fresh browser context for this test
     const { chromium } = await import('@playwright/test');

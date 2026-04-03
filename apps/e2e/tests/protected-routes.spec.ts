@@ -88,7 +88,10 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
 
       const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Origin': baseUrl,
+        },
         body: JSON.stringify({ name, email, password }),
       });
       if (!registerRes.ok) {
@@ -97,7 +100,9 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
 
       const message = await pollForEmail(email);
       const verificationUrl = await extractVerificationUrl(message.ID);
-      await fetch(toVerificationFetchUrl(verificationUrl));
+      await fetch(toVerificationFetchUrl(verificationUrl), {
+        headers: { 'Origin': baseUrl },
+      });
 
       await use({ email, password, name });
 

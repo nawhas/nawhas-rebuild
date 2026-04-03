@@ -21,8 +21,9 @@ export default async function ProtectedLayout({
   if (!sessionData) {
     // Redirect to login. Middleware already injects callbackUrl for edge cases;
     // this server-side guard provides a safe fallback for direct RSC invocations.
-    const nextUrl = reqHeaders.get('next-url');
-    const callbackPath = nextUrl ? new URL(nextUrl).pathname : '/';
+    // Use x-pathname forwarded by middleware — more reliable than next-url, whose
+    // value can vary across Docker/CI environments and Next.js versions.
+    const callbackPath = reqHeaders.get('x-pathname') ?? '/';
     redirect(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
   }
 
