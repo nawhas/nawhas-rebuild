@@ -27,18 +27,26 @@ function makeCtx(db: TestDb) {
   return { db: db as unknown as import('@nawhas/db').Database, session: null, user: null };
 }
 
-export function makeHomeCaller(db: TestDb) {
+// TS2742: tRPC caller return types reference internal un-portable types.
+// Wrapping each factory in an explicit ReturnType avoids the error while
+// keeping full type inference for call-sites in the co-located test files.
+type HomeCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof homeRouter>>>;
+type ReciterCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof reciterRouter>>>;
+type AlbumCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof albumRouter>>>;
+type TrackCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof trackRouter>>>;
+
+export function makeHomeCaller(db: TestDb): HomeCaller {
   return createCallerFactory(homeRouter)(makeCtx(db));
 }
 
-export function makeReciterCaller(db: TestDb) {
+export function makeReciterCaller(db: TestDb): ReciterCaller {
   return createCallerFactory(reciterRouter)(makeCtx(db));
 }
 
-export function makeAlbumCaller(db: TestDb) {
+export function makeAlbumCaller(db: TestDb): AlbumCaller {
   return createCallerFactory(albumRouter)(makeCtx(db));
 }
 
-export function makeTrackCaller(db: TestDb) {
+export function makeTrackCaller(db: TestDb): TrackCaller {
   return createCallerFactory(trackRouter)(makeCtx(db));
 }

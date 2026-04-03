@@ -4,6 +4,9 @@ const cdnHostname = process.env.NEXT_PUBLIC_CDN_HOSTNAME;
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Lint runs in the dedicated CI quality job — skip during `next build` to avoid
+  // false positives from Next.js-transformed code (e.g. import() in error.tsx).
+  eslint: { ignoreDuringBuilds: true },
   output: 'standalone',
   transpilePackages: ['@nawhas/db', '@nawhas/types', '@nawhas/ui'],
   images: {
