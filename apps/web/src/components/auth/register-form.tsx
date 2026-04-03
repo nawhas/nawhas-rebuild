@@ -4,8 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUp } from '@/lib/auth-client';
+import { SocialButtons } from './social-buttons';
+import type { EnabledSocialProvider } from '@/lib/social-providers';
 
-export function RegisterForm(): React.JSX.Element {
+interface RegisterFormProps {
+  enabledProviders?: EnabledSocialProvider[];
+}
+
+export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): React.JSX.Element {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -104,6 +110,8 @@ export function RegisterForm(): React.JSX.Element {
           {loading ? 'Creating account…' : 'Create account'}
         </button>
       </form>
+
+      <SocialButtons providers={enabledProviders} callbackUrl="/" />
 
       <p className="mt-6 text-center text-sm text-gray-600">
         Already have an account?{' '}

@@ -1,7 +1,48 @@
 import { betterAuth } from 'better-auth';
+import type { SocialProviders } from 'better-auth/social-providers';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db, users, sessions, accounts, verificationTokens } from '@nawhas/db';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email';
+
+/**
+ * Build the socialProviders config from env vars.
+ * Each provider is only included when its feature flag is set to 'true'.
+ * Apple uses APPLE_PRIVATE_KEY (.p8 content) as the client secret —
+ * Better Auth handles JWT client-secret generation internally.
+ */
+function buildSocialProviders(): SocialProviders {
+  const providers: SocialProviders = {};
+
+  if (process.env['GOOGLE_OAUTH_ENABLED'] === 'true') {
+    providers.google = {
+      clientId: process.env['GOOGLE_CLIENT_ID'] ?? '',
+      clientSecret: process.env['GOOGLE_CLIENT_SECRET'] ?? '',
+    };
+  }
+
+  if (process.env['APPLE_OAUTH_ENABLED'] === 'true') {
+    providers.apple = {
+      clientId: process.env['APPLE_CLIENT_ID'] ?? '',
+      clientSecret: process.env['APPLE_PRIVATE_KEY'] ?? '',
+    };
+  }
+
+  if (process.env['FACEBOOK_OAUTH_ENABLED'] === 'true') {
+    providers.facebook = {
+      clientId: process.env['FACEBOOK_CLIENT_ID'] ?? '',
+      clientSecret: process.env['FACEBOOK_CLIENT_SECRET'] ?? '',
+    };
+  }
+
+  if (process.env['MICROSOFT_OAUTH_ENABLED'] === 'true') {
+    providers.microsoft = {
+      clientId: process.env['MICROSOFT_CLIENT_ID'] ?? '',
+      clientSecret: process.env['MICROSOFT_CLIENT_SECRET'] ?? '',
+    };
+  }
+
+  return providers;
+}
 
 export const auth = betterAuth({
   secret: process.env['BETTER_AUTH_SECRET'],
@@ -18,6 +59,7 @@ export const auth = betterAuth({
       verification: verificationTokens,
     },
   }),
+  socialProviders: buildSocialProviders(),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

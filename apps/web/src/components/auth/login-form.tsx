@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from '@/lib/auth-client';
+import { SocialButtons } from './social-buttons';
+import type { EnabledSocialProvider } from '@/lib/social-providers';
 
 interface LoginFormProps {
   callbackUrl?: string;
+  enabledProviders?: EnabledSocialProvider[];
 }
 
-export function LoginForm({ callbackUrl }: LoginFormProps): React.JSX.Element {
+export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps): React.JSX.Element {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -99,6 +102,8 @@ export function LoginForm({ callbackUrl }: LoginFormProps): React.JSX.Element {
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
+
+      <SocialButtons providers={enabledProviders} callbackUrl={callbackUrl} />
 
       <p className="mt-6 text-center text-sm text-gray-600">
         Don&apos;t have an account?{' '}
