@@ -155,7 +155,7 @@ export function PlayerBar(): React.JSX.Element {
 
       if (e.code === 'Space') {
         e.preventDefault();
-        isPlaying ? pause() : resume();
+        if (isPlaying) { pause(); } else { resume(); }
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault();
         previous();

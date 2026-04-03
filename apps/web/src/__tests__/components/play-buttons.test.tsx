@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import type { TrackDTO } from '@nawhas/types';
 import { usePlayerStore } from '@/store/player';
 import { TrackPlayButton } from '@/components/player/track-play-button';
