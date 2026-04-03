@@ -32,7 +32,7 @@ beforeAll(async () => {
     .values({ title: 'Track Test Album', slug: ALBUM_SLUG, reciterId: r!.id })
     .returning({ id: albums.id });
 
-  const [t1, t2] = await db
+  const [t1] = await db
     .insert(tracks)
     .values([
       { title: 'Track With Lyrics', slug: TRACK_SLUG, albumId: a!.id, trackNumber: 1 },

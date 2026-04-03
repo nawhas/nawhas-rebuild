@@ -11,7 +11,7 @@
  * - afterAll cleans up all users created by this suite (sessions/accounts cascade).
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { eq, inArray, like, and } from 'drizzle-orm';
+import { eq, inArray, like } from 'drizzle-orm';
 import { betterAuth, APIError } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { users, sessions, accounts, verificationTokens } from '@nawhas/db';

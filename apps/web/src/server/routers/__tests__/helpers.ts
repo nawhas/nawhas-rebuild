@@ -7,6 +7,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import type { Database } from '@nawhas/db';
 import * as schema from '@nawhas/db';
 import { createCallerFactory } from '../../trpc/trpc';
 import { homeRouter } from '../home';
@@ -24,29 +25,21 @@ export function createTestDb(): { db: TestDb; close: () => Promise<void> } {
 }
 
 function makeCtx(db: TestDb) {
-  return { db: db as unknown as import('@nawhas/db').Database, session: null, user: null };
+  return { db: db as unknown as Database, session: null, user: null };
 }
 
-// TS2742: tRPC caller return types reference internal un-portable types.
-// Wrapping each factory in an explicit ReturnType avoids the error while
-// keeping full type inference for call-sites in the co-located test files.
-type HomeCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof homeRouter>>>;
-type ReciterCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof reciterRouter>>>;
-type AlbumCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof albumRouter>>>;
-type TrackCaller = ReturnType<ReturnType<typeof createCallerFactory<typeof trackRouter>>>;
-
-export function makeHomeCaller(db: TestDb): HomeCaller {
+export function makeHomeCaller(db: TestDb) {
   return createCallerFactory(homeRouter)(makeCtx(db));
 }
 
-export function makeReciterCaller(db: TestDb): ReciterCaller {
+export function makeReciterCaller(db: TestDb) {
   return createCallerFactory(reciterRouter)(makeCtx(db));
 }
 
-export function makeAlbumCaller(db: TestDb): AlbumCaller {
+export function makeAlbumCaller(db: TestDb) {
   return createCallerFactory(albumRouter)(makeCtx(db));
 }
 
-export function makeTrackCaller(db: TestDb): TrackCaller {
+export function makeTrackCaller(db: TestDb) {
   return createCallerFactory(trackRouter)(makeCtx(db));
 }

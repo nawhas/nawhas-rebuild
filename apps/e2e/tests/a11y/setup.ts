@@ -1,4 +1,4 @@
-import { injectAxe } from '@axe-core/playwright';
+import { AxeBuilder } from '@axe-core/playwright';
 import { Page } from '@playwright/test';
 
 /**
@@ -9,7 +9,7 @@ import { Page } from '@playwright/test';
  */
 
 /**
- * Inject axe-core into the page and run accessibility scan
+ * Run an axe-core accessibility scan against the current page.
  * @param page - Playwright page object
  * @param options - Configuration for axe-core
  * @returns Results from axe-core scan
@@ -21,35 +21,24 @@ export async function testPageAccessibility(
     rules?: { [key: string]: { enabled: boolean } };
   }
 ) {
-  await injectAxe(page);
+  const builder = new AxeBuilder({ page }).withTags(['wcag2aa']);
 
-  const results = await page.evaluate(
-    async (axeOptions) => {
-      return new Promise((resolve) => {
-        // Run axe with WCAG 2.1 AA standard
-        (window as any).axe.run(
-          {
-            runOnly: {
-              type: 'tag',
-              values: ['wcag2aa'],
-            },
-            ...axeOptions,
-          },
-          (error: Error | null, results: any) => {
-            if (error) {
-              console.error('Accessibility scan failed:', error);
-              resolve({ violations: [], passes: [] });
-            } else {
-              resolve(results);
-            }
-          }
-        );
-      });
-    },
-    options
-  );
+  if (options?.exclude) {
+    for (const selector of options.exclude) {
+      builder.exclude(selector);
+    }
+  }
 
-  return results;
+  if (options?.rules) {
+    const disabledRules = Object.entries(options.rules)
+      .filter(([, cfg]) => !cfg.enabled)
+      .map(([rule]) => rule);
+    if (disabledRules.length > 0) {
+      builder.disableRules(disabledRules);
+    }
+  }
+
+  return builder.analyze();
 }
 
 /**
@@ -60,18 +49,17 @@ export async function testPageAccessibility(
 export async function assertPageAccessible(page: Page, pageName: string) {
   const results = await testPageAccessibility(page);
 
-  // Filter for critical and serious violations
-  const violations = (results as any).violations.filter(
-    (v: any) => v.impact === 'critical' || v.impact === 'serious'
+  const violations = results.violations.filter(
+    (v) => v.impact === 'critical' || v.impact === 'serious'
   );
 
   if (violations.length > 0) {
     console.error(`\n❌ Accessibility violations on ${pageName}:`);
-    violations.forEach((violation: any) => {
+    violations.forEach((violation) => {
       console.error(`\n  Rule: ${violation.id} (${violation.impact})`);
       console.error(`  Description: ${violation.description}`);
       console.error(`  Elements affected: ${violation.nodes.length}`);
-      violation.nodes.slice(0, 3).forEach((node: any) => {
+      violation.nodes.slice(0, 3).forEach((node) => {
         console.error(`    - ${node.html.substring(0, 100)}`);
       });
     });
@@ -90,7 +78,6 @@ export async function testKeyboardNavigation(
   page: Page,
   expectedFocusableCount?: number
 ) {
-  // Get all focusable elements
   const focusableElements = await page.evaluate(() => {
     const elements = document.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -109,7 +96,6 @@ export async function testKeyboardNavigation(
     );
   }
 
-  // Test tab order
   const focusPath: string[] = [];
   for (let i = 0; i < Math.min(5, focusableElements.count); i++) {
     await page.keyboard.press('Tab');
@@ -130,14 +116,13 @@ export async function testKeyboardNavigation(
 export async function checkColorContrast(page: Page) {
   const contrastIssues = await page.evaluate(() => {
     const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, a, button');
-    const issues: any[] = [];
+    const issues: { element: string; text: string }[] = [];
 
     textElements.forEach((el) => {
       const styles = window.getComputedStyle(el);
       const color = styles.color;
       const bgColor = styles.backgroundColor;
 
-      // This is a simplified check - real implementation would calculate contrast ratio
       if (color === 'rgba(0, 0, 0, 0)' || bgColor === 'rgba(0, 0, 0, 0)') {
         issues.push({
           element: el.tagName,
