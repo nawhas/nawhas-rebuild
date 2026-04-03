@@ -138,7 +138,8 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const queueButton = page.getByRole('button', { name: /queue/i });
+    const playerBar = page.getByRole('region', { name: /audio player/i });
+    const queueButton = playerBar.getByRole('button', { name: /queue/i });
     const ariaPressed = await queueButton.getAttribute('aria-pressed');
     expect(ariaPressed).toBeTruthy();
     expect(['true', 'false']).toContain(ariaPressed);
@@ -327,7 +328,8 @@ test.describe('QueuePanel — Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const queueButton = page.getByRole('button', { name: /queue/i });
+    const playerBar = page.getByRole('region', { name: /audio player/i });
+    const queueButton = playerBar.getByRole('button', { name: /queue/i });
     await queueButton.click();
     await page.waitForTimeout(300);
 
@@ -346,7 +348,8 @@ test.describe('QueuePanel — Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const queueButton = page.getByRole('button', { name: /queue/i });
+    const playerBar = page.getByRole('region', { name: /audio player/i });
+    const queueButton = playerBar.getByRole('button', { name: /queue/i });
     await queueButton.click();
     await page.waitForTimeout(300);
 
@@ -362,7 +365,8 @@ test.describe('QueuePanel — Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const queueButton = page.getByRole('button', { name: /queue/i });
+    const playerBar = page.getByRole('region', { name: /audio player/i });
+    const queueButton = playerBar.getByRole('button', { name: /queue/i });
     await queueButton.click();
     await page.waitForTimeout(300);
 
@@ -379,7 +383,8 @@ test.describe('QueuePanel — Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const queueButton = page.getByRole('button', { name: /queue/i });
+    const playerBar = page.getByRole('region', { name: /audio player/i });
+    const queueButton = playerBar.getByRole('button', { name: /queue/i });
     await queueButton.click();
     await page.waitForTimeout(300);
 
@@ -398,7 +403,8 @@ test.describe('QueuePanel — Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const queueButton = page.getByRole('button', { name: /queue/i });
+    const playerBar = page.getByRole('region', { name: /audio player/i });
+    const queueButton = playerBar.getByRole('button', { name: /queue/i });
     await queueButton.click();
     await page.waitForTimeout(300);
 
