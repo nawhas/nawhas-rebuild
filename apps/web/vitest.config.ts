@@ -12,9 +12,13 @@ export default defineConfig({
   test: {
     // Playwright specs under src/tests/ use @playwright/test; Vitest must not load them.
     exclude: ['**/node_modules/**', '**/dist/**', '**/src/tests/**'],
-    // Provide a dummy DATABASE_URL so @nawhas/db can be imported in unit tests
-    // without a live Postgres connection. Tests that need a real DB should use
-    // integration test setup instead.
+    // DATABASE_URL for tests.
+    // - Unit tests (schema, cursor, etc.) import @nawhas/db without hitting a real DB.
+    // - Integration tests (routers/__tests__) require the `nawhas_test` database to exist
+    //   and be migrated. In CI this is created by the test job setup step.
+    //   Locally: docker compose up -d postgres && pnpm --filter @nawhas/db db:migrate
+    //   (with DATABASE_URL=postgresql://postgres:password@localhost:5432/nawhas_test)
+    //   then create the test user: CREATE USER test WITH PASSWORD 'test' and grant access.
     env: {
       DATABASE_URL: 'postgresql://test:test@localhost:5432/nawhas_test',
     },
