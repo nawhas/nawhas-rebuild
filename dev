@@ -8,30 +8,29 @@ cd "$SCRIPT_DIR"
 
 usage() {
   cat <<EOF
-Usage: ./dev <command> [options]
+Usage: ./dev <command> [args...]
 
-Development
-  up                Start the full development stack
-  down              Stop containers
-  restart           Restart the web service
-  logs [service]    Tail logs (default: web)
-  shell [service]   Shell into a container (default: web)
-
-Database
-  db:migrate        Run migrations
+Special commands
+  db:migrate        Run database migrations
   db:seed           Seed fixture data
   db:reset          Drop, migrate, and seed
-
-Code quality
   build             Production build
   lint              Run ESLint
   typecheck         TypeScript type check
-
-Testing
   test              Run unit tests (vitest)
-  test:e2e          Run E2E tests (Docker)
-  test:e2e:ui       Run E2E tests (interactive UI)
+  test:e2e          Run E2E tests (docker-compose.test.yml overlay)
+  test:e2e:ui       Run E2E tests in interactive Playwright UI
   test:e2e --ci     Run E2E tests with CI overrides
+
+Docker Compose pass-through
+  Any other command is forwarded to docker compose.
+  Examples:
+    ./dev up -d
+    ./dev down
+    ./dev exec web bash
+    ./dev logs web -f
+    ./dev ps
+    ./dev run --rm web pnpm lint
 EOF
 }
 
@@ -50,34 +49,6 @@ check_hosts() {
 }
 
 # ── Commands ─────────────────────────────────────────────────────────────────
-
-cmd_up() {
-  require_docker
-  check_hosts
-  docker compose up -d
-}
-
-cmd_down() {
-  require_docker
-  docker compose down
-}
-
-cmd_restart() {
-  require_docker
-  docker compose restart web
-}
-
-cmd_logs() {
-  require_docker
-  local service="${1:-web}"
-  docker compose logs -f "$service"
-}
-
-cmd_shell() {
-  require_docker
-  local service="${1:-web}"
-  docker compose exec "$service" sh
-}
 
 cmd_db_migrate() {
   require_docker
@@ -115,13 +86,17 @@ cmd_test_e2e() {
   require_docker
   check_hosts
   local ci_flag=""
+  local ci_env=""
   for arg in "$@"; do
     if [[ "$arg" == "--ci" ]]; then
-      ci_flag="-f docker-compose.ci.yml"
+      ci_flag="--ci"
     fi
   done
+  if [[ "${CI:-}" == "true" ]] || [[ "$ci_flag" != "" ]]; then
+    ci_env="-e CI=true"
+  fi
   # shellcheck disable=SC2086
-  docker compose -f docker-compose.yml -f docker-compose.test.yml $ci_flag --profile testing run --rm playwright
+  docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm $ci_env playwright
 }
 
 cmd_test_e2e_ui() {
@@ -135,11 +110,6 @@ COMMAND="${1:-}"
 shift || true
 
 case "$COMMAND" in
-  up)           cmd_up ;;
-  down)         cmd_down ;;
-  restart)      cmd_restart ;;
-  logs)         cmd_logs "$@" ;;
-  shell)        cmd_shell "$@" ;;
   db:migrate)   cmd_db_migrate ;;
   db:seed)      cmd_db_seed ;;
   db:reset)     cmd_db_reset ;;
@@ -151,9 +121,8 @@ case "$COMMAND" in
   test:e2e)     cmd_test_e2e "$@" ;;
   --help|-h|"") usage ;;
   *)
-    echo "Error: unknown command '$COMMAND'" >&2
-    echo "" >&2
-    usage >&2
-    exit 1
+    # Pass through to docker compose with standard compose files
+    require_docker
+    docker compose "$COMMAND" "$@"
     ;;
 esac

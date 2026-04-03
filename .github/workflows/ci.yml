@@ -28,19 +28,21 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      # All quality checks run inside the web container so there is no runner-side
-      # pnpm/node setup. --no-deps skips starting postgres/typesense/etc since
-      # typecheck, lint, and unit tests do not need a running database.
-      - name: Run quality checks
-        run: |
-          docker compose run --rm --no-deps web sh -c "
-            corepack enable &&
-            pnpm install --frozen-lockfile &&
-            pnpm --filter @nawhas/db build &&
-            pnpm run typecheck &&
-            pnpm run lint &&
-            pnpm run test
-          "
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build
+
+      - name: Typecheck
+        run: ./dev typecheck
+
+      - name: Lint
+        run: ./dev lint
+
+      - name: Test
+        run: ./dev test
 
   build:
     name: Build
@@ -55,18 +57,20 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      # docker compose run respects depends_on conditions — postgres, typesense, minio, and mailpit
-      # are started and waited on (health checks) before the build command runs. No runner-side
-      # pnpm/node setup needed; all env vars come from the web service in docker-compose.yml.
+      - name: Add nawhas.test to hosts
+        run: echo "127.0.0.1 nawhas.test" | sudo tee -a /etc/hosts
+
+      # Start all services (postgres, typesense, minio, mailpit, web). The web container
+      # installs deps, builds the db package, applies migrations, and starts the dev server.
+      - name: Start stack
+        run: ./dev up -d
+
+      # Wait for the web service to be ready before running the build command.
+      - name: Wait for web
+        run: timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
+
       - name: Build
-        run: |
-          docker compose run --rm web sh -c "
-            corepack enable &&
-            pnpm install --frozen-lockfile &&
-            pnpm --filter @nawhas/db build &&
-            pnpm --filter @nawhas/db db:migrate &&
-            pnpm run build
-          "
+        run: ./dev build
 
   docker-build:
     name: Docker Build
@@ -111,7 +115,7 @@ jobs:
             -o /tmp/playwright-cache/playwright.tar
 
       - name: Start stack
-        run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+        run: ./dev up -d
 
       # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
       # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;
@@ -120,24 +124,16 @@ jobs:
         run: |
           timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
 
-      # Upload MinIO audio/image fixtures and seed the database so E2E tests
-      # have real audio URLs to work with. Runs inside the web container on the
-      # same Docker network so it can reach MinIO and postgres.
+      # Seed the database so E2E tests have real data to work with.
       - name: Seed fixtures
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm --no-deps web sh -c "
-            corepack enable &&
-            pnpm install --frozen-lockfile &&
-            pnpm --filter @nawhas/db build &&
-            pnpm --filter @nawhas/db db:seed
-          "
+        run: ./dev db:seed
 
       - name: Run E2E tests
-        run: docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm -e CI=true playwright
+        run: ./dev test:e2e --ci
 
       - name: Docker Compose logs (web)
         if: failure()
-        run: docker compose -f docker-compose.yml -f docker-compose.test.yml logs --no-color --tail=200 web || true
+        run: ./dev logs --no-color --tail=200 web || true
 
       - uses: actions/upload-artifact@v4
         if: always()
