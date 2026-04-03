@@ -371,9 +371,13 @@ function Pagination({
           ← Previous
         </Link>
       ) : (
-        <span className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300" aria-disabled="true">
+        <button
+          disabled
+          className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"
+          aria-label="Previous page"
+        >
           ← Previous
-        </span>
+        </button>
       )}
 
       <span className="text-sm text-gray-600" aria-live="polite" aria-atomic="true">
@@ -390,9 +394,13 @@ function Pagination({
           Next →
         </Link>
       ) : (
-        <span className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300" aria-disabled="true">
+        <button
+          disabled
+          className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"
+          aria-label="Next page"
+        >
           Next →
-        </span>
+        </button>
       )}
     </nav>
   );

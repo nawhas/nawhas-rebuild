@@ -241,6 +241,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
                       <div key={section.key}>
                         <div
                           role="presentation"
+                          aria-label={section.label}
                           className="bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
                         >
                           {section.label}
@@ -278,7 +279,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
                       <Link
                         href={`/search?q=${encodeURIComponent(query)}`}
                         onClick={closeOverlay}
-                        className="flex items-center gap-1 px-4 py-3 text-sm text-gray-500 active:bg-gray-50"
+                        className="flex items-center gap-1 px-4 py-3 text-sm text-gray-500 active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                       >
                         <span>See all results for &ldquo;{query}&rdquo;</span>
                         <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
