@@ -57,20 +57,21 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      - name: Add nawhas.test to hosts
-        run: echo "127.0.0.1 nawhas.test" | sudo tee -a /etc/hosts
-
-      # Start all services (postgres, typesense, minio, mailpit, web). The web container
-      # installs deps, builds the db package, applies migrations, and starts the dev server.
-      - name: Start stack
-        run: ./dev up -d
-
-      # Wait for the web service to be ready before running the build command.
-      - name: Wait for web
-        run: timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
-
+      # Run next build in a fresh throwaway container so it does not conflict with
+      # `next dev` (which would be running in the web service container). The web
+      # service's depends_on conditions ensure postgres + typesense are healthy before
+      # the build command starts. @nawhas/types must be built first so its dist/
+      # declarations exist when next build type-checks.
       - name: Build
-        run: ./dev build
+        run: |
+          docker compose run --rm web sh -c "
+            corepack enable &&
+            pnpm install --frozen-lockfile &&
+            pnpm --filter @nawhas/types build &&
+            pnpm --filter @nawhas/db build &&
+            pnpm --filter @nawhas/db db:migrate &&
+            pnpm --filter @nawhas/web build
+          "
 
   docker-build:
     name: Docker Build
