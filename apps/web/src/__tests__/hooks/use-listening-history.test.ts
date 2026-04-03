@@ -13,7 +13,7 @@
  *   - Use vitest fake timers to control the 30-second dedup window.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, renderHook } from '@testing-library/react';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { usePlayerStore } from '@/store/player';
 import type { TrackDTO } from '@nawhas/types';
 
@@ -98,6 +98,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.useRealTimers();
 });
 
