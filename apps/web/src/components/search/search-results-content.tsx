@@ -230,7 +230,7 @@ function TrackResult({
           <HighlightedText snippet={albumSnippet} fallback={item.albumTitle} />
         </p>
         {lyricsHighlight && (
-          <p className="mt-0.5 truncate text-xs italic text-gray-400">
+          <p className="mt-0.5 truncate text-xs italic text-gray-600">
             <HighlightedText
               snippet={lyricsHighlight.snippet}
               fallback=""
