@@ -173,6 +173,18 @@ export function MobilePlayerOverlay(): React.JSX.Element {
     }
   }, [isVisible]);
 
+  // Escape key to dismiss overlay (WCAG 2.1 SC 2.1.1)
+  useEffect(() => {
+    if (!isVisible) return;
+    function handleKeyDown(e: KeyboardEvent): void {
+      if (e.key === 'Escape') {
+        closeMobileOverlay();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isVisible, closeMobileOverlay]);
+
   return (
     <div
       role="dialog"
@@ -202,18 +214,18 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           ref={closeButtonRef}
           type="button"
           onClick={closeMobileOverlay}
-          aria-label="Collapse player"
+          aria-label="Collapse to mini player"
           className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
           tabIndex={isVisible ? 0 : -1}
         >
           <ChevronDownIcon />
         </button>
 
-        {/* Close button (top-right) */}
+        {/* Dismiss button (top-right) — unique label distinct from collapse */}
         <button
           type="button"
           onClick={closeMobileOverlay}
-          aria-label="Close player"
+          aria-label="Dismiss player"
           className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
           tabIndex={isVisible ? 0 : -1}
         >

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   usePlayerStore,
   selectQueue,
@@ -45,6 +45,22 @@ function RemoveIcon(): React.JSX.Element {
   );
 }
 
+function ChevronUpIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3">
+      <path d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
+    </svg>
+  );
+}
+
+function ChevronDownSmIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3">
+      <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+    </svg>
+  );
+}
+
 /** Format seconds as m:ss */
 function formatDuration(seconds: number): string {
   if (!isFinite(seconds) || seconds <= 0) return '';
@@ -81,6 +97,61 @@ export function QueuePanel(): React.JSX.Element {
   const dragIndexRef = useRef<number | null>(null);
   // Visual drag-over index for drop-target highlighting
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Focus management: panel container ref, close button ref, trigger restore (WCAG 2.1 AA SC 2.4.3)
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      triggerRef.current = document.activeElement as HTMLElement;
+      closeButtonRef.current?.focus();
+    } else {
+      triggerRef.current?.focus();
+      triggerRef.current = null;
+    }
+  }, [isOpen]);
+
+  // Keyboard: Escape to close + Tab focus trap (WCAG 2.1 SC 2.1.1 + SC 2.4.3)
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        toggleQueue();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const panel = panelRef.current;
+        if (!panel) return;
+        const focusable = Array.from(
+          panel.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          ),
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    },
+    [toggleQueue],
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleKeyDown]);
 
   function handleDragStart(index: number): void {
     dragIndexRef.current = index;
@@ -120,6 +191,7 @@ export function QueuePanel(): React.JSX.Element {
 
       {/* Panel */}
       <div
+        ref={panelRef}
         role="dialog"
         aria-label="Playback queue"
         aria-modal="true"
@@ -145,6 +217,7 @@ export function QueuePanel(): React.JSX.Element {
             )}
           </h2>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={toggleQueue}
             aria-label="Close queue"
@@ -227,6 +300,31 @@ export function QueuePanel(): React.JSX.Element {
                       {formatDuration(track.duration)}
                     </span>
                   )}
+
+                  {/* Keyboard reorder buttons — always visible to keyboard users (WCAG 2.1 SC 2.1.1) */}
+                  <div
+                    className="flex shrink-0 flex-col opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+                    aria-label={`Reorder ${track.title}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => index > 0 ? reorderQueue(index, index - 1) : undefined}
+                      aria-label={`Move ${track.title} up`}
+                      disabled={index === 0}
+                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30"
+                    >
+                      <ChevronUpIcon />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => index < queue.length - 1 ? reorderQueue(index, index + 1) : undefined}
+                      aria-label={`Move ${track.title} down`}
+                      disabled={index === queue.length - 1}
+                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30"
+                    >
+                      <ChevronDownSmIcon />
+                    </button>
+                  </div>
 
                   {/* Remove button */}
                   <button

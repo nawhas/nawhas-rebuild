@@ -114,7 +114,7 @@ describe('MobilePlayerOverlay — controls', () => {
     const track = makeTrack();
     usePlayerStore.setState({ currentTrack: track, isMobileOverlayOpen: true });
     render(<MobilePlayerOverlay />);
-    fireEvent.click(screen.getByRole('button', { name: 'Collapse player' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse to mini player' }));
     expect(usePlayerStore.getState().isMobileOverlayOpen).toBe(false);
   });
 
@@ -122,7 +122,7 @@ describe('MobilePlayerOverlay — controls', () => {
     const track = makeTrack();
     usePlayerStore.setState({ currentTrack: track, isMobileOverlayOpen: true });
     render(<MobilePlayerOverlay />);
-    fireEvent.click(screen.getByRole('button', { name: 'Close player' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss player' }));
     expect(usePlayerStore.getState().isMobileOverlayOpen).toBe(false);
   });
 
