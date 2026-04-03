@@ -42,8 +42,13 @@ export function LikeButton({ trackId, initialLiked, className = '' }: LikeButton
   const router = useRouter();
 
   // Fetch initial state from the server once the session is known.
+  // Use session?.user?.id (stable string) rather than session?.user (object reference)
+  // so the effect does not re-run when Better Auth returns a new session object for the
+  // same user.  Also skip re-fetching while a like/unlike transition is in flight so a
+  // slow getIsLiked response cannot race against and revert an optimistic update.
   useEffect(() => {
     if (sessionLoading) return;
+    if (isPending) return;
     if (initialLiked !== undefined) {
       setStateLoaded(true);
       return;
@@ -57,7 +62,7 @@ export function LikeButton({ trackId, initialLiked, className = '' }: LikeButton
       setIsLiked(liked);
       setStateLoaded(true);
     });
-  }, [trackId, session?.user, sessionLoading, initialLiked]);
+  }, [trackId, session?.user?.id, sessionLoading, isPending, initialLiked]);
 
   function handleClick(): void {
     if (!session?.user) {

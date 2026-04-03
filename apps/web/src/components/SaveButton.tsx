@@ -44,8 +44,13 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
   const router = useRouter();
 
   // Fetch initial state from the server once the session is known.
+  // Use session?.user?.id (stable string) rather than session?.user (object reference)
+  // so the effect does not re-run when Better Auth returns a new session object for the
+  // same user.  Also skip re-fetching while a save/unsave transition is in flight so a
+  // slow getIsSaved response cannot race against and revert an optimistic update.
   useEffect(() => {
     if (sessionLoading) return;
+    if (isPending) return;
     if (initialSaved !== undefined) {
       setStateLoaded(true);
       return;
@@ -59,7 +64,7 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
       setIsSaved(saved);
       setStateLoaded(true);
     });
-  }, [trackId, session?.user, sessionLoading, initialSaved]);
+  }, [trackId, session?.user?.id, sessionLoading, isPending, initialSaved]);
 
   function handleClick(): void {
     if (!session?.user) {
