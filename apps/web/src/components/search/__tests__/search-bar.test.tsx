@@ -243,7 +243,7 @@ describe('SearchBar', () => {
       fireEvent.keyDown(input, { key: 'ArrowDown' });
 
       const options = screen.getAllByRole('option');
-      expect(options[0].getAttribute('aria-selected')).toBe('true');
+      expect(options[0]!.getAttribute('aria-selected')).toBe('true');
     });
 
     it('ArrowDown cycles through all options and wraps', async () => {
@@ -255,7 +255,7 @@ describe('SearchBar', () => {
       fireEvent.keyDown(input, { key: 'ArrowDown' }); // wraps to 0
 
       const options = screen.getAllByRole('option');
-      expect(options[0].getAttribute('aria-selected')).toBe('true');
+      expect(options[0]!.getAttribute('aria-selected')).toBe('true');
     });
 
     it('ArrowUp moves focus to last option from start', async () => {
@@ -263,7 +263,7 @@ describe('SearchBar', () => {
       fireEvent.keyDown(input, { key: 'ArrowUp' });
 
       const options = screen.getAllByRole('option');
-      expect(options[options.length - 1].getAttribute('aria-selected')).toBe('true');
+      expect(options[options.length - 1]!.getAttribute('aria-selected')).toBe('true');
     });
 
     it('Escape closes the dropdown', async () => {

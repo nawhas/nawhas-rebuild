@@ -161,7 +161,7 @@ export function SearchBar() {
                     >
                       <span className="font-medium [&_mark]:bg-yellow-100 [&_mark]:text-gray-900">
                         <HighlightedText
-                          snippet={item.highlightSnippet}
+                          {...(item.highlightSnippet !== undefined ? { snippet: item.highlightSnippet } : {})}
                           fallback={item.primaryText}
                         />
                       </span>

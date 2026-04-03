@@ -82,6 +82,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
 
       const first = focusableEls[0];
       const last = focusableEls[focusableEls.length - 1];
+      if (!first || !last) return;
 
       if (e.shiftKey) {
         if (document.activeElement === first) {
@@ -260,7 +261,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
                           >
                             <span className="font-medium [&_mark]:bg-yellow-100 [&_mark]:text-gray-900">
                               <HighlightedText
-                                snippet={item.highlightSnippet}
+                                {...(item.highlightSnippet !== undefined ? { snippet: item.highlightSnippet } : {})}
                                 fallback={item.primaryText}
                               />
                             </span>

@@ -243,7 +243,7 @@ describe('MobileSearchOverlay', () => {
     it('closes overlay when a result link is clicked', async () => {
       await openAndSearch('hussain');
       const options = screen.getAllByRole('option');
-      fireEvent.click(options[0]);
+      fireEvent.click(options[0]!);
       expect(screen.queryByRole('dialog')).toBeNull();
     });
 

@@ -54,31 +54,34 @@ function buildFlatItems(results: AutocompleteDTO | null): FlatItem[] {
   const items: FlatItem[] = [];
 
   for (const r of results.reciters as Array<ReciterSearchItemDTO & { highlights: SearchHighlightDTO[] }>) {
+    const snippet = getHighlightSnippet(r.highlights, 'name');
     items.push({
       id: `reciter-${r.id}`,
       href: `/reciters/${r.slug}`,
       primaryText: r.name,
-      highlightSnippet: getHighlightSnippet(r.highlights, 'name'),
+      ...(snippet !== undefined ? { highlightSnippet: snippet } : {}),
     });
   }
 
   for (const a of results.albums as Array<AlbumSearchItemDTO & { highlights: SearchHighlightDTO[] }>) {
+    const snippet = getHighlightSnippet(a.highlights, 'title');
     items.push({
       id: `album-${a.id}`,
       href: `/albums/${a.slug}`,
       primaryText: a.title,
       secondaryText: a.reciterName,
-      highlightSnippet: getHighlightSnippet(a.highlights, 'title'),
+      ...(snippet !== undefined ? { highlightSnippet: snippet } : {}),
     });
   }
 
   for (const t of results.tracks as Array<TrackSearchItemDTO & { highlights: SearchHighlightDTO[] }>) {
+    const snippet = getHighlightSnippet(t.highlights, 'title');
     items.push({
       id: `track-${t.id}`,
       href: `/reciters/${t.reciterSlug}/albums/${t.albumSlug}/tracks/${t.slug}`,
       primaryText: t.title,
       secondaryText: `${t.reciterName} · ${t.albumTitle}`,
-      highlightSnippet: getHighlightSnippet(t.highlights, 'title'),
+      ...(snippet !== undefined ? { highlightSnippet: snippet } : {}),
     });
   }
 
