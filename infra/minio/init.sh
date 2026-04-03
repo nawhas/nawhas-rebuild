@@ -16,25 +16,5 @@ mc mb --ignore-existing local/nawhas-images
 mc anonymous set download local/nawhas-audio
 mc anonymous set download local/nawhas-images
 
-# CORS policy — required for browser audio streaming.
-# Howler.js sets crossOrigin="anonymous" on the HTMLAudioElement, causing the
-# browser to enforce Same-Origin Policy. Without CORS headers, MinIO returns
-# the audio bytes but the browser refuses to hand them to the JS context.
-cat > /tmp/cors.json << 'EOF'
-{
-  "CORSRules": [
-    {
-      "AllowedHeaders": ["*"],
-      "AllowedMethods": ["GET", "HEAD"],
-      "AllowedOrigins": ["*"],
-      "ExposeHeaders": ["ETag", "Content-Length", "Content-Type", "Accept-Ranges", "Content-Range"],
-      "MaxAgeSeconds": 3000
-    }
-  ]
-}
-EOF
-
-mc cors set local/nawhas-audio /tmp/cors.json
-mc cors set local/nawhas-images /tmp/cors.json
-
-echo "MinIO init complete: buckets created, anonymous access enabled, CORS configured."
+echo "MinIO init complete: buckets created, anonymous access enabled."
+echo "CORS is handled at the server level via MINIO_API_CORS_ALLOW_ORIGIN (set in docker-compose.yml)."

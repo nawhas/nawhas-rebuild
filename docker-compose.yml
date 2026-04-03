@@ -82,6 +82,10 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+      # Server-level CORS: allows any origin to make cross-origin requests to
+      # MinIO. Required for Howler.js crossOrigin="anonymous" audio streaming.
+      # mc cors set does not work with MinIO CE — use this env var instead.
+      MINIO_API_CORS_ALLOW_ORIGIN: "*"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
