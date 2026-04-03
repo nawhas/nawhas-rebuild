@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
@@ -84,6 +84,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Cache the Playwright Docker image (~780MB) to avoid a fresh pull on every CI run.
+      # The cache key includes the full image tag so it invalidates automatically when the
+      # image version changes in docker-compose.yml.
+      - name: Cache Playwright Docker image
+        id: cache-playwright
+        uses: actions/cache@v5
+        with:
+          path: /tmp/playwright-cache
+          key: playwright-docker-${{ runner.os }}-v1.59.1-noble
+
+      - name: Load Playwright image from cache
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/playwright-cache/playwright.tar
+
+      - name: Pull and cache Playwright image
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: |
+          docker pull mcr.microsoft.com/playwright:v1.59.1-noble
+          mkdir -p /tmp/playwright-cache
+          docker save mcr.microsoft.com/playwright:v1.59.1-noble \
+            -o /tmp/playwright-cache/playwright.tar
 
       - name: Start stack
         run: docker compose up -d
