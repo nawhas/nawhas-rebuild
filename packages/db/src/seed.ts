@@ -13,6 +13,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema/index.js';
+import { runSearchIndex } from './search-index.js';
 
 // ---------------------------------------------------------------------------
 // Config — all values come from env vars.
@@ -304,6 +305,14 @@ async function seedDatabase(audioUrls: string[], artworkUrls: string[]) {
 async function main() {
   const { audioUrls, artworkUrls } = await uploadFixtures();
   await seedDatabase(audioUrls, artworkUrls);
+
+  console.log('\nIndexing seed data into Typesense…');
+  try {
+    await runSearchIndex(db);
+    console.log('  ✓ Typesense index updated');
+  } catch (err) {
+    console.warn('  ⚠ Typesense not reachable — skipping search index.', err instanceof Error ? err.message : err);
+  }
 
   await client.end();
 
