@@ -15,6 +15,7 @@
 import postgres from 'postgres';
 import { test as seedTest, expect } from '../fixtures/seed';
 import { AxeBuilder } from '@axe-core/playwright';
+import type { Page, Locator } from '@playwright/test';
 import type { SeedData } from '../fixtures/seed';
 
 // ---------------------------------------------------------------------------
@@ -144,6 +145,21 @@ function searchUrl(q: string, type?: string): string {
   return `/search?${params.toString()}`;
 }
 
+/**
+ * Scoped track result link locator.
+ *
+ * With 4 parallel workers each seeding a track named "Test Track E2E",
+ * `getByRole('link', { name: /Play Test Track E2E/ })` matches ALL workers'
+ * results in Typesense and causes a strict-mode violation.  Scoping by
+ * href containing the worker-specific slug ensures we match only this
+ * worker's track.
+ */
+function trackResultLink(page: Page, sd: SeedData): Locator {
+  return page
+    .getByRole('link', { name: new RegExp(`Play ${sd.track.title}`, 'i') })
+    .and(page.locator(`[href*="${sd.track.slug}"]`));
+}
+
 // ---------------------------------------------------------------------------
 // Language quality — each language query returns the seeded track
 // ---------------------------------------------------------------------------
@@ -154,18 +170,12 @@ test.describe('Language quality — multi-language lyrics search', () => {
     searchData,
   }) => {
     await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
-    const trackLink = page.getByRole('link', {
-      name: new RegExp(`Play ${searchData.track.title}`, 'i'),
-    });
-    await expect(trackLink).toBeVisible({ timeout: 10_000 });
+    await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
   test('Urdu text search returns seeded track', async ({ page, searchData }) => {
     await page.goto(searchUrl(URDU_QUERY, 'tracks'));
-    const trackLink = page.getByRole('link', {
-      name: new RegExp(`Play ${searchData.track.title}`, 'i'),
-    });
-    await expect(trackLink).toBeVisible({ timeout: 10_000 });
+    await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
   test('English text search returns seeded track via lyrics_en field', async ({
@@ -173,10 +183,7 @@ test.describe('Language quality — multi-language lyrics search', () => {
     searchData,
   }) => {
     await page.goto(searchUrl('Ya Hussain Ya Hussain', 'tracks'));
-    const trackLink = page.getByRole('link', {
-      name: new RegExp(`Play ${searchData.track.title}`, 'i'),
-    });
-    await expect(trackLink).toBeVisible({ timeout: 10_000 });
+    await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
   test('French lyrics search returns seeded track via wildcard field', async ({
@@ -184,10 +191,7 @@ test.describe('Language quality — multi-language lyrics search', () => {
     searchData,
   }) => {
     await page.goto(searchUrl(FRENCH_QUERY, 'tracks'));
-    const trackLink = page.getByRole('link', {
-      name: new RegExp(`Play ${searchData.track.title}`, 'i'),
-    });
-    await expect(trackLink).toBeVisible({ timeout: 10_000 });
+    await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
   test('Transliteration search returns seeded track via lyrics_transliteration field', async ({
@@ -195,10 +199,7 @@ test.describe('Language quality — multi-language lyrics search', () => {
     searchData,
   }) => {
     await page.goto(searchUrl(TRANSLITERATION_QUERY, 'tracks'));
-    const trackLink = page.getByRole('link', {
-      name: new RegExp(`Play ${searchData.track.title}`, 'i'),
-    });
-    await expect(trackLink).toBeVisible({ timeout: 10_000 });
+    await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -215,7 +216,7 @@ test.describe('RTL rendering', () => {
 
     // Confirm the seeded track appears
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // The lyrics snippet rendered for an Arabic match must have RTL attributes
@@ -230,7 +231,7 @@ test.describe('RTL rendering', () => {
     await page.goto(searchUrl(URDU_QUERY, 'tracks'));
 
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     const rtlSnippet = page.locator('[dir="rtl"][lang="ur"]').first();
@@ -244,7 +245,7 @@ test.describe('RTL rendering', () => {
     await page.goto(searchUrl('Ya Hussain Ya Hussain', 'tracks'));
 
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // A transliteration/English match should NOT produce an RTL span in this result
@@ -374,7 +375,7 @@ test.describe('Accessibility — WCAG 2.1 AA compliance', () => {
 
     // Wait for results to load
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // Run axe-core WCAG 2.1 AA audit
@@ -403,7 +404,7 @@ test.describe('Accessibility — WCAG 2.1 AA compliance', () => {
 
     // Wait for results to load
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // Run axe-core WCAG 2.1 AA audit
@@ -433,7 +434,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
     await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
 
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // Verify the RTL span for Arabic has lang="ar" so screen readers use Arabic pronunciation
@@ -452,7 +453,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
     await page.goto(searchUrl(URDU_QUERY, 'tracks'));
 
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // Verify the RTL span for Urdu has lang="ur" for screen reader support
@@ -470,7 +471,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
     await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
 
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // Find the Arabic snippet that contains mark tags
@@ -508,7 +509,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
 
     // Wait for page to load
     await expect(
-      page.getByRole('link', { name: new RegExp(`Play ${searchData.track.title}`, 'i') }),
+      trackResultLink(page, searchData),
     ).toBeVisible({ timeout: 10_000 });
 
     // Tab through tab bar items
