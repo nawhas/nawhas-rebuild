@@ -14,7 +14,6 @@ export enum COLLECTIONS {
 const recitersSchema: CollectionCreateSchema = {
   name: COLLECTIONS.reciters,
   fields: [
-    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', index: true },
     { name: 'slug', type: 'string' },
   ],
@@ -24,7 +23,6 @@ const recitersSchema: CollectionCreateSchema = {
 const albumsSchema: CollectionCreateSchema = {
   name: COLLECTIONS.albums,
   fields: [
-    { name: 'id', type: 'string' },
     { name: 'title', type: 'string', index: true },
     { name: 'slug', type: 'string' },
     { name: 'reciterId', type: 'string', facet: true },
@@ -38,7 +36,6 @@ const albumsSchema: CollectionCreateSchema = {
 const tracksSchema: CollectionCreateSchema = {
   name: COLLECTIONS.tracks,
   fields: [
-    { name: 'id', type: 'string' },
     { name: 'title', type: 'string', index: true },
     { name: 'slug', type: 'string' },
     { name: 'trackNumber', type: 'int32', optional: true },

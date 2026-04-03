@@ -1,20 +1,34 @@
 // @vitest-environment node
 /**
- * Integration tests for the Typesense client and ensureCollections().
- * Requires a real Typesense instance — Docker Compose runs one on port 8108.
+ * Tests for the Typesense client and ensureCollections().
  *
- * Run with:
+ * The "Typesense client" suite is a unit test — it only checks that the
+ * client object is initialised; no network connection is made.
+ *
+ * The "ensureCollections()" suite is an integration test that requires a
+ * running Typesense instance. It is automatically skipped when
+ * TYPESENSE_HOST and TYPESENSE_API_KEY are not set in the environment so
+ * that the CI quality job (which runs without services) stays green.
+ *
+ * Run with services:
  *   TYPESENSE_HOST=localhost TYPESENSE_PORT=8108 TYPESENSE_PROTOCOL=http \
  *   TYPESENSE_API_KEY=nawhas-typesense-key pnpm --filter web test src/__tests__/lib/typesense.test.ts
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-// Set env vars before importing modules that read them at init time.
+// Capture whether live credentials were explicitly provided BEFORE applying
+// defaults, so the integration suite can self-skip when they are absent.
+const hasTypesense =
+  Boolean(process.env['TYPESENSE_HOST']) && Boolean(process.env['TYPESENSE_API_KEY']);
+
+// Apply defaults so the client unit tests can import the module without errors.
 process.env.TYPESENSE_HOST = process.env.TYPESENSE_HOST ?? 'localhost';
 process.env.TYPESENSE_PORT = process.env.TYPESENSE_PORT ?? '8108';
 process.env.TYPESENSE_PROTOCOL = process.env.TYPESENSE_PROTOCOL ?? 'http';
 process.env.TYPESENSE_API_KEY = process.env.TYPESENSE_API_KEY ?? 'nawhas-typesense-key';
+
+const describeIntegration = hasTypesense ? describe : describe.skip;
 
 import { typesenseClient, TYPESENSE_SEARCH_API_KEY } from '@/lib/typesense/client';
 import { COLLECTIONS, ensureCollections } from '@/lib/typesense/collections';
@@ -40,7 +54,7 @@ describe('Typesense client', () => {
   });
 });
 
-describe('ensureCollections()', () => {
+describeIntegration('ensureCollections()', () => {
   beforeAll(async () => {
     // Start from a clean slate so we test creation, not an already-existing state.
     await Promise.all(COLLECTION_NAMES.map(deleteCollectionIfExists));
@@ -70,7 +84,8 @@ describe('ensureCollections()', () => {
     const collection = await typesenseClient.collections(COLLECTIONS.reciters).retrieve();
     const fieldNames = collection.fields?.map((f) => f.name) ?? [];
 
-    expect(fieldNames).toContain('id');
+    // Note: 'id' is a Typesense built-in document identifier and is NOT returned
+    // in collection.fields — it is always implicitly present on every document.
     expect(fieldNames).toContain('name');
     expect(fieldNames).toContain('slug');
   });
