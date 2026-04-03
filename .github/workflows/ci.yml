@@ -1,7 +1,7 @@
 # GitHub Actions CI Pipeline
 #
 # Branch protection settings (configure in GitHub repo settings):
-#   - Required status checks: quality, build, docker-build
+#   - Required status checks: quality, build, docker-build, e2e
 #   - Require branches to be up to date before merging
 #   - No force-pushes to main
 #   - No direct commits to main
@@ -82,7 +82,6 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
