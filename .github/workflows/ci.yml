@@ -21,15 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
       - uses: actions/cache@v4
         with:
           path: .turbo
@@ -37,17 +28,19 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm run typecheck
-
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Test
-        run: pnpm run test
+      # All quality checks run inside the web container so there is no runner-side
+      # pnpm/node setup. --no-deps skips starting postgres/typesense/etc since
+      # typecheck, lint, and unit tests do not need a running database.
+      - name: Run quality checks
+        run: |
+          docker compose run --rm --no-deps web sh -c "
+            corepack enable &&
+            pnpm install --frozen-lockfile &&
+            pnpm --filter @nawhas/db build &&
+            pnpm run typecheck &&
+            pnpm run lint &&
+            pnpm run test
+          "
 
   build:
     name: Build
@@ -55,15 +48,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
       - uses: actions/cache@v4
         with:
           path: .turbo
@@ -71,26 +55,18 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # Next.js collects page data for ISR routes (e.g. /reciters/[slug]) and runs
-      # generateStaticParams against PostgreSQL — same as local `docker compose` dev.
-      # --wait blocks until the service healthcheck passes (see docker-compose.yml).
-      - name: Start Postgres for static generation
-        run: docker compose up -d --wait postgres
-
-      - name: Apply database migrations
-        run: pnpm --filter @nawhas/db db:migrate
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
-
+      # docker compose run respects depends_on conditions — postgres, typesense, minio, and mailpit
+      # are started and waited on (health checks) before the build command runs. No runner-side
+      # pnpm/node setup needed; all env vars come from the web service in docker-compose.yml.
       - name: Build
-        run: pnpm run build
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
-          BETTER_AUTH_SECRET: ci-build-secret-not-for-production
-          BETTER_AUTH_URL: http://localhost:3000
+        run: |
+          docker compose run --rm web sh -c "
+            corepack enable &&
+            pnpm install --frozen-lockfile &&
+            pnpm --filter @nawhas/db build &&
+            pnpm --filter @nawhas/db db:migrate &&
+            pnpm run build
+          "
 
   docker-build:
     name: Docker Build
@@ -113,11 +89,12 @@ jobs:
       - name: Start stack
         run: docker compose up -d
 
-      # Web container: frozen pnpm install (cold anonymous volume) + db:migrate + next dev — often >5 min on CI.
-      # Migrations run inside the web container after install so schema matches the process serving :3000.
+      # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
+      # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;
+      # if the app is not ready by then, something is broken in the stack.
       - name: Wait for web
         run: |
-          timeout 900 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+          timeout 180 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
 
       - name: Run E2E tests
         run: docker compose --profile testing run --rm -e CI=true playwright
@@ -140,65 +117,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
+      # Starts all infra deps (postgres, typesense, minio, mailpit) then builds the production
+      # Next.js app and serves it inside the web container. --wait blocks until the web
+      # healthcheck passes (defined in docker-compose.ci.yml, up to ~300s total).
+      # Port 3000 is published to the host so lhci can reach http://localhost:3000.
+      - name: Start production stack
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait web
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Start infrastructure
-        run: docker compose up -d postgres typesense minio
-
-      - name: Wait for infrastructure
-        run: timeout 60 bash -c "until docker compose exec -T postgres pg_isready -U postgres; do sleep 2; done"
-
-      - name: Apply database migrations
-        run: pnpm --filter @nawhas/db db:migrate
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
-
-      - name: Build production app
-        run: pnpm run build
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
-          BETTER_AUTH_SECRET: lighthouse-ci-secret
-          BETTER_AUTH_URL: http://localhost:3000
-          TYPESENSE_HOST: localhost
-          TYPESENSE_PORT: "8108"
-          TYPESENSE_PROTOCOL: http
-          TYPESENSE_API_KEY: nawhas-typesense-key
-          S3_ENDPOINT: http://localhost:9000
-          S3_ACCESS_KEY_ID: minioadmin
-          S3_SECRET_ACCESS_KEY: minioadmin
-          S3_BUCKET_AUDIO: nawhas-audio
-          S3_BUCKET_IMAGES: nawhas-images
-          S3_PUBLIC_BASE_URL: http://localhost:9000/nawhas-audio
-
-      - name: Start production server
-        run: pnpm --filter @nawhas/web start &
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/nawhas
-          BETTER_AUTH_SECRET: lighthouse-ci-secret
-          BETTER_AUTH_URL: http://localhost:3000
-          TYPESENSE_HOST: localhost
-          TYPESENSE_PORT: "8108"
-          TYPESENSE_PROTOCOL: http
-          TYPESENSE_API_KEY: nawhas-typesense-key
-          S3_ENDPOINT: http://localhost:9000
-          S3_ACCESS_KEY_ID: minioadmin
-          S3_SECRET_ACCESS_KEY: minioadmin
-          S3_BUCKET_AUDIO: nawhas-audio
-          S3_BUCKET_IMAGES: nawhas-images
-          S3_PUBLIC_BASE_URL: http://localhost:9000/nawhas-audio
-
-      - name: Wait for app
-        run: timeout 90 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
-
+      # Runs on the GitHub runner directly — Ubuntu runners have Chrome pre-installed and
+      # Node.js available via npx, so no pnpm/node setup action is needed.
       - name: Run Lighthouse CI
-        run: pnpm run perf:lighthouse
+        run: npx --yes @lhci/cli@0.15 autorun

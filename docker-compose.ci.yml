@@ -1,0 +1,13 @@
+# CI override: runs the web service in production mode (build + serve) instead of dev.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait web
+#
+# Used by the Lighthouse CI job to build and serve the production app so lhci can audit it.
+services:
+  web:
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build && pnpm --filter @nawhas/db db:migrate && pnpm run build && pnpm --filter @nawhas/web start"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 120s
