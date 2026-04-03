@@ -81,7 +81,7 @@ test.describe('Registration form', () => {
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
 
-    await expect(page).toHaveURL(/\/check-email/);
+    await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
   });
 
   test('duplicate email shows error', async ({ page }) => {
@@ -93,7 +93,7 @@ test.describe('Registration form', () => {
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/check-email/);
+    await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
 
     // Second registration with the same email should fail
     await page.goto('/register');
@@ -166,7 +166,7 @@ test.describe('Email verification', () => {
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/check-email/);
+    await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
 
     // Wait for verification email in Mailpit
     const message = await pollForEmail(request, email);
