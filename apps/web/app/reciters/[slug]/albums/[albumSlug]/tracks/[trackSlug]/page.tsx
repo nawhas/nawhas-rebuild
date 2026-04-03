@@ -84,7 +84,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
         {track.youtubeId ? (
           <MediaToggle track={track} />
         ) : (
-          <TrackDetailPlayButton track={track} />
+          <TrackDetailPlayButton track={track} lyrics={track.lyrics} />
         )}
 
         {track.lyrics.length > 0 && (

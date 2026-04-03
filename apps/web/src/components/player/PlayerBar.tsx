@@ -12,6 +12,14 @@ import {
   selectVolume,
 } from '@/store/player';
 
+function ExpandIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z" />
+    </svg>
+  );
+}
+
 /** Format seconds as m:ss */
 function formatTime(seconds: number): string {
   if (!isFinite(seconds) || seconds < 0) return '0:00';
@@ -134,6 +142,7 @@ export function PlayerBar(): React.JSX.Element {
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const setVolume = usePlayerStore((s) => s.setVolume);
   const toggleQueue = usePlayerStore((s) => s.toggleQueue);
+  const openMobileOverlay = usePlayerStore((s) => s.openMobileOverlay);
 
   // Global keyboard shortcuts — Space, ← and → — only when a track is active.
   useEffect(() => {
@@ -221,8 +230,14 @@ export function PlayerBar(): React.JSX.Element {
 
       {/* Main controls row */}
       <div className="flex items-center gap-2 px-4 py-2 sm:gap-4">
-        {/* Track info */}
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        {/* Track info — tappable on mobile to open full-screen overlay */}
+        <button
+          type="button"
+          onClick={openMobileOverlay}
+          aria-label={currentTrack ? `Open full player for ${currentTrack.title}` : 'Open player'}
+          tabIndex={isVisible ? 0 : -1}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 md:cursor-default md:focus:ring-0"
+        >
           {/* Album art placeholder — real art requires extending the store */}
           <div
             aria-hidden="true"
@@ -231,15 +246,20 @@ export function PlayerBar(): React.JSX.Element {
             <MusicNoteIcon />
           </div>
 
-          {/* Title */}
-          <div className="min-w-0">
+          {/* Title + expand hint on mobile */}
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-gray-900">
               {currentTrack?.title ?? ''}
             </p>
             {/* Reciter name not available in TrackDTO — placeholder for future */}
             <p className="truncate text-xs text-gray-500" aria-hidden="true" />
           </div>
-        </div>
+
+          {/* Expand icon — shown only on mobile (hidden md+) */}
+          <span aria-hidden="true" className="shrink-0 text-gray-400 md:hidden">
+            <ExpandIcon />
+          </span>
+        </button>
 
         {/* Playback controls — centred */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">

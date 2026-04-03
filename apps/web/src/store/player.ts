@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { TrackDTO } from '@nawhas/types';
+import type { LyricDTO, TrackDTO } from '@nawhas/types';
 
 // ---------------------------------------------------------------------------
 // State shape
@@ -12,6 +12,8 @@ interface PlayerState {
   isPlaying: boolean;
   isShuffle: boolean;
   isQueueOpen: boolean;
+  isMobileOverlayOpen: boolean;
+  currentLyrics: LyricDTO[];
   position: number; // seconds
   duration: number; // seconds
   volume: number; // 0–1
@@ -35,6 +37,10 @@ interface PlayerActions {
   setVolume: (level: number) => void;
   reorderQueue: (from: number, to: number) => void;
   toggleQueue: () => void;
+  toggleMobileOverlay: () => void;
+  openMobileOverlay: () => void;
+  closeMobileOverlay: () => void;
+  setCurrentLyrics: (lyrics: LyricDTO[]) => void;
 }
 
 export type PlayerStore = PlayerState & PlayerActions;
@@ -49,6 +55,8 @@ export const selectQueueIndex = (s: PlayerStore) => s.queueIndex;
 export const selectIsPlaying = (s: PlayerStore) => s.isPlaying;
 export const selectIsShuffle = (s: PlayerStore) => s.isShuffle;
 export const selectIsQueueOpen = (s: PlayerStore) => s.isQueueOpen;
+export const selectIsMobileOverlayOpen = (s: PlayerStore) => s.isMobileOverlayOpen;
+export const selectCurrentLyrics = (s: PlayerStore) => s.currentLyrics;
 export const selectPosition = (s: PlayerStore) => s.position;
 export const selectDuration = (s: PlayerStore) => s.duration;
 export const selectVolume = (s: PlayerStore) => s.volume;
@@ -64,6 +72,8 @@ const defaultState: PlayerState = {
   isPlaying: false,
   isShuffle: false,
   isQueueOpen: false,
+  isMobileOverlayOpen: false,
+  currentLyrics: [],
   position: 0,
   duration: 0,
   volume: 1,
@@ -84,6 +94,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
       isPlaying: true,
       position: 0,
       duration: track.duration ?? 0,
+      currentLyrics: [],
     });
   },
 
@@ -173,6 +184,22 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
 
   toggleQueue() {
     set((state) => ({ isQueueOpen: !state.isQueueOpen }));
+  },
+
+  toggleMobileOverlay() {
+    set((state) => ({ isMobileOverlayOpen: !state.isMobileOverlayOpen }));
+  },
+
+  openMobileOverlay() {
+    set({ isMobileOverlayOpen: true });
+  },
+
+  closeMobileOverlay() {
+    set({ isMobileOverlayOpen: false });
+  },
+
+  setCurrentLyrics(lyrics) {
+    set({ currentLyrics: lyrics });
   },
 
   playAlbum(tracks) {

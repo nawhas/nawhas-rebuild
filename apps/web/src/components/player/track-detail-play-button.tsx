@@ -1,6 +1,7 @@
 'use client';
 
-import type { TrackDTO } from '@nawhas/types';
+import { useEffect } from 'react';
+import type { LyricDTO, TrackDTO } from '@nawhas/types';
 import {
   usePlayerStore,
   selectCurrentTrack,
@@ -25,23 +26,37 @@ function PauseIcon(): React.JSX.Element {
 
 interface TrackDetailPlayButtonProps {
   track: TrackDTO;
+  /** Lyrics to sync into the player store so the mobile overlay can display them. */
+  lyrics?: LyricDTO[];
 }
 
 /**
  * Play/pause control for the track detail page.
  * Fills the reserved placeholder space below the track header.
  *
+ * Also syncs track lyrics into the player store so the mobile overlay
+ * can display them when this track is playing.
+ *
  * Client Component — reads from and dispatches to Zustand player store.
  */
-export function TrackDetailPlayButton({ track }: TrackDetailPlayButtonProps): React.JSX.Element {
+export function TrackDetailPlayButton({ track, lyrics }: TrackDetailPlayButtonProps): React.JSX.Element {
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const isPlaying = usePlayerStore(selectIsPlaying);
   const play = usePlayerStore((s) => s.play);
   const pause = usePlayerStore((s) => s.pause);
   const resume = usePlayerStore((s) => s.resume);
+  const setCurrentLyrics = usePlayerStore((s) => s.setCurrentLyrics);
 
   const isActive = currentTrack?.id === track.id;
   const isCurrentlyPlaying = isActive && isPlaying;
+
+  // When this track becomes the active track, populate the store with lyrics
+  // so the mobile overlay can display them.
+  useEffect(() => {
+    if (isActive && lyrics && lyrics.length > 0) {
+      setCurrentLyrics(lyrics);
+    }
+  }, [isActive, lyrics, setCurrentLyrics]);
 
   function handleClick(): void {
     if (isCurrentlyPlaying) {
@@ -50,6 +65,10 @@ export function TrackDetailPlayButton({ track }: TrackDetailPlayButtonProps): Re
       resume();
     } else {
       play(track);
+      // Immediately set lyrics since play() clears them
+      if (lyrics && lyrics.length > 0) {
+        setCurrentLyrics(lyrics);
+      }
     }
   }
 
