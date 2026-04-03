@@ -115,13 +115,11 @@ jobs:
           docker save mcr.microsoft.com/playwright:v1.59.1-noble \
             -o /tmp/playwright-cache/playwright.tar
 
-      # Start with the test overlay so postgres runs the init-test-db.sh script on
-      # its first boot (creates nawhas_test). Starting without the overlay first and
-      # then re-applying it via `./dev test:e2e` causes Docker to recreate the
-      # postgres container after its data dir is already initialised — init scripts
-      # only run on a fresh data dir, so nawhas_test would never be created.
+      # Start with -T (test overlay) so postgres runs init-test-db.sh on first boot
+      # and creates nawhas_test. Starting without the overlay first would cause Docker
+      # to recreate postgres mid-job, skipping the init script on a non-empty data dir.
       - name: Start stack
-        run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+        run: ./dev -T up -d
 
       # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
       # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;
@@ -130,16 +128,16 @@ jobs:
         run: |
           timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
 
-      # Seed the database so E2E tests have real data to work with.
+      # Seed the test database (nawhas_test). -T targets the test stack.
       - name: Seed fixtures
-        run: ./dev db:seed
+        run: ./dev -T db:seed
 
       - name: Run E2E tests
         run: ./dev test:e2e --ci
 
       - name: Docker Compose logs (web)
         if: failure()
-        run: ./dev logs --no-color --tail=200 web || true
+        run: ./dev -T logs --no-color --tail=200 web || true
 
       - uses: actions/upload-artifact@v4
         if: always()
