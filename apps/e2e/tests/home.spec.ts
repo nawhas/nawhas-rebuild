@@ -18,29 +18,25 @@ test.describe('Home page content', () => {
     const section = page.getByRole('region', { name: 'Featured Reciters' });
     await expect(section).toBeVisible();
 
-    // The seed reciter card should be present
-    const reciterCard = page.getByRole('link', {
-      name: `View ${seedData.reciter.name}'s profile`,
-    });
+    // Scope by slug href to avoid strict-mode violations when multiple workers
+    // have inserted reciters with the same name but different slugs.
+    const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await expect(reciterCard).toBeVisible();
   });
 
   test('recent albums section renders', async ({ page, seedData }) => {
     await page.goto('/');
 
-    // RecentAlbums section should be present once we have an album
-    const albumCard = page.getByRole('link', {
-      name: new RegExp(`View album: ${seedData.album.title}`, 'i'),
-    });
+    // Scope by slug href to avoid strict-mode violations when multiple workers
+    // have inserted albums with the same title but different slugs.
+    const albumCard = page.locator(`a[href="/albums/${seedData.album.slug}"]`);
     await expect(albumCard).toBeVisible();
   });
 
   test('clicking reciter card navigates to reciter profile', async ({ page, seedData }) => {
     await page.goto('/');
 
-    const reciterCard = page.getByRole('link', {
-      name: `View ${seedData.reciter.name}'s profile`,
-    });
+    const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await reciterCard.click();
 
     await expect(page).toHaveURL(`/reciters/${seedData.reciter.slug}`);

@@ -12,28 +12,23 @@ test.describe('Reciters listing page', () => {
     await expect(page).toHaveTitle(/Reciters/i);
     await expect(page.getByRole('heading', { name: 'Reciters', level: 1 })).toBeVisible();
 
-    // The seed reciter should appear in the grid
-    const reciterCard = page.getByRole('link', {
-      name: `View ${seedData.reciter.name}'s profile`,
-    });
+    // Scope by slug href to avoid strict-mode violations when multiple workers
+    // have inserted reciters with the same name but different slugs.
+    const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await expect(reciterCard).toBeVisible();
   });
 
   test('each reciter card shows the reciter name', async ({ page, seedData }) => {
     await page.goto('/reciters');
 
-    const reciterCard = page.getByRole('link', {
-      name: `View ${seedData.reciter.name}'s profile`,
-    });
+    const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await expect(reciterCard).toContainText(seedData.reciter.name);
   });
 
   test('each reciter card links to the reciter profile page', async ({ page, seedData }) => {
     await page.goto('/reciters');
 
-    const reciterCard = page.getByRole('link', {
-      name: `View ${seedData.reciter.name}'s profile`,
-    });
+    const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await reciterCard.click();
 
     await expect(page).toHaveURL(`/reciters/${seedData.reciter.slug}`);
