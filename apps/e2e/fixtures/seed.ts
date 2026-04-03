@@ -27,14 +27,34 @@ const DATABASE_URL =
   process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
 
 /**
- * Minimal MPEG1 Layer3 128kbps 44100Hz frame (48 bytes).
- * Browsers treat this as a near-zero-duration audio clip; Howler.js fires
- * onend almost immediately, which is required for the auto-advance queue test.
+ * Build a silent MPEG1 Layer3 MP3 of the requested duration.
+ *
+ * Each frame is 417 bytes (128 kbps, 44100 Hz, stereo, no padding).
+ * The 4-byte header is valid; the remaining 413 bytes are zeroed-out side
+ * information and main data, which decoders interpret as silence.
+ *
+ * Using multiple seconds of silence prevents a race condition where Howler's
+ * `onend` fires (~26 ms for a single-frame placeholder) and clears
+ * `currentTrack` from the player store before Playwright assertions can
+ * observe the visible PlayerBar.  The auto-advance queue test still works
+ * because its 15 s timeout easily outlasts the ~3 s silence.
  */
-const PLACEHOLDER_MP3 = Buffer.from(
-  'fffb9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  'hex',
-);
+function buildSilentMp3(durationSec: number): Buffer {
+  const header = Buffer.from([0xff, 0xfb, 0x90, 0x00]); // MPEG1 Layer3, 128 kbps, 44100 Hz, stereo
+  const frameSize = 417; // int(144 × 128000 / 44100) = 417, no padding
+  const framesPerSec = 44100 / 1152; // ≈38.28 frames per second
+  const numFrames = Math.ceil(durationSec * framesPerSec);
+  const frames: Buffer[] = [];
+  for (let i = 0; i < numFrames; i++) {
+    const frame = Buffer.alloc(frameSize, 0);
+    header.copy(frame, 0);
+    frames.push(frame);
+  }
+  return Buffer.concat(frames);
+}
+
+/** ~3-second silent MP3 — long enough for all player assertions, short enough for auto-advance test (15 s limit). */
+const PLACEHOLDER_MP3 = buildSilentMp3(3);
 
 /**
  * MinIO public base URL — differs between local dev (localhost) and Docker CI
@@ -56,7 +76,7 @@ export interface SeedData {
 }
 
 async function insertSeedData(workerIndex: number): Promise<SeedData> {
-  const sql = postgres(DATABASE_URL);
+  const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
   const w = workerIndex;
 
   try {
@@ -147,7 +167,7 @@ async function insertSeedData(workerIndex: number): Promise<SeedData> {
 }
 
 async function deleteSeedData(reciterId: string): Promise<void> {
-  const sql = postgres(DATABASE_URL);
+  const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
   try {
     // Cascade handles albums → tracks → lyrics
     await sql`DELETE FROM reciters WHERE id = ${reciterId}`;

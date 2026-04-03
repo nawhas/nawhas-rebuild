@@ -15,8 +15,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
       - BETTER_AUTH_SECRET=change-me-in-production-use-a-long-random-secret
-      - BETTER_AUTH_URL=http://localhost:3000
-      - BETTER_AUTH_TRUSTED_ORIGINS=http://web:3000
+      - BETTER_AUTH_URL=http://nawhas.test:3000
+      - BETTER_AUTH_TRUSTED_ORIGINS=http://nawhas.test:3000,http://localhost:3000
       - TYPESENSE_HOST=typesense
       - TYPESENSE_PORT=8108
       - TYPESENSE_PROTOCOL=http
@@ -33,6 +33,16 @@ services:
       - SMTP_PASS=
       - SMTP_FROM=noreply@nawhas.com
       - SMTP_SECURE=false
+    networks:
+      default:
+        aliases:
+          - nawhas.test
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -139,7 +149,8 @@ services:
       - CI=${CI:-}
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
 volumes:
   postgres_data:

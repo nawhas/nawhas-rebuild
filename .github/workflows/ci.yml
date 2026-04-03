@@ -21,26 +21,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      # All quality checks run inside the web container so there is no runner-side
-      # pnpm/node setup. --no-deps skips starting postgres/typesense/etc since
-      # typecheck, lint, and unit tests do not need a running database.
-      - name: Run quality checks
-        run: |
-          docker compose run --rm --no-deps web sh -c "
-            corepack enable &&
-            pnpm install --frozen-lockfile &&
-            pnpm --filter @nawhas/db build &&
-            pnpm run typecheck &&
-            pnpm run lint &&
-            pnpm run test
-          "
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build
+
+      - name: Typecheck
+        run: ./dev typecheck
+
+      - name: Lint
+        run: ./dev lint
+
+      - name: Test
+        run: ./dev test
 
   build:
     name: Build
@@ -48,24 +50,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      # docker compose run respects depends_on conditions — postgres, typesense, minio, and mailpit
-      # are started and waited on (health checks) before the build command runs. No runner-side
-      # pnpm/node setup needed; all env vars come from the web service in docker-compose.yml.
+      # Run next build in a fresh throwaway container so it does not conflict with
+      # `next dev` (which would be running in the web service container). The web
+      # service's depends_on conditions ensure postgres + typesense are healthy before
+      # the build command starts. @nawhas/types must be built first so its dist/
+      # declarations exist when next build type-checks.
       - name: Build
         run: |
           docker compose run --rm web sh -c "
             corepack enable &&
             pnpm install --frozen-lockfile &&
+            pnpm --filter @nawhas/types build &&
             pnpm --filter @nawhas/db build &&
             pnpm --filter @nawhas/db db:migrate &&
-            pnpm run build
+            pnpm --filter @nawhas/web build
           "
 
   docker-build:
@@ -85,34 +90,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Add nawhas.test to hosts
+        run: echo "127.0.0.1 nawhas.test" | sudo tee -a /etc/hosts
+
+      # Cache the Playwright Docker image (~780MB) to avoid a fresh pull on every CI run.
+      # The cache key includes the full image tag so it invalidates automatically when the
+      # image version changes in docker-compose.yml.
+      - name: Cache Playwright Docker image
+        id: cache-playwright
+        uses: actions/cache@v5
+        with:
+          path: /tmp/playwright-cache
+          key: playwright-docker-${{ runner.os }}-v1.59.1-noble
+
+      - name: Load Playwright image from cache
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/playwright-cache/playwright.tar
+
+      - name: Pull and cache Playwright image
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: |
+          docker pull mcr.microsoft.com/playwright:v1.59.1-noble
+          mkdir -p /tmp/playwright-cache
+          docker save mcr.microsoft.com/playwright:v1.59.1-noble \
+            -o /tmp/playwright-cache/playwright.tar
+
+      # Start with -T (test overlay) so postgres runs init-test-db.sh on first boot
+      # and creates nawhas_test. Starting without the overlay first would cause Docker
+      # to recreate postgres mid-job, skipping the init script on a non-empty data dir.
       - name: Start stack
-        run: docker compose up -d
+        run: ./dev -T up -d
 
       # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
       # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;
       # if the app is not ready by then, something is broken in the stack.
       - name: Wait for web
         run: |
-          timeout 180 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+          timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
 
-      # Upload MinIO audio/image fixtures and seed the database so E2E tests
-      # have real audio URLs to work with. Runs inside the web container on the
-      # same Docker network so it can reach MinIO and postgres.
+      # Seed the test database (nawhas_test). -T targets the test stack.
       - name: Seed fixtures
-        run: |
-          docker compose run --rm --no-deps web sh -c "
-            corepack enable &&
-            pnpm install --frozen-lockfile &&
-            pnpm --filter @nawhas/db build &&
-            pnpm --filter @nawhas/db db:seed
-          "
+        run: ./dev -T db:seed
 
       - name: Run E2E tests
-        run: docker compose --profile testing run --rm -e CI=true playwright
+        run: ./dev test:e2e --ci
 
       - name: Docker Compose logs (web)
         if: failure()
-        run: docker compose logs --no-color --tail=200 web || true
+        run: ./dev -T logs --no-color --tail=200 web || true
 
       - uses: actions/upload-artifact@v4
         if: always()

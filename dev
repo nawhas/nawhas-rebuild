@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# ── Global flags ─────────────────────────────────────────────────────────────
+#
+# -T / --test   Append docker-compose.test.yml to every docker compose command.
+#               Use this when you want the full test stack (nawhas_test DB,
+#               nawhas.test alias, Typesense vars, etc.) without typing the full
+#               -f flag chain.
+#
+#   ./dev up -d            → base stack only  (dev mode)
+#   ./dev -T up -d         → base + test overlay (test mode)
+#   ./dev -T db:seed       → seed nawhas_test
+#   ./dev -T logs web -f   → tail web logs in test stack
+#   ./dev down             → always uses all compose files (see cmd_down)
+#
+# test:e2e always uses the test overlay regardless of this flag.
+
+COMPOSE_FILES="-f docker-compose.yml"
+
+while [[ "${1:-}" =~ ^- ]]; do
+  case "$1" in
+    -T|--test)
+      COMPOSE_FILES="-f docker-compose.yml -f docker-compose.test.yml"
+      shift
+      ;;
+    --help|-h)
+      # Let --help fall through to the usage display below
+      break
+      ;;
+    *)
+      # Not a global flag — stop parsing and treat as the command
+      break
+      ;;
+  esac
+done
+
+# ── Helpers ─────────────────────────────────────────────────────────────────
+
+usage() {
+  cat <<EOF
+Usage: ./dev [-T] <command> [args...]
+
+Global flags
+  -T, --test        Use docker-compose.test.yml overlay (test stack)
+
+Special commands
+  db:migrate        Run database migrations
+  db:seed           Seed fixture data
+  db:reset          Drop, migrate, and seed
+  build             Production build
+  lint              Run ESLint
+  typecheck         TypeScript type check
+  test              Run unit tests (vitest)
+  test:e2e          Run E2E tests (always uses test overlay)
+  test:e2e:ui       Run E2E tests in interactive Playwright UI
+  test:e2e --ci     Run E2E tests with CI overrides
+
+Docker Compose pass-through
+  Any other command is forwarded to docker compose (using active compose files).
+  Examples:
+    ./dev up -d              Start base dev stack
+    ./dev -T up -d           Start test stack (creates nawhas_test DB)
+    ./dev down               Stop all stacks (base + test + CI compose files; testing profile)
+    ./dev -T down            Same as ./dev down (-T does not limit teardown)
+    ./dev exec web bash      Shell into web container
+    ./dev logs web -f        Tail web logs
+    ./dev ps
+EOF
+}
+
+require_docker() {
+  if ! docker info > /dev/null 2>&1; then
+    echo "Error: Docker is not running. Please start Docker and try again." >&2
+    exit 1
+  fi
+}
+
+check_hosts() {
+  if ! grep -q "nawhas.test" /etc/hosts 2>/dev/null; then
+    echo "Warning: nawhas.test is not in /etc/hosts."
+    echo "  Add it with: echo '127.0.0.1 nawhas.test' | sudo tee -a /etc/hosts"
+  fi
+}
+
+# All local compose overlays (same project name); used by cmd_down so one command
+# tears down dev, test, and CI-shaped stacks regardless of which files were used for up.
+ALL_COMPOSE_FILES=(
+  -f docker-compose.yml
+  -f docker-compose.test.yml
+  -f docker-compose.ci.yml
+)
+
+cmd_down() {
+  require_docker
+  docker compose "${ALL_COMPOSE_FILES[@]}" --profile testing down "$@"
+}
+
+# ── Commands ─────────────────────────────────────────────────────────────────
+
+cmd_db_migrate() {
+  require_docker
+  # shellcheck disable=SC2086
+  docker compose $COMPOSE_FILES exec web pnpm --filter @nawhas/db db:migrate
+}
+
+cmd_db_seed() {
+  require_docker
+  # shellcheck disable=SC2086
+  docker compose $COMPOSE_FILES exec web pnpm --filter @nawhas/db db:seed
+}
+
+cmd_db_reset() {
+  require_docker
+  # shellcheck disable=SC2086
+  docker compose $COMPOSE_FILES exec web sh -c "pnpm --filter @nawhas/db db:drop && pnpm --filter @nawhas/db db:migrate && pnpm --filter @nawhas/db db:seed"
+}
+
+cmd_build() {
+  require_docker
+  # Run next build in a fresh throwaway container so it does not conflict with the
+  # `next dev` process running in the web service container. Build @nawhas/types first
+  # so its dist/ declarations exist when next build type-checks.
+  # shellcheck disable=SC2086
+  docker compose $COMPOSE_FILES run --rm web sh -c "
+    pnpm --filter @nawhas/types build &&
+    pnpm --filter @nawhas/db build &&
+    pnpm --filter @nawhas/web build
+  "
+}
+
+cmd_lint() {
+  pnpm run lint
+}
+
+cmd_typecheck() {
+  pnpm run typecheck
+}
+
+cmd_test() {
+  pnpm run test
+}
+
+cmd_test_e2e() {
+  require_docker
+  check_hosts
+  local ci_env=""
+  for arg in "$@"; do
+    if [[ "$arg" == "--ci" ]]; then
+      ci_env="-e CI=true"
+    fi
+  done
+  if [[ "${CI:-}" == "true" ]]; then
+    ci_env="-e CI=true"
+  fi
+  # test:e2e always uses the test overlay — it is the only valid context for E2E.
+  # shellcheck disable=SC2086
+  docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm $ci_env playwright
+}
+
+cmd_test_e2e_ui() {
+  check_hosts
+  pnpm --filter @nawhas/e2e test:e2e:ui
+}
+
+# ── Dispatch ─────────────────────────────────────────────────────────────────
+
+COMMAND="${1:-}"
+shift || true
+
+case "$COMMAND" in
+  db:migrate)   cmd_db_migrate ;;
+  db:seed)      cmd_db_seed ;;
+  db:reset)     cmd_db_reset ;;
+  build)        cmd_build ;;
+  lint)         cmd_lint ;;
+  typecheck)    cmd_typecheck ;;
+  test)         cmd_test ;;
+  test:e2e:ui)  cmd_test_e2e_ui ;;
+  test:e2e)     cmd_test_e2e "$@" ;;
+  down)         cmd_down "$@" ;;
+  --help|-h|"") usage ;;
+  *)
+    # Pass through to docker compose using the active compose files.
+    require_docker
+    # shellcheck disable=SC2086
+    docker compose $COMPOSE_FILES "$COMMAND" "$@"
+    ;;
+esac
