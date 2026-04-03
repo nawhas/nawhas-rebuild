@@ -270,25 +270,27 @@ test.describe('Listening History', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Account — Delete Account', () => {
-  test('delete account → session ends and user is redirected to home', async ({ request }) => {
+  test('delete account → session ends and user is redirected to home', async () => {
     // Create a dedicated user for this destructive test so we don't affect
     // the shared worker-scoped verifiedUser.
+    const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
     const suffix = `del-${Date.now()}`;
     const email = `delete-acct-${suffix}@example.com`;
     const password = 'DeleteMe99!';
 
-    const registerRes = await request.post('/api/auth/sign-up/email', {
-      data: { name: 'Delete Me User', email, password },
+    const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Delete Me User', email, password }),
     });
-    if (!registerRes.ok()) {
+    if (!registerRes.ok) {
       throw new Error(`Registration failed: ${await registerRes.text()}`);
     }
 
     // Verify email
-    const message = await pollForEmail(request, email);
-    const verificationUrl = await extractVerificationUrl(request, message.ID);
-    await request.get(toRelativePath(verificationUrl));
+    const message = await pollForEmail(email);
+    const verificationUrl = await extractVerificationUrl(message.ID);
+    await fetch(toVerificationFetchUrl(verificationUrl));
 
     // Use a fresh browser context for this test
     const { chromium } = await import('@playwright/test');

@@ -34,14 +34,12 @@ const PROTECTED_ROUTES = [
 // Auth helpers
 // ---------------------------------------------------------------------------
 
-async function pollForEmail(
-  request: import('@playwright/test').APIRequestContext,
-  to: string,
-  timeoutMs = 15_000,
-) {
+// Use native fetch() — worker-scoped fixtures cannot access Playwright's
+// test-scoped request fixture.
+async function pollForEmail(to: string, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const res = await request.get(`${MAILPIT_URL}/api/v1/messages`);
+    const res = await fetch(`${MAILPIT_URL}/api/v1/messages`);
     const data = await res.json() as {
       messages?: Array<{ ID: string; To: Array<{ Address: string }> }>;
     };
@@ -52,11 +50,8 @@ async function pollForEmail(
   throw new Error(`No email found for <${to}> within ${timeoutMs}ms`);
 }
 
-async function extractVerificationUrl(
-  request: import('@playwright/test').APIRequestContext,
-  messageId: string,
-): Promise<string> {
-  const res = await request.get(`${MAILPIT_URL}/api/v1/message/${messageId}`);
+async function extractVerificationUrl(messageId: string): Promise<string> {
+  const res = await fetch(`${MAILPIT_URL}/api/v1/message/${messageId}`);
   const data = await res.json() as { HTML?: string; Text?: string };
   const body = data.HTML ?? data.Text ?? '';
   const match = body.match(/https?:\/\/[^\s"'<>]*\/api\/auth\/verify-email[^\s"'<>]*/i);
@@ -64,9 +59,10 @@ async function extractVerificationUrl(
   return match[0];
 }
 
-function toRelativePath(fullUrl: string): string {
-  const u = new URL(fullUrl);
-  return u.pathname + u.search;
+function toVerificationFetchUrl(fullUrl: string): string {
+  const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+  const { pathname, search } = new URL(fullUrl);
+  return `${baseUrl}${pathname}${search}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -83,23 +79,25 @@ type WorkerFixtures = { verifiedUser: VerifiedUser };
 
 const test = base.extend<Record<string, never>, WorkerFixtures>({
   verifiedUser: [
-    async ({ request }, use) => {
+    async ({}, use) => {
+      const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const email = `protected-e2e-${suffix}@example.com`;
       const password = 'ProtectedTest99!';
       const name = 'Protected Route E2E User';
 
-      const registerRes = await request.post('/api/auth/sign-up/email', {
-        data: { name, email, password },
+      const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
       });
-      if (!registerRes.ok()) {
+      if (!registerRes.ok) {
         throw new Error(`Registration failed: ${await registerRes.text()}`);
       }
 
-      const message = await pollForEmail(request, email);
-      const verificationUrl = await extractVerificationUrl(request, message.ID);
-      await request.get(toRelativePath(verificationUrl));
+      const message = await pollForEmail(email);
+      const verificationUrl = await extractVerificationUrl(message.ID);
+      await fetch(toVerificationFetchUrl(verificationUrl));
 
       await use({ email, password, name });
 
