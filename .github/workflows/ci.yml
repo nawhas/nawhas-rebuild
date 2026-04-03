@@ -95,6 +95,18 @@ jobs:
         run: |
           timeout 180 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
 
+      # Upload MinIO audio/image fixtures and seed the database so E2E tests
+      # have real audio URLs to work with. Runs inside the web container on the
+      # same Docker network so it can reach MinIO and postgres.
+      - name: Seed fixtures
+        run: |
+          docker compose run --rm --no-deps web sh -c "
+            corepack enable &&
+            pnpm install --frozen-lockfile &&
+            pnpm --filter @nawhas/db build &&
+            pnpm --filter @nawhas/db db:seed
+          "
+
       - name: Run E2E tests
         run: docker compose --profile testing run --rm -e CI=true playwright
 

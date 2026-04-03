@@ -3,6 +3,10 @@ import { Inter, Noto_Naskh_Arabic, Noto_Nastaliq_Urdu } from 'next/font/google';
 import './globals.css';
 import { SiteHeader } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
+import { AudioProvider } from '@/components/providers/audio-provider';
+import { PlayerBar } from '@/components/player/PlayerBar';
+import { QueuePanel } from '@/components/player/QueuePanel';
+import { MobilePlayerOverlay } from '@/components/player/MobilePlayerOverlay';
 
 // Load Inter for primary UI text.
 // display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
@@ -62,9 +66,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
       <body suppressHydrationWarning>
-        <PageLayout header={<SiteHeader />} footer={<></>}>
-          {children}
-        </PageLayout>
+        <AudioProvider>
+          <PageLayout header={<SiteHeader />} footer={<></>}>
+            {children}
+          </PageLayout>
+          <QueuePanel />
+          <PlayerBar />
+          <MobilePlayerOverlay />
+        </AudioProvider>
       </body>
     </html>
   );

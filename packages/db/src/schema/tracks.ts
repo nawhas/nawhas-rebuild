@@ -12,6 +12,8 @@ export const tracks = pgTable(
       .references(() => albums.id, { onDelete: 'cascade' }),
     trackNumber: integer('track_number'),
     audioUrl: text('audio_url'),
+    // YouTube video ID for embedding (e.g. "dQw4w9WgXcQ")
+    youtubeId: text('youtube_id'),
     // Duration in seconds
     duration: integer('duration'),
     typesenseSyncedAt: timestamp('typesense_synced_at', { withTimezone: true }),

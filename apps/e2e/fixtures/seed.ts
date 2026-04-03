@@ -9,8 +9,9 @@
  * Data inserted per test run:
  *   - 1 reciter  (slug: test-reciter-e2e)
  *   - 1 album    (slug: test-album-e2e, year: 2024)
- *   - 1 track    (slug: test-track-e2e, track number: 1)
- *   - 2 lyric rows: Arabic ('ar') + English ('en')
+ *   - 1 track    (slug: test-track-e2e, track number: 1, with audioUrl + youtubeId)
+ *   - 1 track    (slug: test-track-2-e2e, track number: 2, audio only — for queue tests)
+ *   - 2 lyric rows on track 1: Arabic ('ar') + English ('en')
  */
 
 import { test as base, expect } from '@playwright/test';
@@ -24,7 +25,8 @@ export { expect };
 export interface SeedData {
   reciter: { id: string; name: string; slug: string };
   album: { id: string; title: string; slug: string; year: number };
-  track: { id: string; title: string; slug: string };
+  track: { id: string; title: string; slug: string; audioUrl: string; youtubeId: string };
+  track2: { id: string; title: string; slug: string };
 }
 
 async function insertSeedData(): Promise<SeedData> {
@@ -52,11 +54,23 @@ async function insertSeedData(): Promise<SeedData> {
     if (!album) throw new Error('Failed to insert album');
 
     // Track — unique per (album_id, slug)
-    const [track] = await sql<{ id: string; title: string; slug: string }[]>`
-      INSERT INTO tracks (id, title, slug, album_id, track_number)
-      VALUES (gen_random_uuid(), 'Test Track E2E', 'test-track-e2e', ${album.id}, 1)
-      ON CONFLICT (album_id, slug) DO UPDATE SET title = EXCLUDED.title
-      RETURNING id, title, slug
+    // audio_url points to the MinIO test fixture; youtube_id is a stable test video ID.
+    const [track] = await sql<{ id: string; title: string; slug: string; audio_url: string; youtube_id: string }[]>`
+      INSERT INTO tracks (id, title, slug, album_id, track_number, audio_url, youtube_id)
+      VALUES (
+        gen_random_uuid(),
+        'Test Track E2E',
+        'test-track-e2e',
+        ${album.id},
+        1,
+        'http://localhost:9000/nawhas-audio/fixtures/track-001.mp3',
+        'dQw4w9WgXcQ'
+      )
+      ON CONFLICT (album_id, slug) DO UPDATE SET
+        title = EXCLUDED.title,
+        audio_url = EXCLUDED.audio_url,
+        youtube_id = EXCLUDED.youtube_id
+      RETURNING id, title, slug, audio_url, youtube_id
     `;
 
     if (!track) throw new Error('Failed to insert track');
@@ -70,10 +84,36 @@ async function insertSeedData(): Promise<SeedData> {
       ON CONFLICT (track_id, language) DO UPDATE SET text = EXCLUDED.text
     `;
 
+    // Second track — audio only, no youtubeId; used for Next/Previous queue tests
+    const [track2] = await sql<{ id: string; title: string; slug: string }[]>`
+      INSERT INTO tracks (id, title, slug, album_id, track_number, audio_url)
+      VALUES (
+        gen_random_uuid(),
+        'Test Track 2 E2E',
+        'test-track-2-e2e',
+        ${album.id},
+        2,
+        'http://localhost:9000/nawhas-audio/fixtures/track-002.mp3'
+      )
+      ON CONFLICT (album_id, slug) DO UPDATE SET
+        title = EXCLUDED.title,
+        audio_url = EXCLUDED.audio_url
+      RETURNING id, title, slug
+    `;
+
+    if (!track2) throw new Error('Failed to insert track2');
+
     return {
       reciter: { id: reciter.id, name: reciter.name, slug: reciter.slug },
       album: { id: album.id, title: album.title, slug: album.slug, year: album.year },
-      track: { id: track.id, title: track.title, slug: track.slug },
+      track: {
+        id: track.id,
+        title: track.title,
+        slug: track.slug,
+        audioUrl: track.audio_url,
+        youtubeId: track.youtube_id,
+      },
+      track2: { id: track2.id, title: track2.title, slug: track2.slug },
     };
   } finally {
     await sql.end();

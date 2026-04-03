@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import type { TrackDTO } from '@nawhas/types';
+import { TrackListItem } from '@/components/albums/track-list-item';
 
 interface TrackListProps {
   tracks: TrackDTO[];
@@ -7,18 +7,12 @@ interface TrackListProps {
   albumSlug: string;
 }
 
-/** Format a duration in seconds as m:ss */
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 /**
  * Ordered track list for the album detail page.
- * Display-only in Milestone 1 — no audio playback.
  *
- * Server Component — no interactivity required.
+ * Server Component — data is passed as props from the album page.
+ * Each row is rendered as a TrackListItem client component to handle
+ * play affordances and active-track highlighting.
  */
 export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): React.JSX.Element {
   return (
@@ -39,33 +33,12 @@ export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): R
             const href = `/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${track.slug}`;
 
             return (
-              <li key={track.id}>
-                <Link
-                  href={href}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900"
-                  aria-label={`Track ${trackNumber}: ${track.title}${track.duration != null ? `, ${formatDuration(track.duration)}` : ''}`}
-                >
-                  {/* Track number */}
-                  <span
-                    aria-hidden="true"
-                    className="w-6 shrink-0 text-center text-sm tabular-nums text-gray-400"
-                  >
-                    {trackNumber}
-                  </span>
-
-                  {/* Track title */}
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
-                    {track.title}
-                  </span>
-
-                  {/* Duration */}
-                  {track.duration != null && (
-                    <span className="shrink-0 text-xs tabular-nums text-gray-500" aria-hidden="true">
-                      {formatDuration(track.duration)}
-                    </span>
-                  )}
-                </Link>
-              </li>
+              <TrackListItem
+                key={track.id}
+                track={track}
+                trackNumber={trackNumber}
+                href={href}
+              />
             );
           })}
         </ol>
