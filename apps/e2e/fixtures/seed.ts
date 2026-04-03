@@ -24,7 +24,7 @@ import { test as base, expect } from '@playwright/test';
 import postgres from 'postgres';
 
 const DATABASE_URL =
-  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
+  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas'; // gitguardian:ignore — dev-only default matching docker-compose POSTGRES_PASSWORD
 
 /**
  * Build a silent MPEG1 Layer3 MP3 of the requested duration.

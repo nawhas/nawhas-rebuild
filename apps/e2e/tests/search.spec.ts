@@ -23,7 +23,7 @@ import type { SeedData } from '../fixtures/seed';
 // ---------------------------------------------------------------------------
 
 const DATABASE_URL =
-  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
+  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas'; // gitguardian:ignore — dev-only default matching docker-compose POSTGRES_PASSWORD
 
 const TYPESENSE_HOST = process.env['TYPESENSE_HOST'] ?? 'localhost';
 const TYPESENSE_PORT = process.env['TYPESENSE_PORT'] ?? '8108';

@@ -1,2 +1,6 @@
 paths-ignore:
   - docs/**
+
+# Note: dev-only PostgreSQL credentials (postgres:password) in E2E test files
+# and .env.example are suppressed with inline `// gitguardian:ignore` comments.
+# These mirror docker-compose POSTGRES_PASSWORD and are never used in production.

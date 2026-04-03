@@ -21,7 +21,7 @@ import postgres from 'postgres';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
-  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
+  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas'; // gitguardian:ignore — dev-only default matching docker-compose POSTGRES_PASSWORD
 
 const PROTECTED_ROUTES = [
   '/library/tracks',

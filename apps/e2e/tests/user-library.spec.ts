@@ -21,20 +21,18 @@ import postgres from 'postgres';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
-  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
+  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas'; // gitguardian:ignore — dev-only default matching docker-compose POSTGRES_PASSWORD
 
 // ---------------------------------------------------------------------------
 // Auth helpers (shared with auth-login.spec.ts pattern)
 // ---------------------------------------------------------------------------
 
-async function pollForEmail(
-  request: import('@playwright/test').APIRequestContext,
-  to: string,
-  timeoutMs = 15_000,
-) {
+// Use native fetch() for Mailpit/auth API calls — these helpers run inside
+// worker-scoped fixtures where Playwright's request fixture is not available.
+async function pollForEmail(to: string, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const res = await request.get(`${MAILPIT_URL}/api/v1/messages`);
+    const res = await fetch(`${MAILPIT_URL}/api/v1/messages`);
     const data = await res.json() as {
       messages?: Array<{ ID: string; To: Array<{ Address: string }> }>;
     };
@@ -45,11 +43,8 @@ async function pollForEmail(
   throw new Error(`No email found for <${to}> within ${timeoutMs}ms`);
 }
 
-async function extractVerificationUrl(
-  request: import('@playwright/test').APIRequestContext,
-  messageId: string,
-): Promise<string> {
-  const res = await request.get(`${MAILPIT_URL}/api/v1/message/${messageId}`);
+async function extractVerificationUrl(messageId: string): Promise<string> {
+  const res = await fetch(`${MAILPIT_URL}/api/v1/message/${messageId}`);
   const data = await res.json() as { HTML?: string; Text?: string };
   const body = data.HTML ?? data.Text ?? '';
   const match = body.match(/https?:\/\/[^\s"'<>]*\/api\/auth\/verify-email[^\s"'<>]*/i);
@@ -57,9 +52,12 @@ async function extractVerificationUrl(
   return match[0];
 }
 
-function toRelativePath(fullUrl: string): string {
-  const u = new URL(fullUrl);
-  return u.pathname + u.search;
+function toVerificationFetchUrl(fullUrl: string): string {
+  // The URL from Mailpit may have a different host (e.g. nawhas.test in Docker).
+  // Rewrite to BASE_URL so fetch() can reach it from the test runner.
+  const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+  const { pathname, search } = new URL(fullUrl);
+  return `${baseUrl}${pathname}${search}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -73,36 +71,33 @@ interface VerifiedUser {
 }
 
 type WorkerFixtures = { verifiedUser: VerifiedUser };
-type TestFixtures = { seedData: SeedData };
 
-const test = base.extend<TestFixtures, WorkerFixtures>({
+// seedData is already provided by the imported base fixture from seed.ts —
+// we only add the new worker-scoped verifiedUser fixture here.
+const test = base.extend<Record<string, never>, WorkerFixtures>({
   verifiedUser: [
-    async ({ request }, use) => {
+    async ({}, use) => {
+      const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const email = `library-e2e-${suffix}@example.com`;
       const password = 'LibraryTest99!';
       const name = 'Library E2E User';
 
-      // Register
-      const registerPage = await (await import('@playwright/test')).chromium
-        .launch()
-        .then((b) => b.newPage())
-        .catch(() => null);
-
-      // Use API-based registration to avoid browser overhead in the worker fixture
-      const registerRes = await request.post('/api/auth/sign-up/email', {
-        data: { name, email, password },
+      // Use native fetch for API calls — worker fixtures can't access request fixture
+      const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
       });
 
-      if (!registerRes.ok()) {
-        throw new Error(`Registration failed: ${registerRes.status()} ${await registerRes.text()}`);
+      if (!registerRes.ok) {
+        throw new Error(`Registration failed: ${registerRes.status} ${await registerRes.text()}`);
       }
 
       // Verify email via Mailpit
-      const message = await pollForEmail(request, email);
-      const verificationUrl = await extractVerificationUrl(request, message.ID);
-      await request.get(toRelativePath(verificationUrl));
+      const message = await pollForEmail(email);
+      const verificationUrl = await extractVerificationUrl(message.ID);
+      await fetch(toVerificationFetchUrl(verificationUrl));
 
       await use({ email, password, name });
 
@@ -146,13 +141,13 @@ test.describe('Library — Save & Unsave', () => {
       `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`,
     );
 
-    // Click the Save button
-    const saveButton = page.getByRole('button', { name: /Save/i });
+    // Click the Save button (aria-label: "Save to library")
+    const saveButton = page.getByRole('button', { name: /Save to library/i });
     await expect(saveButton).toBeVisible();
     await saveButton.click();
 
-    // Button label should change to indicate it's saved
-    await expect(page.getByRole('button', { name: /Saved|Unsave/i })).toBeVisible();
+    // Button label should change to indicate it's saved (aria-label: "Remove from library")
+    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeVisible();
 
     // Navigate to library
     await page.goto('/library/tracks');
@@ -169,16 +164,16 @@ test.describe('Library — Save & Unsave', () => {
     await page.goto(
       `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`,
     );
-    const saveButton = page.getByRole('button', { name: /Save/i });
+    const saveButton = page.getByRole('button', { name: /Save to library/i });
     await saveButton.click();
-    await expect(page.getByRole('button', { name: /Saved|Unsave/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeVisible();
 
     // Navigate to library to confirm it's there
     await page.goto('/library/tracks');
     await expect(page.getByText(seedData.track.title)).toBeVisible();
 
-    // Unsave from the library page or track page
-    const unsaveButton = page.getByRole('button', { name: /Unsave|Saved/i }).first();
+    // Unsave — SaveButton on library page has aria-label "Remove from library"
+    const unsaveButton = page.getByRole('button', { name: /Remove from library/i }).first();
     await unsaveButton.click();
 
     // Track should be removed from the visible list without page reload
@@ -197,19 +192,19 @@ test.describe('Library — Like Track', () => {
     const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
     await page.goto(trackUrl);
 
-    // Click the Like button
-    const likeButton = page.getByRole('button', { name: /Like/i });
+    // Click the Like button (aria-label: "Like track")
+    const likeButton = page.getByRole('button', { name: /Like track/i });
     await expect(likeButton).toBeVisible();
     await likeButton.click();
 
-    // Wait for the button state to update (optimistic or confirmed)
-    await expect(page.getByRole('button', { name: /Unlike|Liked/i })).toBeVisible();
+    // Wait for the button state to update (aria-label: "Unlike track")
+    await expect(page.getByRole('button', { name: /Unlike track/i })).toBeVisible();
 
     // Reload the page
     await page.reload();
 
     // After reload the liked state must still be shown
-    await expect(page.getByRole('button', { name: /Unlike|Liked/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Unlike track/i })).toBeVisible();
   });
 });
 
@@ -259,17 +254,14 @@ test.describe('Listening History', () => {
     await expect(clearButton).toBeVisible();
     await clearButton.click();
 
-    // Confirm action in dialog if present
-    const confirmButton = page.getByRole('button', { name: /Confirm|Yes|Clear/i });
-    if (await confirmButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
-      await confirmButton.click();
-    }
+    // Confirm in the inline confirmation row (button text: "Yes, clear")
+    const confirmButton = page.getByRole('button', { name: /Yes, clear/i });
+    await expect(confirmButton).toBeVisible({ timeout: 3_000 });
+    await confirmButton.click();
 
-    // Empty state should now be visible
+    // Empty state should now be visible (heading text: "No history yet")
     await expect(page.getByText(seedData.track.title)).not.toBeVisible({ timeout: 5_000 });
-    const emptyState = page.getByRole('heading', { name: /No history|Nothing here|Your history is empty/i })
-      .or(page.getByText(/No listening history/i));
-    await expect(emptyState).toBeVisible();
+    await expect(page.getByRole('heading', { name: /No history yet/i })).toBeVisible();
   });
 });
 
@@ -314,14 +306,18 @@ test.describe('Account — Delete Account', () => {
       // Navigate to settings / account danger zone
       await page.goto('/settings');
 
-      // Find and click "Delete account" button
-      const deleteButton = page.getByRole('button', { name: /Delete account/i });
+      // Open the delete account modal (trigger button text: "Delete my account")
+      const deleteButton = page.getByRole('button', { name: /Delete my account/i });
       await expect(deleteButton).toBeVisible();
       await deleteButton.click();
 
-      // Confirm the deletion in the confirmation dialog
-      const confirmButton = page.getByRole('button', { name: /Delete|Confirm|Yes/i }).last();
-      await expect(confirmButton).toBeVisible();
+      // Modal is now open — fill in the password to confirm identity
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.fill('#delete-password', password);
+
+      // Click the final "Delete account" submit button inside the modal
+      const confirmButton = page.getByRole('button', { name: /^Delete account$/i });
+      await expect(confirmButton).toBeEnabled();
       await confirmButton.click();
 
       // After deletion: session should be cleared and user redirected to home
