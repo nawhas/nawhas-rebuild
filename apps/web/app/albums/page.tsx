@@ -28,11 +28,11 @@ export default async function AlbumsPage(): Promise<React.JSX.Element> {
   const { items, nextCursor } = await caller.album.list({ limit: 24 });
 
   return (
-    <main id="main-content" className="py-10">
+    <div className="py-10">
       <Container>
         <h1 className="mb-8 text-2xl font-bold text-gray-900">Albums</h1>
         <AlbumGrid initialItems={items} initialCursor={nextCursor} />
       </Container>
-    </main>
+    </div>
   );
 }

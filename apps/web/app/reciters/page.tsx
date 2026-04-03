@@ -27,11 +27,11 @@ export default async function RecitersPage(): Promise<React.JSX.Element> {
   const { items, nextCursor } = await caller.reciter.list({ limit: 24 });
 
   return (
-    <main id="main-content" className="py-10">
+    <div className="py-10">
       <Container>
         <h1 className="mb-8 text-2xl font-bold text-gray-900">Reciters</h1>
         <ReciterGrid initialItems={items} initialCursor={nextCursor} />
       </Container>
-    </main>
+    </div>
   );
 }

@@ -55,13 +55,13 @@ export default async function ReciterPage({ params }: ReciterPageProps): Promise
   }
 
   return (
-    <main id="main-content" className="py-10">
+    <div className="py-10">
       <Container>
         <ReciterHeader reciter={reciter} />
         <div className="mt-8">
           <ReciterDiscography albums={reciter.albums} />
         </div>
       </Container>
-    </main>
+    </div>
   );
 }

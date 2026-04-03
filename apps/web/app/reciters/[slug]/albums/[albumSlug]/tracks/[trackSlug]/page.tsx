@@ -75,7 +75,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
   }
 
   return (
-    <main id="main-content" className="py-10">
+    <div className="py-10">
       <Container size="md">
         <TrackHeader track={track} />
 
@@ -92,6 +92,6 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
           </div>
         )}
       </Container>
-    </main>
+    </div>
   );
 }

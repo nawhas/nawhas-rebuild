@@ -22,7 +22,7 @@ export default async function HomePage(): Promise<React.JSX.Element> {
   const featured = await caller.home.getFeatured();
 
   return (
-    <main id="main-content" className="py-10">
+    <div className="py-10">
       <Container>
         <div className="flex flex-col gap-12">
           <FeaturedReciters reciters={featured.reciters} />
@@ -30,6 +30,6 @@ export default async function HomePage(): Promise<React.JSX.Element> {
           <PopularTracks tracks={featured.tracks} />
         </div>
       </Container>
-    </main>
+    </div>
   );
 }
