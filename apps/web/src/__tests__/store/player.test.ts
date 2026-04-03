@@ -33,6 +33,7 @@ beforeEach(() => {
     queueIndex: -1,
     isPlaying: false,
     isShuffle: false,
+    isQueueOpen: false,
     position: 0,
     duration: 0,
     volume: 1,
@@ -99,15 +100,18 @@ describe('usePlayerStore — next()', () => {
     expect(state.isPlaying).toBe(true);
   });
 
-  it('wraps around to the first track when at the end of the queue', () => {
+  it('stops and clears state when reaching the end of the queue', () => {
     const t1 = makeTrack({ id: 'a' });
     const t2 = makeTrack({ id: 'b' });
     usePlayerStore.getState().playAlbum([t1, t2]);
     usePlayerStore.getState().next(); // → b
-    usePlayerStore.getState().next(); // → wraps to a
+    usePlayerStore.getState().next(); // → end of queue, should stop
 
-    expect(usePlayerStore.getState().currentTrack?.id).toBe('a');
-    expect(usePlayerStore.getState().queueIndex).toBe(0);
+    const state = usePlayerStore.getState();
+    expect(state.currentTrack).toBeNull();
+    expect(state.queue).toHaveLength(0);
+    expect(state.queueIndex).toBe(-1);
+    expect(state.isPlaying).toBe(false);
   });
 
   it('does nothing when the queue is empty', () => {
@@ -164,7 +168,7 @@ describe('usePlayerStore — addToQueue()', () => {
     usePlayerStore.getState().addToQueue(t2);
 
     expect(usePlayerStore.getState().queue).toHaveLength(2);
-    expect(usePlayerStore.getState().queue[1].id).toBe('b');
+    expect(usePlayerStore.getState().queue[1]?.id).toBe('b');
   });
 });
 
@@ -226,6 +230,60 @@ describe('usePlayerStore — setVolume()', () => {
   it('clamps values below 0 to 0', () => {
     usePlayerStore.getState().setVolume(-0.5);
     expect(usePlayerStore.getState().volume).toBe(0);
+  });
+});
+
+describe('usePlayerStore — removeFromQueue()', () => {
+  it('removes a track at the given index', () => {
+    const t1 = makeTrack({ id: 'a' });
+    const t2 = makeTrack({ id: 'b' });
+    const t3 = makeTrack({ id: 'c' });
+    usePlayerStore.getState().playAlbum([t1, t2, t3]);
+    usePlayerStore.getState().removeFromQueue(1); // remove 'b'
+
+    expect(usePlayerStore.getState().queue.map((t) => t.id)).toEqual(['a', 'c']);
+  });
+
+  it('keeps queueIndex pointing at the current track after removal of a preceding track', () => {
+    const t1 = makeTrack({ id: 'a' });
+    const t2 = makeTrack({ id: 'b' });
+    const t3 = makeTrack({ id: 'c' });
+    usePlayerStore.getState().playAlbum([t1, t2, t3]);
+    usePlayerStore.getState().next(); // now playing 'b' at index 1
+    usePlayerStore.getState().removeFromQueue(0); // remove 'a'
+
+    // 'b' is now at index 0
+    expect(usePlayerStore.getState().queueIndex).toBe(0);
+    expect(usePlayerStore.getState().currentTrack?.id).toBe('b');
+  });
+
+  it('stops playback when the currently playing track is removed', () => {
+    const t1 = makeTrack({ id: 'a' });
+    const t2 = makeTrack({ id: 'b' });
+    usePlayerStore.getState().playAlbum([t1, t2]);
+    usePlayerStore.getState().removeFromQueue(0); // remove currently playing 'a'
+
+    const state = usePlayerStore.getState();
+    expect(state.currentTrack).toBeNull();
+    expect(state.isPlaying).toBe(false);
+  });
+
+  it('ignores out-of-range indices', () => {
+    const t1 = makeTrack({ id: 'a' });
+    usePlayerStore.getState().play(t1);
+    usePlayerStore.getState().removeFromQueue(5);
+
+    expect(usePlayerStore.getState().queue).toHaveLength(1);
+  });
+});
+
+describe('usePlayerStore — toggleQueue()', () => {
+  it('toggles isQueueOpen on and off', () => {
+    expect(usePlayerStore.getState().isQueueOpen).toBe(false);
+    usePlayerStore.getState().toggleQueue();
+    expect(usePlayerStore.getState().isQueueOpen).toBe(true);
+    usePlayerStore.getState().toggleQueue();
+    expect(usePlayerStore.getState().isQueueOpen).toBe(false);
   });
 });
 

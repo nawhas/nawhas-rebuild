@@ -5,6 +5,14 @@ import type { TrackDTO } from '@nawhas/types';
 import { usePlayerStore, selectCurrentTrack, selectIsPlaying } from '@/store/player';
 import { TrackPlayButton } from '@/components/player/track-play-button';
 
+function AddToQueueIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M14 10H3v2h11v-2zm0-4H3v2h11V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM3 16h7v-2H3v2z" />
+    </svg>
+  );
+}
+
 /** Format a duration in seconds as m:ss */
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -30,6 +38,7 @@ interface TrackListItemProps {
 export function TrackListItem({ track, trackNumber, href }: TrackListItemProps): React.JSX.Element {
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const isPlaying = usePlayerStore(selectIsPlaying);
+  const addToQueue = usePlayerStore((s) => s.addToQueue);
 
   const isActive = currentTrack?.id === track.id;
   const isCurrentlyPlaying = isActive && isPlaying;
@@ -59,6 +68,20 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
           />
         )}
       </Link>
+
+      {/* Add to queue — visible on hover */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          addToQueue(track);
+        }}
+        aria-label={`Add ${track.title} to queue`}
+        className="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 group-hover:opacity-100"
+      >
+        <AddToQueueIcon />
+      </button>
 
       {/* Duration */}
       {track.duration != null && (

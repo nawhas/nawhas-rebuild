@@ -11,6 +11,7 @@ interface PlayerState {
   queueIndex: number;
   isPlaying: boolean;
   isShuffle: boolean;
+  isQueueOpen: boolean;
   position: number; // seconds
   duration: number; // seconds
   volume: number; // 0–1
@@ -27,11 +28,13 @@ interface PlayerActions {
   next: () => void;
   previous: () => void;
   addToQueue: (track: TrackDTO) => void;
+  removeFromQueue: (index: number) => void;
   playAlbum: (tracks: TrackDTO[]) => void;
   setPosition: (seconds: number) => void;
   toggleShuffle: () => void;
   setVolume: (level: number) => void;
   reorderQueue: (from: number, to: number) => void;
+  toggleQueue: () => void;
 }
 
 export type PlayerStore = PlayerState & PlayerActions;
@@ -45,6 +48,7 @@ export const selectQueue = (s: PlayerStore) => s.queue;
 export const selectQueueIndex = (s: PlayerStore) => s.queueIndex;
 export const selectIsPlaying = (s: PlayerStore) => s.isPlaying;
 export const selectIsShuffle = (s: PlayerStore) => s.isShuffle;
+export const selectIsQueueOpen = (s: PlayerStore) => s.isQueueOpen;
 export const selectPosition = (s: PlayerStore) => s.position;
 export const selectDuration = (s: PlayerStore) => s.duration;
 export const selectVolume = (s: PlayerStore) => s.volume;
@@ -59,6 +63,7 @@ const defaultState: PlayerState = {
   queueIndex: -1,
   isPlaying: false,
   isShuffle: false,
+  isQueueOpen: false,
   position: 0,
   duration: 0,
   volume: 1,
@@ -101,10 +106,15 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
       nextIndex = Math.floor(Math.random() * queue.length);
     } else {
       nextIndex = queueIndex + 1;
-      if (nextIndex >= queue.length) nextIndex = 0;
+      // End of queue — stop playback and clear state.
+      if (nextIndex >= queue.length) {
+        set({ currentTrack: null, queue: [], queueIndex: -1, isPlaying: false, position: 0, duration: 0 });
+        return;
+      }
     }
 
     const nextTrack = queue[nextIndex];
+    if (!nextTrack) return;
     set({
       currentTrack: nextTrack,
       queueIndex: nextIndex,
@@ -126,6 +136,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
 
     const prevIndex = queueIndex > 0 ? queueIndex - 1 : queue.length - 1;
     const prevTrack = queue[prevIndex];
+    if (!prevTrack) return;
     set({
       currentTrack: prevTrack,
       queueIndex: prevIndex,
@@ -139,9 +150,35 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
     set((state) => ({ queue: [...state.queue, track] }));
   },
 
+  removeFromQueue(index) {
+    const { queue, queueIndex, currentTrack } = get();
+    if (index < 0 || index >= queue.length) return;
+
+    const next = queue.filter((_, i) => i !== index);
+
+    // Keep queueIndex pointing at the same track after removal.
+    let newQueueIndex = queueIndex;
+    if (currentTrack) {
+      const idx = next.findIndex((t) => t.id === currentTrack.id);
+      newQueueIndex = idx; // -1 if removed track was the current one
+    }
+
+    // If the currently playing track was removed, stop playback.
+    if (newQueueIndex === -1) {
+      set({ queue: next, currentTrack: null, queueIndex: -1, isPlaying: false, position: 0, duration: 0 });
+    } else {
+      set({ queue: next, queueIndex: newQueueIndex });
+    }
+  },
+
+  toggleQueue() {
+    set((state) => ({ isQueueOpen: !state.isQueueOpen }));
+  },
+
   playAlbum(tracks) {
     if (tracks.length === 0) return;
     const first = tracks[0];
+    if (!first) return;
     set({
       currentTrack: first,
       queue: tracks,
@@ -172,6 +209,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
 
     const reordered = [...queue];
     const [moved] = reordered.splice(from, 1);
+    if (!moved) return;
     reordered.splice(to, 0, moved);
 
     // Keep queueIndex pointing at the same track after reorder.

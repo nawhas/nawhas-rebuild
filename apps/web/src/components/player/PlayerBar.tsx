@@ -6,6 +6,7 @@ import {
   selectCurrentTrack,
   selectIsPlaying,
   selectIsShuffle,
+  selectIsQueueOpen,
   selectPosition,
   selectDuration,
   selectVolume,
@@ -71,6 +72,14 @@ function MusicNoteIcon(): React.JSX.Element {
   );
 }
 
+function QueueIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
+    </svg>
+  );
+}
+
 function VolumeIcon({ level }: { level: number }): React.JSX.Element {
   if (level === 0) {
     return (
@@ -112,6 +121,7 @@ export function PlayerBar(): React.JSX.Element {
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const isPlaying = usePlayerStore(selectIsPlaying);
   const isShuffle = usePlayerStore(selectIsShuffle);
+  const isQueueOpen = usePlayerStore(selectIsQueueOpen);
   const position = usePlayerStore(selectPosition);
   const duration = usePlayerStore(selectDuration);
   const volume = usePlayerStore(selectVolume);
@@ -123,6 +133,7 @@ export function PlayerBar(): React.JSX.Element {
   const setPosition = usePlayerStore((s) => s.setPosition);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const setVolume = usePlayerStore((s) => s.setVolume);
+  const toggleQueue = usePlayerStore((s) => s.toggleQueue);
 
   // Global keyboard shortcuts — Space, ← and → — only when a track is active.
   useEffect(() => {
@@ -313,6 +324,23 @@ export function PlayerBar(): React.JSX.Element {
               className="w-20 cursor-pointer accent-gray-900"
             />
           </div>
+
+          {/* Queue toggle */}
+          <button
+            type="button"
+            onClick={toggleQueue}
+            aria-label={isQueueOpen ? 'Close queue' : 'Open queue'}
+            aria-pressed={isQueueOpen}
+            tabIndex={isVisible ? 0 : -1}
+            className={[
+              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1',
+              isQueueOpen
+                ? 'bg-gray-100 text-gray-900'
+                : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600',
+            ].join(' ')}
+          >
+            <QueueIcon />
+          </button>
         </div>
       </div>
     </div>
