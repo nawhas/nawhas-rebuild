@@ -4,6 +4,7 @@ import './globals.css';
 import { SiteHeader } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
 import { AudioProvider } from '@/components/providers/audio-provider';
+import { PlayerBar } from '@/components/player/PlayerBar';
 
 // Load Inter for primary UI text.
 // display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
@@ -67,6 +68,7 @@ export default function RootLayout({
           <PageLayout header={<SiteHeader />} footer={<></>}>
             {children}
           </PageLayout>
+          <PlayerBar />
         </AudioProvider>
       </body>
     </html>
