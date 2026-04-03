@@ -15,6 +15,7 @@ function makeTrack(overrides: Partial<TrackDTO> = {}): TrackDTO {
     albumId: overrides.albumId ?? 'album-1',
     trackNumber: overrides.trackNumber ?? 1,
     audioUrl: overrides.audioUrl ?? 'https://example.com/audio.mp3',
+    youtubeId: overrides.youtubeId ?? null,
     duration: 'duration' in overrides ? (overrides.duration ?? null) : 120,
     createdAt: overrides.createdAt ?? new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: overrides.updatedAt ?? new Date('2024-01-01T00:00:00.000Z'),

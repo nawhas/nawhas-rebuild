@@ -181,7 +181,7 @@ async function seedDatabase(audioUrls: string[], artworkUrls: string[]) {
     .insert(schema.tracks)
     .values([
       // Mir Hasan Mir — Muharram 1437 (4 tracks)
-      { title: 'Ya Hussain', slug: 'ya-hussain', albumId: mhm1437.id, trackNumber: 1, audioUrl: audio(0), duration: 420 },
+      { title: 'Ya Hussain', slug: 'ya-hussain', albumId: mhm1437.id, trackNumber: 1, audioUrl: audio(0), youtubeId: 'dQw4w9WgXcQ', duration: 420 },
       { title: 'Mera Dil Karbala', slug: 'mera-dil-karbala', albumId: mhm1437.id, trackNumber: 2, audioUrl: audio(1), duration: 390 },
       { title: 'Shab e Ashoor', slug: 'shab-e-ashoor', albumId: mhm1437.id, trackNumber: 3, audioUrl: audio(2), duration: 480 },
       { title: 'Alamdar', slug: 'alamdar', albumId: mhm1437.id, trackNumber: 4, audioUrl: audio(0), duration: 450 },

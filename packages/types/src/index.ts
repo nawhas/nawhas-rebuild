@@ -93,6 +93,7 @@ export interface TrackDTO {
   albumId: string;
   trackNumber: number | null;
   audioUrl: string | null;
+  youtubeId: string | null;
   duration: number | null;
   createdAt: Date;
   updatedAt: Date;
