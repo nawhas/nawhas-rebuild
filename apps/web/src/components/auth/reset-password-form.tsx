@@ -65,7 +65,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps): React.JSX.
             required
             autoComplete="new-password"
             minLength={8}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
             placeholder="At least 8 characters"
             disabled={loading}
             aria-describedby={error ? 'reset-error' : undefined}

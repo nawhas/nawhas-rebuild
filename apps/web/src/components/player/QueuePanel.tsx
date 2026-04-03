@@ -231,7 +231,7 @@ export function QueuePanel(): React.JSX.Element {
         {queue.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
             <p className="text-sm text-gray-500">Your queue is empty.</p>
-            <p className="text-xs text-gray-400">Play a track or album to get started.</p>
+            <p className="text-xs text-gray-500">Play a track or album to get started.</p>
           </div>
         ) : (
           <ol
