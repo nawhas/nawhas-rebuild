@@ -1,6 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
+import type { PaginatedResult, ListenHistoryEntryDTO } from '@nawhas/types';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -32,7 +33,7 @@ export async function recordPlay(trackId: string): Promise<void> {
  */
 export async function fetchMoreHistoryEntries(
   cursor: string,
-): Promise<import('@nawhas/types').PaginatedResult<import('@nawhas/types').ListenHistoryEntryDTO>> {
+): Promise<PaginatedResult<ListenHistoryEntryDTO>> {
   const caller = await getAuthenticatedCaller();
   if (!caller) return { items: [], nextCursor: null };
   return caller.history.list({ limit: 20, cursor });

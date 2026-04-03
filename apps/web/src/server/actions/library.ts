@@ -1,6 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
+import type { PaginatedResult, SavedTrackDTO, TrackDTO } from '@nawhas/types';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -51,7 +52,7 @@ export async function getIsSaved(trackId: string): Promise<boolean> {
  */
 export async function fetchMoreLibraryTracks(
   cursor: string,
-): Promise<import('@nawhas/types').PaginatedResult<import('@nawhas/types').SavedTrackDTO>> {
+): Promise<PaginatedResult<SavedTrackDTO>> {
   const caller = await getAuthenticatedCaller();
   if (!caller) return { items: [], nextCursor: null };
   return caller.library.list({ limit: 20, cursor });
@@ -60,7 +61,7 @@ export async function fetchMoreLibraryTracks(
 /**
  * Server action: get all saved tracks for queue injection.
  */
-export async function playAllLibraryTracks(): Promise<import('@nawhas/types').TrackDTO[]> {
+export async function playAllLibraryTracks(): Promise<TrackDTO[]> {
   const caller = await getAuthenticatedCaller();
   if (!caller) return [];
   return caller.library.playAll();

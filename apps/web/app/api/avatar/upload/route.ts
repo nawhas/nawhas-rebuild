@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { eq } from 'drizzle-orm';
