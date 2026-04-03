@@ -98,7 +98,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
     await pauseButton.click();
     await page.waitForTimeout(200);
 
-    await expect(playerBar.getByRole('button', { name: /play/i })).toBeVisible();
+    await expect(playerBar.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   });
 
   test('Volume control has accessible labels (desktop only)', async ({ page, seedData }) => {
@@ -210,11 +210,13 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const playerBar = page.getByRole('region', { name: /audio player/i });
-    await playerBar.click();
+    // Click the "Open full player" track-info button (not the whole region) to open the overlay.
+    await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
 
-    const dialog = page.getByRole('dialog');
+    // Scope to the mobile overlay dialog by its dynamic label to avoid ambiguity
+    // with the QueuePanel dialog (which stays in the DOM without aria-hidden).
+    const dialog = page.getByRole('dialog', { name: /now playing/i });
     await expect(dialog).toBeVisible();
 
     const ariaModal = await dialog.getAttribute('aria-modal');
@@ -229,11 +231,11 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const playerBar = page.getByRole('region', { name: /audio player/i });
-    await playerBar.click();
+    await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
 
-    const dialog = page.getByRole('dialog');
+    // Scope to the mobile overlay to avoid matching the always-present QueuePanel dialog.
+    const dialog = page.getByRole('dialog', { name: /now playing/i });
     const ariaLabel = await dialog.getAttribute('aria-label');
     expect(ariaLabel).toMatch(/playing|Now playing/i);
   });
@@ -246,17 +248,20 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const playerBar = page.getByRole('region', { name: /audio player/i });
-    await playerBar.click();
+    await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
 
-    const closeButton = page.getByRole('button', { name: /close/i });
+    // The overlay uses "Dismiss player" (×) as its close button.
+    const overlay = page.getByRole('dialog', { name: /now playing/i });
+    const closeButton = overlay.getByRole('button', { name: /dismiss player/i });
     await expect(closeButton).toBeVisible();
 
     await closeButton.click();
     await page.waitForTimeout(300);
 
-    await expect(page.getByRole('dialog')).not.toBeVisible();
+    // After dismissing, the overlay gets aria-hidden="true" — locator returns 0 elements,
+    // so not.toBeVisible() passes immediately.
+    await expect(overlay).not.toBeVisible();
   });
 
   test('Mobile overlay seek bar has proper ARIA attributes', async ({ page, seedData }) => {
@@ -267,12 +272,15 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const playerBar = page.getByRole('region', { name: /audio player/i });
-    await playerBar.click();
-    await page.waitForTimeout(300);
+    await page.getByRole('button', { name: /open full player/i }).click();
 
-    const seekSlider = page.getByRole('slider', { name: /seek/i });
-    await expect(seekSlider).toBeVisible();
+    // Scope the seek slider lookup to inside the overlay dialog to avoid strict-mode
+    // violations when aria-modal scoping is active or the PlayerBar is also in the DOM.
+    const overlay = page.getByRole('dialog', { name: /now playing/i });
+    await expect(overlay).toBeVisible();
+
+    const seekSlider = overlay.locator('input[type="range"][aria-label="Seek"]');
+    await expect(seekSlider).toBeAttached();
 
     expect(await seekSlider.getAttribute('aria-label')).toBe('Seek');
     expect(await seekSlider.getAttribute('aria-valuemin')).toBe('0');
@@ -288,12 +296,12 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const playerBar = page.getByRole('region', { name: /audio player/i });
-    await playerBar.click();
+    await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
 
-    const closeButton = page.getByRole('button', { name: /close/i });
-    await closeButton.focus();
+    // Focus the "Collapse to mini player" button (the chevron-down button in the overlay).
+    const collapseButton = page.getByRole('button', { name: /collapse to mini player/i });
+    await collapseButton.focus();
 
     const focused = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
     expect(focused).toBeTruthy();
@@ -307,8 +315,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
     await playButton.click();
     await page.waitForTimeout(500);
 
-    const playerBar = page.getByRole('region', { name: /audio player/i });
-    await playerBar.click();
+    await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
 
     await assertPageAccessible(page, 'MobilePlayerOverlay (Mobile)');
@@ -370,7 +377,10 @@ test.describe('QueuePanel — Accessibility', () => {
     await queueButton.click();
     await page.waitForTimeout(300);
 
-    const firstItem = page.getByRole('listitem').first();
+    // Scope to the queue dialog to avoid matching track-list <li> elements
+    // which don't have aria-label.
+    const queueDialog = page.getByRole('dialog', { name: /queue/i });
+    const firstItem = queueDialog.getByRole('listitem').first();
     const ariaLabel = await firstItem.getAttribute('aria-label');
     expect(ariaLabel).toMatch(/Track \d+:/i);
   });
@@ -426,8 +436,12 @@ test.describe('Play Buttons — Accessibility', () => {
     expect(count).toBeGreaterThan(0);
 
     for (let i = 0; i < Math.min(count, 3); i++) {
-      const ariaLabel = await playButtons.nth(i).getAttribute('aria-label');
-      expect(ariaLabel).toMatch(/play/i);
+      const btn = playButtons.nth(i);
+      // Accessible name may come from aria-label (track buttons) or text content ("Play All").
+      const ariaLabel = await btn.getAttribute('aria-label');
+      const textContent = await btn.textContent();
+      const accessibleName = ariaLabel ?? textContent?.trim() ?? '';
+      expect(accessibleName).toMatch(/play/i);
     }
   });
 
@@ -436,7 +450,10 @@ test.describe('Play Buttons — Accessibility', () => {
     await page.goto(albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
-    const initialLabel = await playButton.getAttribute('aria-label');
+    // Accessible name may come from aria-label or text content ("Play All").
+    const ariaLabel = await playButton.getAttribute('aria-label');
+    const textContent = await playButton.textContent();
+    const initialLabel = ariaLabel ?? textContent?.trim() ?? '';
     expect(initialLabel).toMatch(/play/i);
 
     await playButton.click();

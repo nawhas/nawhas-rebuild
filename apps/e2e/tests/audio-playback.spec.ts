@@ -45,8 +45,10 @@ test.describe('Audio playback — player bar', () => {
     const playerBar = page.getByRole('region', { name: 'Audio player' });
     await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
 
-    // Navigate away; the player lives in the root layout so it must survive
-    await page.goto('/reciters');
+    // Navigate away using the Next.js Link (soft navigation) so the root layout —
+    // and the Zustand player store — survive the route change.
+    await page.getByRole('link', { name: 'Browse Reciters' }).click();
+    await page.waitForURL('**/reciters');
     await expect(playerBar).toBeVisible();
   });
 });
@@ -67,10 +69,10 @@ test.describe('Audio playback — transport controls', () => {
 
     // Pause → Play
     await playerBar.getByRole('button', { name: 'Pause' }).click();
-    await expect(playerBar.getByRole('button', { name: 'Play' })).toBeVisible();
+    await expect(playerBar.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
 
     // Play → Pause
-    await playerBar.getByRole('button', { name: 'Play' }).click();
+    await playerBar.getByRole('button', { name: 'Play', exact: true }).click();
     await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible();
   });
 
@@ -113,8 +115,8 @@ test.describe('Audio playback — transport controls', () => {
     await expect(seekSlider).toBeVisible();
     await expect(seekSlider).toHaveAttribute('aria-valuemin', '0');
 
-    // Seek to 5 seconds; position must move away from 0
-    await seekSlider.fill('5');
+    // Seek to 2 seconds (within the 3-second silent placeholder); position must move away from 0
+    await seekSlider.fill('2');
     await expect(seekSlider).not.toHaveAttribute('aria-valuenow', '0');
   });
 });
@@ -258,6 +260,6 @@ test.describe('Audio playback — YouTube embed', () => {
     // Switch to Watch tab — audio must pause
     await page.getByRole('tab', { name: 'Watch' }).click();
 
-    await expect(playerBar.getByRole('button', { name: 'Play' })).toBeVisible();
+    await expect(playerBar.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   });
 });
