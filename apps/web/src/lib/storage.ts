@@ -23,3 +23,5 @@ export const BUCKET_AUDIO = process.env.S3_BUCKET_AUDIO ?? 'nawhas-audio';
 export const BUCKET_IMAGES = process.env.S3_BUCKET_IMAGES ?? 'nawhas-images';
 export const S3_PUBLIC_BASE_URL =
   process.env.S3_PUBLIC_BASE_URL ?? 'http://localhost:9000/nawhas-audio';
+export const S3_IMAGES_PUBLIC_BASE_URL =
+  process.env.S3_IMAGES_PUBLIC_BASE_URL ?? 'http://localhost:9000/nawhas-images';

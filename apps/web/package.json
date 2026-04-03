@@ -26,6 +26,7 @@
     "nodemailer": "^8.0.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.0.6",
     "typesense": "^2.0.0",
     "zod": "^3.24.1",
