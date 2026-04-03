@@ -3,7 +3,24 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "DATABASE_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "TYPESENSE_HOST",
+        "TYPESENSE_PORT",
+        "TYPESENSE_PROTOCOL",
+        "TYPESENSE_API_KEY",
+        "S3_ENDPOINT",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY",
+        "S3_BUCKET_AUDIO",
+        "S3_BUCKET_IMAGES",
+        "S3_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_CDN_HOSTNAME"
+      ]
     },
     "dev": {
       "persistent": true,

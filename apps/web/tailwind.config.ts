@@ -7,7 +7,12 @@ const config: Config = {
     '../../packages/ui/src/**/*.{ts,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        arabic: ['var(--font-noto-naskh-arabic)', 'serif'],
+        urdu: ['var(--font-noto-nastaliq-urdu)', 'serif'],
+      },
+    },
   },
   plugins: [],
 };

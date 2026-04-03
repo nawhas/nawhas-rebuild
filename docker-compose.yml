@@ -3,7 +3,9 @@ services:
   web:
     image: node:20-alpine
     working_dir: /app
-    command: sh -c "corepack enable && pnpm install && pnpm --filter @nawhas/web dev"
+    # Install workspace deps, build the @nawhas/db package (dist/ is gitignored so must be compiled
+    # before next dev imports it), apply Drizzle migrations, then start the dev server.
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build && pnpm --filter @nawhas/db db:migrate && pnpm --filter @nawhas/web dev"
     ports:
       - "3000:3000"
     volumes:
@@ -14,6 +16,7 @@ services:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
       - BETTER_AUTH_SECRET=change-me-in-production-use-a-long-random-secret
       - BETTER_AUTH_URL=http://localhost:3000
+      - BETTER_AUTH_TRUSTED_ORIGINS=http://web:3000
       - TYPESENSE_HOST=typesense
       - TYPESENSE_PORT=8108
       - TYPESENSE_PROTOCOL=http
@@ -133,6 +136,7 @@ services:
       - BASE_URL=http://web:3000
       - DOCKER=true
       - CI=${CI:-}
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
     depends_on:
       - web
 
