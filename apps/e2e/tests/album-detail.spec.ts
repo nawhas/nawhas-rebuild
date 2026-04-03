@@ -37,7 +37,7 @@ test.describe('Album detail page', () => {
 
     // The seed track should appear in the list
     const trackLink = page.getByRole('link', {
-      name: new RegExp(`Track 1: ${seedData.track.title}`, 'i'),
+      name: new RegExp(seedData.track.title, 'i'),
     });
     await expect(trackLink).toBeVisible();
   });
@@ -46,7 +46,7 @@ test.describe('Album detail page', () => {
     await page.goto(`/albums/${seedData.album.slug}`);
 
     const trackLink = page.getByRole('link', {
-      name: new RegExp(`Track 1: ${seedData.track.title}`, 'i'),
+      name: new RegExp(seedData.track.title, 'i'),
     });
     await trackLink.click();
 

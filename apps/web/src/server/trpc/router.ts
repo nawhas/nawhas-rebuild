@@ -5,6 +5,7 @@ import { albumRouter } from '../routers/album';
 import { trackRouter } from '../routers/track';
 import { homeRouter } from '../routers/home';
 import { authRouter } from '../routers/auth';
+import { searchRouter } from '../routers/search';
 
 export const appRouter = router({
   health: publicProcedure.query(() => ({ status: 'ok' as const })),
@@ -13,6 +14,7 @@ export const appRouter = router({
   album: albumRouter,
   track: trackRouter,
   home: homeRouter,
+  search: searchRouter,
 });
 
 export type AppRouter = typeof appRouter;

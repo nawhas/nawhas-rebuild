@@ -50,6 +50,14 @@ vi.mock('../nav-links', () => ({
   ),
 }));
 
+vi.mock('@/components/search/search-bar', () => ({
+  SearchBar: () => <div data-testid="search-bar" />,
+}));
+
+vi.mock('@/components/search/mobile-search-overlay', () => ({
+  MobileSearchOverlay: () => <div data-testid="mobile-search-overlay" />,
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();

@@ -158,6 +158,9 @@ importers:
       postgres:
         specifier: ^3.4.5
         version: 3.4.8
+      typesense:
+        specifier: ^2.0.0
+        version: 2.1.0(@babel/runtime@7.29.2)
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.1022.0

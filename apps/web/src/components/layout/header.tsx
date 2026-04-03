@@ -6,6 +6,8 @@ import { Container } from './container';
 import { NavLinks } from './nav-links';
 import { UserMenu } from './user-menu';
 import { MobileNav } from './mobile-nav';
+import { SearchBar } from '@/components/search/search-bar';
+import { MobileSearchOverlay } from '@/components/search/mobile-search-overlay';
 
 export const NAV_LINKS = [
   { href: '/', label: 'Home' },
@@ -59,6 +61,9 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
           {/* Desktop nav links — hidden on mobile */}
           <NavLinks links={NAV_LINKS} className="hidden items-center md:flex" />
 
+          {/* Desktop search bar — hidden on mobile */}
+          <SearchBar />
+
           {/* Desktop auth state — hidden on mobile */}
           <div className="hidden items-center gap-4 md:flex">
             {user ? (
@@ -72,6 +77,9 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
               </Link>
             )}
           </div>
+
+          {/* Mobile search icon — hidden on md+ */}
+          <MobileSearchOverlay />
 
           {/* Mobile hamburger — hidden on md+ */}
           <MobileNav links={NAV_LINKS} user={user} />
