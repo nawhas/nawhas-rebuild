@@ -3,7 +3,7 @@
 The full dev stack starts with a single command:
 
 ```bash
-docker compose up
+./dev up
 ```
 
 This brings up five services:
@@ -56,7 +56,7 @@ These are already set in `docker-compose.yml` for the `web` service. Copy `.env.
 Upload placeholder audio and image fixtures to MinIO:
 
 ```bash
-pnpm db:seed
+./dev db:seed
 ```
 
 This uploads small placeholder MP3s and JPEGs to the `nawhas-audio` and `nawhas-images` buckets. You can then stream a seeded audio file directly in the browser via the public MinIO URL.
@@ -103,3 +103,111 @@ cp apps/web/.env.example apps/web/.env.local
 ```
 
 The example file contains dev-safe defaults for all services. Production values are set via CI/CD secrets — never committed to the repo.
+
+---
+
+## Health checks
+
+Use these commands to verify all services are running after `./dev up`:
+
+```bash
+# Next.js web app
+curl -f http://localhost:3000
+
+# PostgreSQL
+./dev exec postgres pg_isready -U postgres
+
+# Typesense
+curl -f http://localhost:8108/health
+
+# MinIO (open http://localhost:9001 in a browser, or check the API)
+curl -f http://localhost:9000/minio/health/live
+
+# Mailpit (open http://localhost:8025 in a browser)
+curl -f http://localhost:8025
+```
+
+All should return `200 OK` (or a success message). If a service is not yet ready, wait a few seconds and retry — the `web` container waits for `postgres` and `typesense` to be healthy before starting.
+
+---
+
+## Troubleshooting
+
+### Port conflicts
+
+If any service fails to start because a port is already in use:
+
+| Service | Default port | Common conflict |
+|---------|-------------|-----------------|
+| web | 3000 | Another Next.js dev server |
+| postgres | 5432 | A local PostgreSQL installation |
+| typesense | 8108 | Rarely conflicts |
+| minio API | 9000 | Other S3-compatible tools |
+| minio console | 9001 | Other MinIO instances |
+| mailpit UI | 8025 | Other mail catchers |
+
+To find what is using a port: `lsof -i :<port>` (macOS/Linux) or `netstat -ano | findstr :<port>` (Windows).
+
+### Resetting all local data
+
+To wipe all Docker volumes and start fresh (⚠️ destroys the local database and all seeded data):
+
+```bash
+./dev down -v
+./dev up
+./dev db:seed
+```
+
+### MinIO bucket not found
+
+If the app logs S3 errors about missing buckets, the `minio-init` one-shot container may not have run successfully. Re-run it manually:
+
+```bash
+./dev up minio-init
+```
+
+### Database migrations not applied
+
+If the app crashes with schema errors, apply pending migrations:
+
+```bash
+./dev db:migrate
+```
+
+Or simply restart the `web` container — it runs migrations automatically on startup.
+
+### pnpm install fails
+
+Ensure you are using Node.js 20+ and that corepack is enabled:
+
+```bash
+node --version   # should be v20.x or higher
+corepack enable
+pnpm install
+```
+
+If the `node_modules` volume inside Docker is stale, rebuild the container:
+
+```bash
+./dev build web
+./dev up
+```
+
+### Typesense search returns no results after seeding
+
+The search index is populated during `./dev db:seed`. If the index is missing or stale, re-run the seed:
+
+```bash
+./dev db:seed
+```
+
+If the Typesense container was restarted after seeding, the index persists in the `typesense_data` volume and does not need to be rebuilt.
+
+### Authentication callback errors
+
+Better-Auth validates the `BETTER_AUTH_TRUSTED_ORIGINS` environment variable. If you see origin mismatch errors, ensure your `.env.local` (or `docker-compose.yml` for the `web` service) includes your local hostname:
+
+```env
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:3000
+```
