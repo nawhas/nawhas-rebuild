@@ -76,7 +76,7 @@ export interface SeedData {
 }
 
 async function insertSeedData(workerIndex: number): Promise<SeedData> {
-  const sql = postgres(DATABASE_URL);
+  const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
   const w = workerIndex;
 
   try {
@@ -167,7 +167,7 @@ async function insertSeedData(workerIndex: number): Promise<SeedData> {
 }
 
 async function deleteSeedData(reciterId: string): Promise<void> {
-  const sql = postgres(DATABASE_URL);
+  const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
   try {
     // Cascade handles albums → tracks → lyrics
     await sql`DELETE FROM reciters WHERE id = ${reciterId}`;

@@ -75,7 +75,7 @@ async function typesenseDelete(collection: string, id: string): Promise<void> {
 
 const test = seedTest.extend<{ searchData: SeedData }>({
   searchData: async ({ seedData }, use) => {
-    const sql = postgres(DATABASE_URL);
+    const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
 
     // Add extra lyrics (Urdu, French, transliteration) for the seeded track.
     // Arabic + English are already inserted by the base seed fixture.
