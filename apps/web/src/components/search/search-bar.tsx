@@ -1,98 +1,39 @@
 'use client';
 
-import { useState, useRef, useId, useTransition, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useId } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import type {
-  AutocompleteDTO,
-  ReciterSearchItemDTO,
-  AlbumSearchItemDTO,
-  TrackSearchItemDTO,
-  SearchHighlightDTO,
-} from '@nawhas/types';
-import { autocompleteSearch } from '@/server/actions/search';
+import { useSearchAutocomplete } from '@/hooks/use-search-autocomplete';
 
 // ---------------------------------------------------------------------------
-// Internal helpers
+// Shared UI helpers
 // ---------------------------------------------------------------------------
-
-interface FlatItem {
-  id: string;
-  href: string;
-  primaryText: string;
-  secondaryText?: string;
-  highlightSnippet?: string;
-}
-
-function getHighlightSnippet(
-  highlights: SearchHighlightDTO[],
-  preferredField: string,
-): string | undefined {
-  const preferred = highlights.find((h) => h.field === preferredField);
-  return preferred?.snippet ?? highlights[0]?.snippet;
-}
-
-function buildFlatItems(results: AutocompleteDTO | null): FlatItem[] {
-  if (!results) return [];
-  const items: FlatItem[] = [];
-
-  for (const r of results.reciters as Array<ReciterSearchItemDTO & { highlights: SearchHighlightDTO[] }>) {
-    items.push({
-      id: `reciter-${r.id}`,
-      href: `/reciters/${r.slug}`,
-      primaryText: r.name,
-      highlightSnippet: getHighlightSnippet(r.highlights, 'name'),
-    });
-  }
-
-  for (const a of results.albums as Array<AlbumSearchItemDTO & { highlights: SearchHighlightDTO[] }>) {
-    items.push({
-      id: `album-${a.id}`,
-      href: `/albums/${a.slug}`,
-      primaryText: a.title,
-      secondaryText: a.reciterName,
-      highlightSnippet: getHighlightSnippet(a.highlights, 'title'),
-    });
-  }
-
-  for (const t of results.tracks as Array<TrackSearchItemDTO & { highlights: SearchHighlightDTO[] }>) {
-    items.push({
-      id: `track-${t.id}`,
-      href: `/reciters/${t.reciterSlug}/albums/${t.albumSlug}/tracks/${t.slug}`,
-      primaryText: t.title,
-      secondaryText: `${t.reciterName} · ${t.albumTitle}`,
-      highlightSnippet: getHighlightSnippet(t.highlights, 'title'),
-    });
-  }
-
-  return items;
-}
 
 /**
  * Renders a Typesense highlight snippet which may contain <mark> tags.
  * Content originates from our own server — safe to use dangerouslySetInnerHTML.
  */
-function HighlightedText({ snippet, fallback }: { snippet?: string; fallback: string }) {
+export function HighlightedText({ snippet, fallback }: { snippet?: string; fallback: string }) {
   if (!snippet) return <span>{fallback}</span>;
   return <span dangerouslySetInnerHTML={{ __html: snippet }} />;
 }
 
-// ---------------------------------------------------------------------------
-// Group labels
-// ---------------------------------------------------------------------------
-
-const GROUP_LABELS: Record<string, string> = {
-  reciter: 'Reciters',
-  album: 'Albums',
-  track: 'Tracks',
-};
-
-type GroupKey = 'reciter' | 'album' | 'track';
-
-function getGroupKey(item: FlatItem): GroupKey {
-  if (item.id.startsWith('reciter-')) return 'reciter';
-  if (item.id.startsWith('album-')) return 'album';
-  return 'track';
+export function Spinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin text-gray-400"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 3 12 3 12h1z"
+      />
+    </svg>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -102,140 +43,43 @@ function getGroupKey(item: FlatItem): GroupKey {
 /**
  * Global search bar for the desktop header.
  *
- * - 200ms debounced autocomplete via `search.autocomplete` server action
+ * - 200ms debounced autocomplete via `useSearchAutocomplete` shared hook
  * - Results grouped by Reciters / Albums / Tracks
  * - Full keyboard navigation: ArrowUp/Down, Enter, Escape, Tab
  * - WCAG 2.1 AA: combobox + listbox + option ARIA pattern
- * - Hidden on mobile (`hidden md:block`) — mobile search handled by NAW-118
+ * - Hidden on mobile (`hidden md:block`) — mobile search handled by MobileSearchOverlay
  */
 export function SearchBar() {
   const inputId = useId();
-  const listboxId = useId();
-  const router = useRouter();
-
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<AutocompleteDTO | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [isPending, startTransition] = useTransition();
-
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const flatItems = buildFlatItems(results);
-  const hasResults =
-    results !== null &&
-    (results.reciters.length > 0 || results.albums.length > 0 || results.tracks.length > 0);
-
-  // Fetch autocomplete results, debounced 200ms
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    setActiveIndex(-1);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (!value.trim()) {
-      setResults(null);
-      setIsOpen(false);
-      return;
-    }
-
-    debounceRef.current = setTimeout(() => {
-      startTransition(async () => {
-        const data = await autocompleteSearch(value.trim());
-        setResults(data);
-        setIsOpen(true);
-        setActiveIndex(-1);
-      });
-    }, 200);
-  }, []);
+  const {
+    query,
+    isOpen,
+    setIsOpen,
+    activeIndex,
+    isPending,
+    hasResults,
+    groupedSections,
+    flatItems,
+    listboxId,
+    activeOptionId,
+    handleChange,
+    handleKeyDown,
+    closeDropdown,
+  } = useSearchAutocomplete();
 
   // Close on outside click
   useEffect(() => {
     function handlePointerDown(e: PointerEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-        setActiveIndex(-1);
+        closeDropdown();
       }
     }
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, []);
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
-  const closeDropdown = useCallback(() => {
-    setIsOpen(false);
-    setActiveIndex(-1);
-  }, []);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isOpen) return;
-
-      switch (e.key) {
-        case 'ArrowDown': {
-          e.preventDefault();
-          setActiveIndex((prev) => (prev < flatItems.length - 1 ? prev + 1 : 0));
-          break;
-        }
-        case 'ArrowUp': {
-          e.preventDefault();
-          setActiveIndex((prev) => (prev > 0 ? prev - 1 : flatItems.length - 1));
-          break;
-        }
-        case 'Enter': {
-          e.preventDefault();
-          if (activeIndex >= 0 && flatItems[activeIndex]) {
-            router.push(flatItems[activeIndex].href);
-            closeDropdown();
-            setQuery('');
-          } else if (query.trim()) {
-            router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-            closeDropdown();
-          }
-          break;
-        }
-        case 'Escape': {
-          e.preventDefault();
-          closeDropdown();
-          break;
-        }
-        case 'Tab': {
-          closeDropdown();
-          break;
-        }
-      }
-    },
-    [isOpen, flatItems, activeIndex, query, router, closeDropdown],
-  );
-
-  const activeOptionId =
-    activeIndex >= 0 && flatItems[activeIndex]
-      ? `${listboxId}-option-${activeIndex}`
-      : undefined;
-
-  // Build grouped sections for rendering
-  const groupedSections: Array<{ key: GroupKey; label: string; items: Array<{ item: FlatItem; globalIndex: number }> }> = [];
-  let globalIdx = 0;
-  for (const groupKey of ['reciter', 'album', 'track'] as GroupKey[]) {
-    const sectionItems: Array<{ item: FlatItem; globalIndex: number }> = [];
-    for (const item of flatItems) {
-      if (getGroupKey(item) === groupKey) {
-        sectionItems.push({ item, globalIndex: globalIdx++ });
-      }
-    }
-    if (sectionItems.length > 0) {
-      groupedSections.push({ key: groupKey, label: GROUP_LABELS[groupKey], items: sectionItems });
-    }
-  }
+  }, [closeDropdown]);
 
   return (
     <div ref={containerRef} className="relative hidden md:block">
@@ -268,7 +112,7 @@ export function SearchBar() {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (results && query.trim()) setIsOpen(true);
+            if (query.trim()) setIsOpen(true);
           }}
           className="h-9 w-64 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
         />
@@ -351,24 +195,5 @@ export function SearchBar() {
         </div>
       )}
     </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <svg
-      className="h-4 w-4 animate-spin text-gray-400"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 3 12 3 12h1z"
-      />
-    </svg>
   );
 }
