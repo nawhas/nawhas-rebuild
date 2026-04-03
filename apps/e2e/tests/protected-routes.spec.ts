@@ -122,6 +122,13 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
 // ---------------------------------------------------------------------------
 
 test.describe('Protected routes — unauthenticated redirect', () => {
+  // Defensively clear cookies before each test to prevent any stale session token
+  // from a previous test (in the same worker) from leaking through and causing
+  // middleware to skip the fast-path cookie-absence redirect.
+  test.beforeEach(async ({ page }) => {
+    await page.context().clearCookies();
+  });
+
   for (const route of PROTECTED_ROUTES) {
     test(`${route} redirects unauthenticated user to /login with callbackUrl`, async ({ page }) => {
       await page.goto(route);
