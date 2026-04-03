@@ -39,16 +39,43 @@ export interface SearchResultsContentProps {
 /**
  * Renders a Typesense snippet that may contain <mark> tags.
  * Content originates from our own server — safe to dangerouslySetInnerHTML.
+ * Pass dir="rtl" and a lang code for Arabic/Urdu content.
  */
 function HighlightedText({
   snippet,
   fallback,
+  dir,
+  lang,
 }: {
   snippet: string | undefined;
   fallback: string;
+  dir?: 'rtl' | 'ltr';
+  lang?: string;
 }) {
-  if (!snippet) return <span>{fallback}</span>;
-  return <span dangerouslySetInnerHTML={{ __html: snippet }} />;
+  if (!snippet) return <span dir={dir} lang={lang}>{fallback}</span>;
+  return <span dir={dir} lang={lang} dangerouslySetInnerHTML={{ __html: snippet }} />;
+}
+
+/**
+ * Finds the first lyrics highlight from any field matching `lyrics_<lang>`.
+ * Returns the field name and snippet so the caller can derive the lang code.
+ */
+function findLyricsHighlight(
+  highlights: SearchHighlightDTO[],
+): { field: string; snippet: string } | undefined {
+  return highlights.find(
+    (h): h is { field: string; snippet: string } =>
+      typeof h.field === 'string' &&
+      h.field.startsWith('lyrics_') &&
+      h.snippet != null,
+  ) as { field: string; snippet: string } | undefined;
+}
+
+/** Derive RTL attributes from a Typesense field name like `lyrics_ar`. */
+function rtlAttrsForField(field: string): { dir: 'rtl'; lang: string } | undefined {
+  if (field === 'lyrics_ar') return { dir: 'rtl', lang: 'ar' };
+  if (field === 'lyrics_ur') return { dir: 'rtl', lang: 'ur' };
+  return undefined;
 }
 
 /** Find the first highlight snippet for a given field name. */
@@ -172,6 +199,8 @@ function TrackResult({
   const titleSnippet = findSnippet(highlights, 'title');
   const albumSnippet = findSnippet(highlights, 'albumTitle');
   const reciterSnippet = findSnippet(highlights, 'reciterName');
+  const lyricsHighlight = findLyricsHighlight(highlights);
+  const lyricsRtlAttrs = lyricsHighlight ? rtlAttrsForField(lyricsHighlight.field) : undefined;
 
   const href = `/reciters/${item.reciterSlug}/albums/${item.albumSlug}/tracks/${item.slug}`;
 
@@ -200,6 +229,15 @@ function TrackResult({
           {' · '}
           <HighlightedText snippet={albumSnippet} fallback={item.albumTitle} />
         </p>
+        {lyricsHighlight && (
+          <p className="mt-0.5 truncate text-xs italic text-gray-400">
+            <HighlightedText
+              snippet={lyricsHighlight.snippet}
+              fallback=""
+              {...(lyricsRtlAttrs ?? {})}
+            />
+          </p>
+        )}
       </div>
     </Link>
   );

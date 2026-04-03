@@ -41,7 +41,20 @@ interface TrackDoc {
   reciterId: string;
   reciterName: string;
   reciterSlug: string;
+  // Lyrics fields synced dynamically; not always present.
+  lyrics_ar?: string;
+  lyrics_ur?: string;
+  [key: string]: string | number | undefined;
 }
+
+// Fields searched on tracks — title/album/reciter plus all lyrics fields
+// (Arabic, Urdu, transliteration, wildcard for any other language).
+const TRACK_QUERY_BY =
+  'title,albumTitle,reciterName,lyrics_ar,lyrics_ur,lyrics_.*';
+
+// Below this many results Typesense attempts typo-correction;
+// 1 = always try typos even when a match exists (important for Arabic/Urdu).
+const TYPO_TOKENS_THRESHOLD = 1;
 
 // ---------------------------------------------------------------------------
 // Highlight extraction helper
@@ -99,7 +112,8 @@ export const searchRouter = router({
             {
               collection: COLLECTIONS.tracks,
               q: input.q,
-              query_by: 'title,albumTitle,reciterName',
+              query_by: TRACK_QUERY_BY,
+              typo_tokens_threshold: TYPO_TOKENS_THRESHOLD,
               per_page: 5,
             },
           ],
@@ -224,7 +238,8 @@ export const searchRouter = router({
           .documents()
           .search({
             q,
-            query_by: 'title,albumTitle,reciterName',
+            query_by: TRACK_QUERY_BY,
+            typo_tokens_threshold: TYPO_TOKENS_THRESHOLD,
             page,
             per_page: perPage,
           });
@@ -282,7 +297,8 @@ export const searchRouter = router({
             {
               collection: COLLECTIONS.tracks,
               q,
-              query_by: 'title,albumTitle,reciterName',
+              query_by: TRACK_QUERY_BY,
+              typo_tokens_threshold: TYPO_TOKENS_THRESHOLD,
               page,
               per_page: tracksPerPage,
             },
