@@ -8,6 +8,7 @@ import { authRouter } from '../routers/auth';
 import { searchRouter } from '../routers/search';
 import { libraryRouter } from '../routers/library';
 import { likesRouter } from '../routers/likes';
+import { historyRouter } from '../routers/history';
 
 export const appRouter = router({
   health: publicProcedure.query(() => ({ status: 'ok' as const })),
@@ -19,6 +20,7 @@ export const appRouter = router({
   search: searchRouter,
   library: libraryRouter,
   likes: likesRouter,
+  history: historyRouter,
 });
 
 export type AppRouter = typeof appRouter;

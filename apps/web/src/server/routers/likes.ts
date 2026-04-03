@@ -52,7 +52,7 @@ export const likesRouter = router({
    * Returns a map of trackId → liked boolean for a batch of track IDs.
    * Avoids N+1 queries in list views.
    */
-  isLikedBatch: protectedProcedure
+  batchStatus: protectedProcedure
     .input(z.object({ trackIds: z.array(z.string().uuid()).max(200) }))
     .query(async ({ ctx, input }): Promise<Record<string, boolean>> => {
       if (input.trackIds.length === 0) return {};

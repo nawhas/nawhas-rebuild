@@ -185,6 +185,6 @@ export const libraryRouter = router({
       .where(eq(userSavedTracks.userId, ctx.user.id))
       .orderBy(asc(userSavedTracks.savedAt), asc(userSavedTracks.trackId));
 
-    return rows.map(toTrackDTO);
+    return rows;
   }),
 });
