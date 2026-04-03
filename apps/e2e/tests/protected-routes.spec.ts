@@ -106,7 +106,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
 
       await use({ email, password, name });
 
-      const sql = postgres(DATABASE_URL);
+      const sql = postgres(DATABASE_URL, { max: 1 });
       try {
         await sql`DELETE FROM "user" WHERE email = ${email}`;
       } finally {

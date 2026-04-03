@@ -107,7 +107,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
       await use({ email, password, name });
 
       // Cleanup
-      const sql = postgres(DATABASE_URL);
+      const sql = postgres(DATABASE_URL, { max: 1 });
       try {
         await sql`DELETE FROM "user" WHERE email = ${email}`;
       } finally {
@@ -340,7 +340,7 @@ test.describe('Account — Delete Account', () => {
     } finally {
       await browser.close();
       // Cleanup (in case the delete didn't work or the test failed)
-      const sql = postgres(DATABASE_URL);
+      const sql = postgres(DATABASE_URL, { max: 1 });
       try {
         await sql`DELETE FROM "user" WHERE email = ${email}`;
       } finally {
