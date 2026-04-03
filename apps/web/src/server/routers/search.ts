@@ -41,16 +41,11 @@ interface TrackDoc {
   reciterId: string;
   reciterName: string;
   reciterSlug: string;
-  // Lyrics fields synced dynamically; not always present.
-  lyrics_ar?: string;
-  lyrics_ur?: string;
   [key: string]: string | number | undefined;
 }
 
-// Fields searched on tracks — title/album/reciter plus all lyrics fields
-// (Arabic, Urdu, transliteration, wildcard for any other language).
-const TRACK_QUERY_BY =
-  'title,albumTitle,reciterName,lyrics_ar,lyrics_ur,lyrics_.*';
+// Fields searched on tracks — matches the tracks collection schema (NAW-113).
+const TRACK_QUERY_BY = 'title,albumTitle,reciterName';
 
 // Below this many results Typesense attempts typo-correction;
 // 1 = always try typos even when a match exists (important for Arabic/Urdu).
