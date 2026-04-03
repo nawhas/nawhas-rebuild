@@ -138,9 +138,6 @@ services:
       - DOCKER=true
       - CI=${CI:-}
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
-      - TYPESENSE_HOST=typesense
-      - TYPESENSE_PORT=8108
-      - TYPESENSE_API_KEY=nawhas-typesense-key
     depends_on:
       - web
 

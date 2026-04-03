@@ -85,6 +85,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Add nawhas.test to hosts
+        run: echo "127.0.0.1 nawhas.test" | sudo tee -a /etc/hosts
+
       # Cache the Playwright Docker image (~780MB) to avoid a fresh pull on every CI run.
       # The cache key includes the full image tag so it invalidates automatically when the
       # image version changes in docker-compose.yml.
@@ -108,21 +111,21 @@ jobs:
             -o /tmp/playwright-cache/playwright.tar
 
       - name: Start stack
-        run: docker compose up -d
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
 
       # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
       # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;
       # if the app is not ready by then, something is broken in the stack.
       - name: Wait for web
         run: |
-          timeout 180 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+          timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
 
       # Upload MinIO audio/image fixtures and seed the database so E2E tests
       # have real audio URLs to work with. Runs inside the web container on the
       # same Docker network so it can reach MinIO and postgres.
       - name: Seed fixtures
         run: |
-          docker compose run --rm --no-deps web sh -c "
+          docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm --no-deps web sh -c "
             corepack enable &&
             pnpm install --frozen-lockfile &&
             pnpm --filter @nawhas/db build &&
@@ -130,11 +133,11 @@ jobs:
           "
 
       - name: Run E2E tests
-        run: docker compose --profile testing run --rm -e CI=true playwright
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm -e CI=true playwright
 
       - name: Docker Compose logs (web)
         if: failure()
-        run: docker compose logs --no-color --tail=200 web || true
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml logs --no-color --tail=200 web || true
 
       - uses: actions/upload-artifact@v4
         if: always()
