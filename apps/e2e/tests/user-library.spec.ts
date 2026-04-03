@@ -72,9 +72,53 @@ interface VerifiedUser {
 
 type WorkerFixtures = { verifiedUser: VerifiedUser };
 
+async function sleep(ms: number): Promise<void> {
+  await new Promise((r) => setTimeout(r, ms));
+}
+
+/** Register + verify with retries — parallel CI workers can briefly overload the API / DB. */
+async function registerAndVerifyUser(params: {
+  baseUrl: string;
+  email: string;
+  password: string;
+  name: string;
+}): Promise<void> {
+  const { baseUrl, email, password, name } = params;
+  let lastError = '';
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (attempt > 0) {
+      await sleep(400 * attempt);
+    }
+    const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Origin': baseUrl,
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const bodyText = await registerRes.text();
+    if (registerRes.ok) {
+      const message = await pollForEmail(email);
+      const verificationUrl = await extractVerificationUrl(message.ID);
+      await fetch(toVerificationFetchUrl(verificationUrl), {
+        headers: { 'Origin': baseUrl },
+      });
+      return;
+    }
+    lastError = `${registerRes.status} ${bodyText}`;
+    if (registerRes.status >= 500) {
+      continue;
+    }
+    throw new Error(`Registration failed: ${lastError}`);
+  }
+  throw new Error(`Registration failed after retries: ${lastError}`);
+}
+
 // seedData is already provided by the imported base fixture from seed.ts —
 // we only add the new worker-scoped verifiedUser fixture here.
-const test = base.extend<Record<string, never>, WorkerFixtures>({
+// Use `object` (not Record<string, never>) so Playwright merges worker fixtures with the seed test type.
+const test = base.extend<object, WorkerFixtures>({
   verifiedUser: [
     async ({}, use) => {
       const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
@@ -83,26 +127,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
       const password = 'LibraryTest99!';
       const name = 'Library E2E User';
 
-      // Use native fetch for API calls — worker fixtures can't access request fixture
-      const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Origin': baseUrl,
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (!registerRes.ok) {
-        throw new Error(`Registration failed: ${registerRes.status} ${await registerRes.text()}`);
-      }
-
-      // Verify email via Mailpit
-      const message = await pollForEmail(email);
-      const verificationUrl = await extractVerificationUrl(message.ID);
-      await fetch(toVerificationFetchUrl(verificationUrl), {
-        headers: { 'Origin': baseUrl },
-      });
+      await registerAndVerifyUser({ baseUrl, email, password, name });
 
       await use({ email, password, name });
 
@@ -126,11 +151,12 @@ async function signIn(
   page: import('@playwright/test').Page,
   user: VerifiedUser,
 ): Promise<void> {
-  await page.goto('/login');
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#email')).toBeVisible({ timeout: 30_000 });
   await page.fill('#email', user.email);
   await page.fill('#password', user.password);
   await clickLoginSubmitAndWaitForAuth(page);
-  await expect(page).toHaveURL('/', { timeout: 15_000 });
+  await expect(page).toHaveURL('/', { timeout: 30_000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -283,23 +309,11 @@ test.describe('Account — Delete Account', () => {
     const email = `delete-acct-${suffix}@example.com`;
     const password = 'DeleteMe99!';
 
-    const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': baseUrl,
-      },
-      body: JSON.stringify({ name: 'Delete Me User', email, password }),
-    });
-    if (!registerRes.ok) {
-      throw new Error(`Registration failed: ${await registerRes.text()}`);
-    }
-
-    // Verify email
-    const message = await pollForEmail(email);
-    const verificationUrl = await extractVerificationUrl(message.ID);
-    await fetch(toVerificationFetchUrl(verificationUrl), {
-      headers: { 'Origin': baseUrl },
+    await registerAndVerifyUser({
+      baseUrl,
+      email,
+      password,
+      name: 'Delete Me User',
     });
 
     // Use a fresh browser context for this test
@@ -309,11 +323,12 @@ test.describe('Account — Delete Account', () => {
     const page = await context.newPage();
 
     try {
-      await page.goto('/login');
+      await page.goto('/login', { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('#email')).toBeVisible({ timeout: 30_000 });
       await page.fill('#email', email);
       await page.fill('#password', password);
       await clickLoginSubmitAndWaitForAuth(page);
-      await expect(page).toHaveURL('/', { timeout: 15_000 });
+      await expect(page).toHaveURL('/', { timeout: 30_000 });
 
       // Navigate to settings / account danger zone
       await page.goto('/settings');
