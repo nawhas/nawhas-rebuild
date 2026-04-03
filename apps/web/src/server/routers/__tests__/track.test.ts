@@ -4,6 +4,8 @@ import { inArray } from 'drizzle-orm';
 import { reciters, albums, tracks, lyrics } from '@nawhas/db';
 import { createTestDb, isDbAvailable, makeTrackCaller, type TestDb } from './helpers';
 
+const dbAvailable = await isDbAvailable();
+
 let db: TestDb;
 let close: () => Promise<void>;
 
@@ -17,10 +19,9 @@ const TRACK_SLUG = `track-test-track-${SUFFIX}`;
 // Second track without lyrics to test the no-lyrics path.
 const TRACK_NO_LYRICS_SLUG = `track-test-no-lyrics-${SUFFIX}`;
 
-beforeAll(async function (this: { skip: () => void }) {
-  if (!await isDbAvailable()) {
-    return this.skip();
-  }
+describe.skipIf(!dbAvailable)('Track Router', () => {
+
+beforeAll(async () => {
   ({ db, close } = createTestDb());
 
   const [r] = await db
@@ -204,3 +205,4 @@ describe('track.listByAlbum', () => {
     expect(result).toHaveLength(0);
   });
 });
+}); // Track Router

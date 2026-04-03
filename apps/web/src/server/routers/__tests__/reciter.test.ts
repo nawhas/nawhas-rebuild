@@ -4,6 +4,8 @@ import { inArray } from 'drizzle-orm';
 import { reciters, albums } from '@nawhas/db';
 import { createTestDb, isDbAvailable, makeReciterCaller, type TestDb } from './helpers';
 
+const dbAvailable = await isDbAvailable();
+
 let db: TestDb;
 let close: () => Promise<void>;
 
@@ -12,10 +14,9 @@ const seededReciterIds: string[] = [];
 // Unique suffix prevents collisions with other test runs.
 const SUFFIX = Date.now();
 
-beforeAll(async function (this: { skip: () => void }) {
-  if (!await isDbAvailable()) {
-    return this.skip();
-  }
+describe.skipIf(!dbAvailable)('Reciter Router', () => {
+
+beforeAll(async () => {
   ({ db, close } = createTestDb());
 
   const rows = await db
@@ -136,3 +137,4 @@ describe('reciter.getBySlug', () => {
     expect(result).toBeNull();
   });
 });
+}); // Reciter Router

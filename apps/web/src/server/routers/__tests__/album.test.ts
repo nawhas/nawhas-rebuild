@@ -4,6 +4,8 @@ import { inArray } from 'drizzle-orm';
 import { reciters, albums, tracks } from '@nawhas/db';
 import { createTestDb, isDbAvailable, makeAlbumCaller, type TestDb } from './helpers';
 
+const dbAvailable = await isDbAvailable();
+
 let db: TestDb;
 let close: () => Promise<void>;
 
@@ -15,10 +17,9 @@ const SUFFIX = Date.now();
 const RECITER_SLUG = `album-test-reciter-${SUFFIX}`;
 const ALBUM_SLUG = `album-test-album-${SUFFIX}`;
 
-beforeAll(async function (this: { skip: () => void }) {
-  if (!await isDbAvailable()) {
-    return this.skip();
-  }
+describe.skipIf(!dbAvailable)('Album Router', () => {
+
+beforeAll(async () => {
   ({ db, close } = createTestDb());
 
   const [r] = await db
@@ -158,3 +159,4 @@ describe('album.listByReciter', () => {
     expect(result.nextCursor).toBeNull();
   });
 });
+}); // Album Router

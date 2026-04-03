@@ -70,10 +70,11 @@ function createTestAuth(testDb: TestDb) {
   });
 }
 
-beforeAll(async function (this: { skip: () => void }) {
-  if (!await isDbAvailable()) {
-    return this.skip();
-  }
+const dbAvailable = await isDbAvailable();
+
+describe.skipIf(!dbAvailable)('Auth Router', () => {
+
+beforeAll(async () => {
   ({ db, close } = createTestDb());
   auth = createTestAuth(db);
 });
@@ -355,3 +356,4 @@ describe('auth: password reset', () => {
     expect((err as APIError).status).toBe('UNAUTHORIZED');
   });
 });
+}); // Auth Router

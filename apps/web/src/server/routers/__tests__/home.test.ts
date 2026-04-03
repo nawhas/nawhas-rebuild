@@ -3,6 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { reciters, albums, tracks } from '@nawhas/db';
 import { createTestDb, isDbAvailable, makeHomeCaller, type TestDb } from './helpers';
 
+const dbAvailable = await isDbAvailable();
+
 let db: TestDb;
 let close: () => Promise<void>;
 
@@ -11,10 +13,9 @@ const seededReciterIds: string[] = [];
 const seededAlbumIds: string[] = [];
 const seededTrackIds: string[] = [];
 
-beforeAll(async function (this: { skip: () => void }) {
-  if (!await isDbAvailable()) {
-    return this.skip();
-  }
+describe.skipIf(!dbAvailable)('Home Router', () => {
+
+beforeAll(async () => {
   ({ db, close } = createTestDb());
 
   // Seed 2 reciters, each with 1 album and 1 track.
@@ -118,3 +119,4 @@ describe('home.getFeatured', () => {
     expect(result.tracks.length).toBeLessThanOrEqual(6);
   });
 });
+}); // Home Router
