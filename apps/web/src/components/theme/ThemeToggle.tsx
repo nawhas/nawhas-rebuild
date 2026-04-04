@@ -3,20 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 
-type Theme = 'light' | 'dark' | 'system';
-
-const NEXT_THEME: Record<Theme, Theme> = {
-  light: 'dark',
-  dark: 'system',
-  system: 'light',
-};
-
-const ARIA_LABEL: Record<Theme, string> = {
-  light: 'Switch to dark mode',
-  dark: 'Switch to system mode',
-  system: 'Switch to light mode',
-};
-
 function SunIcon(): React.JSX.Element {
   return (
     <svg
@@ -57,44 +43,25 @@ function MoonIcon(): React.JSX.Element {
   );
 }
 
-function SystemIcon(): React.JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="h-5 w-5"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3"
-      />
-    </svg>
-  );
-}
-
 /**
- * Keyboard-accessible theme toggle button cycling light → dark → system.
+ * Keyboard-accessible theme toggle button — toggles between light and dark.
+ *
+ * Uses `resolvedTheme` so that when theme is "system" it reflects the actual
+ * OS preference and a single click always switches to the opposite visual state.
  *
  * Client Component — requires useTheme() from next-themes.
  * Uses a `mounted` guard to avoid hydration mismatch (server has no theme state).
  */
 export function ThemeToggle(): React.JSX.Element {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const current: Theme = (theme as Theme | undefined) ?? 'system';
-
   function handleClick(): void {
-    setTheme(NEXT_THEME[current]);
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   }
 
   if (!mounted) {
@@ -111,16 +78,16 @@ export function ThemeToggle(): React.JSX.Element {
     );
   }
 
+  const isDark = resolvedTheme === 'dark';
+
   return (
     <button
       type="button"
       onClick={handleClick}
-      aria-label={ARIA_LABEL[current]}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
     >
-      {current === 'dark' && <SunIcon />}
-      {current === 'light' && <MoonIcon />}
-      {current === 'system' && <SystemIcon />}
+      {isDark ? <SunIcon /> : <MoonIcon />}
     </button>
   );
 }

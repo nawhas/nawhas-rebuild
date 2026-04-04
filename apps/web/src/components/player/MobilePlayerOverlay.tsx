@@ -325,7 +325,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               onClick={isPlaying ? pause : resume}
               aria-label={isPlaying ? 'Pause' : 'Play'}
               tabIndex={isVisible ? 0 : -1}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-white"
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </button>

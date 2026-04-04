@@ -311,7 +311,7 @@ export function PlayerBar(): React.JSX.Element {
             onClick={isPlaying ? pause : resume}
             aria-label={isPlaying ? 'Pause' : 'Play'}
             tabIndex={isVisible ? 0 : -1}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-white"
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -355,7 +355,7 @@ export function PlayerBar(): React.JSX.Element {
               aria-valuenow={Math.round(volume * 100) / 100}
               aria-valuetext={`${Math.round(volume * 100)}%`}
               tabIndex={isVisible ? 0 : -1}
-              className="w-20 cursor-pointer accent-gray-900"
+              className="w-20 cursor-pointer accent-gray-900 dark:accent-white"
             />
           </div>
 
