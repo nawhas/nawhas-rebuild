@@ -14,6 +14,9 @@ import { homeRouter } from '../home';
 import { reciterRouter } from '../reciter';
 import { albumRouter } from '../album';
 import { trackRouter } from '../track';
+import { libraryRouter } from '../library';
+import { likesRouter } from '../likes';
+import { historyRouter } from '../history';
 
 export type TestDb = PostgresJsDatabase<typeof schema>;
 
@@ -60,4 +63,46 @@ export function makeAlbumCaller(db: TestDb) {
 
 export function makeTrackCaller(db: TestDb) {
   return createCallerFactory(trackRouter)(makeCtx(db));
+}
+
+// ─── Authenticated context helpers ───────────────────────────────────────────
+//
+// Creates a minimal session + user object that satisfies the Context interface
+// without going through Better Auth registration.  Use these for testing
+// protectedProcedure routers where we only care about DB behaviour, not auth.
+
+export function makeLibraryCaller(db: TestDb, userId: string) {
+  return createCallerFactory(libraryRouter)(makeAuthCtx(db, userId));
+}
+
+export function makeLikesCaller(db: TestDb, userId: string) {
+  return createCallerFactory(likesRouter)(makeAuthCtx(db, userId));
+}
+
+export function makeHistoryCaller(db: TestDb, userId: string) {
+  return createCallerFactory(historyRouter)(makeAuthCtx(db, userId));
+}
+
+export function makeAuthCtx(db: TestDb, userId: string) {
+  const now = new Date();
+  const user = {
+    id: userId,
+    name: 'Test User',
+    email: `test-${userId}@example.com`,
+    emailVerified: true,
+    image: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const session = {
+    id: `session-${userId}`,
+    userId,
+    expiresAt: new Date(now.getTime() + 86_400_000), // 1 day
+    ipAddress: null,
+    userAgent: null,
+    createdAt: now,
+    updatedAt: now,
+    token: `token-${userId}`,
+  };
+  return { db: db as unknown as Database, session, user };
 }

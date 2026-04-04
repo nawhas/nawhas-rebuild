@@ -122,6 +122,23 @@ export interface SessionDTO {
 }
 
 // ---------------------------------------------------------------------------
+// User Library
+// ---------------------------------------------------------------------------
+
+export interface SavedTrackDTO {
+  trackId: string;
+  savedAt: string; // ISO
+  track: TrackDTO;
+}
+
+export interface ListenHistoryEntryDTO {
+  id: string;
+  trackId: string;
+  playedAt: string; // ISO
+  track: TrackDTO;
+}
+
+// ---------------------------------------------------------------------------
 // Home / Featured
 // ---------------------------------------------------------------------------
 
@@ -129,6 +146,17 @@ export interface FeaturedDTO {
   reciters: ReciterDTO[];
   albums: AlbumDTO[];
   tracks: TrackDTO[];
+}
+
+// ---------------------------------------------------------------------------
+// Account / Notification Preferences
+// ---------------------------------------------------------------------------
+
+export interface NotificationPrefsDTO {
+  email: {
+    newAlbums: boolean;
+    weeklyDigest: boolean;
+  };
 }
 
 // ---------------------------------------------------------------------------

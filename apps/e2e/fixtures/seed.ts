@@ -24,7 +24,7 @@ import { test as base, expect } from '@playwright/test';
 import postgres from 'postgres';
 
 const DATABASE_URL =
-  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas';
+  process.env['DATABASE_URL'] ?? 'postgresql://postgres:password@localhost:5432/nawhas'; // gitguardian:ignore — dev-only default matching docker-compose POSTGRES_PASSWORD
 
 /**
  * Build a silent MPEG1 Layer3 MP3 of the requested duration.
@@ -53,8 +53,10 @@ function buildSilentMp3(durationSec: number): Buffer {
   return Buffer.concat(frames);
 }
 
-/** ~3-second silent MP3 — long enough for all player assertions, short enough for auto-advance test (15 s limit). */
+/** ~3-second silent MP3 — long enough for most player assertions, short enough for auto-advance test (15 s limit). */
 const PLACEHOLDER_MP3 = buildSilentMp3(3);
+
+export { buildSilentMp3 };
 
 /**
  * MinIO public base URL — differs between local dev (localhost) and Docker CI

@@ -8,7 +8,10 @@
  */
 
 import { expect } from '@playwright/test';
-import { test } from '../fixtures/seed';
+import { test, buildSilentMp3 } from '../fixtures/seed';
+
+/** 30-second silent MP3 for the persistence test — ensures audio outlasts slow navigation. */
+const LONG_MP3 = buildSilentMp3(30);
 
 type SeedParam = Parameters<Parameters<typeof test>[2]>[0]['seedData'];
 
@@ -39,6 +42,12 @@ test.describe('Audio playback — player bar', () => {
   });
 
   test('player bar persists after navigating to another page', async ({ page, seedData }) => {
+    // Override the default 3-second placeholder with a 30-second MP3 so audio
+    // cannot end during navigation (reciters page may be slow with accumulated test data).
+    await page.route('**/*.mp3', (route) =>
+      route.fulfill({ status: 200, contentType: 'audio/mpeg', body: LONG_MP3 }),
+    );
+
     await page.goto(albumUrl(seedData));
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
@@ -49,7 +58,11 @@ test.describe('Audio playback — player bar', () => {
     // and the Zustand player store — survive the route change.
     await page.getByRole('link', { name: 'Browse Reciters' }).click();
     await page.waitForURL('**/reciters');
-    await expect(playerBar).toBeVisible();
+    // DOM-scoped: the player region sets aria-hidden when no track, which hides
+    // descendants from getByRole; after navigation, wait for the Pause control again.
+    await expect(
+      page.locator('[aria-label="Audio player"] button[aria-label="Pause"]'),
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
 

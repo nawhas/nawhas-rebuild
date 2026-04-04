@@ -5,6 +5,7 @@ import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { TrackHeader } from '@/components/tracks/track-header';
+import { TrackActions } from '@/components/tracks/track-actions';
 import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
 import { MediaToggle } from '@/components/tracks/media-toggle';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
@@ -80,6 +81,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
     <div className="py-10">
       <Container size="md">
         <TrackHeader track={track} />
+        <TrackActions trackId={track.id} />
 
         {track.youtubeId ? (
           <MediaToggle track={track} />

@@ -4,6 +4,22 @@ import { PlayerBar } from '../PlayerBar';
 import { usePlayerStore } from '@/store/player';
 import type { TrackDTO } from '@nawhas/types';
 
+// SaveButton (rendered inside PlayerBar) uses next/navigation, auth-client, and library actions.
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+vi.mock('@/lib/auth-client', () => ({
+  useSession: () => ({ data: null, isPending: false }),
+}));
+
+vi.mock('@/server/actions/library', () => ({
+  getIsSaved: vi.fn().mockResolvedValue(false),
+  saveTrack: vi.fn().mockResolvedValue(undefined),
+  unsaveTrack: vi.fn().mockResolvedValue(undefined),
+}));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

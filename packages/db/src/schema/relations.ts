@@ -3,6 +3,10 @@ import { reciters } from './reciters.js';
 import { albums } from './albums.js';
 import { tracks } from './tracks.js';
 import { lyrics } from './lyrics.js';
+import { users } from './users.js';
+import { userSavedTracks } from './userSavedTracks.js';
+import { userLikedTracks } from './userLikedTracks.js';
+import { listeningHistory } from './listeningHistory.js';
 
 export const recitersRelations = relations(reciters, ({ many }) => ({
   albums: many(albums),
@@ -29,4 +33,25 @@ export const lyricsRelations = relations(lyrics, ({ one }) => ({
     fields: [lyrics.trackId],
     references: [tracks.id],
   }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  savedTracks: many(userSavedTracks),
+  likedTracks: many(userLikedTracks),
+  listeningHistory: many(listeningHistory),
+}));
+
+export const userSavedTracksRelations = relations(userSavedTracks, ({ one }) => ({
+  user: one(users, { fields: [userSavedTracks.userId], references: [users.id] }),
+  track: one(tracks, { fields: [userSavedTracks.trackId], references: [tracks.id] }),
+}));
+
+export const userLikedTracksRelations = relations(userLikedTracks, ({ one }) => ({
+  user: one(users, { fields: [userLikedTracks.userId], references: [users.id] }),
+  track: one(tracks, { fields: [userLikedTracks.trackId], references: [tracks.id] }),
+}));
+
+export const listeningHistoryRelations = relations(listeningHistory, ({ one }) => ({
+  user: one(users, { fields: [listeningHistory.userId], references: [users.id] }),
+  track: one(tracks, { fields: [listeningHistory.trackId], references: [tracks.id] }),
 }));

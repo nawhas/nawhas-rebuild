@@ -1,2 +1,15 @@
 paths-ignore:
   - docs/**
+  - docker-compose.yml
+  - docker-compose.test.yml
+  - apps/e2e/**
+
+# Excluded paths rationale:
+# - docker-compose.yml / docker-compose.test.yml: local dev infrastructure with
+#   intentional dummy credentials (postgres:password, minioadmin). Real deployments
+#   override all values via env vars.
+# - apps/e2e/**: Playwright E2E test fixtures use postgresql://postgres:password
+#   as a hardcoded dev fallback (matches docker-compose POSTGRES_PASSWORD). This is
+#   the intentional local default — not a real credential. Real CI uses DATABASE_URL
+#   from environment. Inline // gitguardian:ignore comments are also present on
+#   each occurrence for belt-and-suspenders suppression.
