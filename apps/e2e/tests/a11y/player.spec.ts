@@ -208,7 +208,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: /open full player/i })).toBeVisible({ timeout: 10_000 });
 
     // Click the "Open full player" track-info button (not the whole region) to open the overlay.
     await page.getByRole('button', { name: /open full player/i }).click();
@@ -229,7 +229,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: /open full player/i })).toBeVisible({ timeout: 10_000 });
 
     await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
@@ -246,7 +246,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: /open full player/i })).toBeVisible({ timeout: 10_000 });
 
     await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
@@ -270,7 +270,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: /open full player/i })).toBeVisible({ timeout: 10_000 });
 
     await page.getByRole('button', { name: /open full player/i }).click();
 
@@ -294,7 +294,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: /open full player/i })).toBeVisible({ timeout: 10_000 });
 
     await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
@@ -313,7 +313,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: /open full player/i })).toBeVisible({ timeout: 10_000 });
 
     await page.getByRole('button', { name: /open full player/i }).click();
     await page.waitForTimeout(300);
