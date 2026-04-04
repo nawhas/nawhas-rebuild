@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   usePlayerStore,
   selectCurrentTrack,
@@ -128,6 +129,7 @@ function VolumeIcon({ level }: { level: number }): React.JSX.Element {
  * Desktop-only extras (md+): volume control.
  */
 export function PlayerBar(): React.JSX.Element {
+  const t = useTranslations('player');
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const isPlaying = usePlayerStore(selectIsPlaying);
   const isShuffle = usePlayerStore(selectIsShuffle);
@@ -194,7 +196,7 @@ export function PlayerBar(): React.JSX.Element {
   return (
     <div
       role="region"
-      aria-label="Audio player"
+      aria-label={t('audioPlayerLabel')}
       // The bar is always in the DOM so the transition works — it slides
       // off-screen when no track is loaded. Fixed positioning means it never
       // affects page flow.
@@ -223,7 +225,7 @@ export function PlayerBar(): React.JSX.Element {
           step={1}
           value={position}
           onChange={handleSeek}
-          aria-label="Seek"
+          aria-label={t('seek')}
           aria-valuemin={0}
           aria-valuemax={duration}
           aria-valuenow={Math.round(position)}
@@ -239,7 +241,7 @@ export function PlayerBar(): React.JSX.Element {
         <button
           type="button"
           onClick={openMobileOverlay}
-          aria-label={currentTrack ? `Open full player for ${currentTrack.title}` : 'Open player'}
+          aria-label={currentTrack ? t('openFullPlayer', { trackTitle: currentTrack.title }) : t('openPlayer')}
           tabIndex={isVisible ? 0 : -1}
           className="flex min-w-0 flex-1 items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 md:cursor-default md:focus:ring-0"
         >
@@ -281,7 +283,7 @@ export function PlayerBar(): React.JSX.Element {
           <button
             type="button"
             onClick={toggleShuffle}
-            aria-label={isShuffle ? 'Disable shuffle' : 'Enable shuffle'}
+            aria-label={isShuffle ? t('shuffleDisable') : t('shuffleEnable')}
             aria-pressed={isShuffle}
             tabIndex={isVisible ? 0 : -1}
             className={[
@@ -298,7 +300,7 @@ export function PlayerBar(): React.JSX.Element {
           <button
             type="button"
             onClick={previous}
-            aria-label="Previous track"
+            aria-label={t('previousTrack')}
             tabIndex={isVisible ? 0 : -1}
             className="rounded p-1.5 text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
           >
@@ -309,7 +311,7 @@ export function PlayerBar(): React.JSX.Element {
           <button
             type="button"
             onClick={isPlaying ? pause : resume}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? t('pause') : t('play')}
             tabIndex={isVisible ? 0 : -1}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-white"
           >
@@ -320,7 +322,7 @@ export function PlayerBar(): React.JSX.Element {
           <button
             type="button"
             onClick={next}
-            aria-label="Next track"
+            aria-label={t('nextTrack')}
             tabIndex={isVisible ? 0 : -1}
             className="rounded p-1.5 text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
           >
@@ -332,15 +334,15 @@ export function PlayerBar(): React.JSX.Element {
         <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
           {/* Elapsed / total time */}
           <span className="shrink-0 tabular-nums text-xs text-gray-500 dark:text-gray-400" aria-live="off">
-            <span className="sr-only">Position: </span>
+            <span className="sr-only">{t('position')}</span>
             <span data-testid="player-position">{formatTime(position)}</span>
             <span aria-hidden="true"> / </span>
-            <span className="sr-only"> of </span>
+            <span className="sr-only">{t('of')}</span>
             <span data-testid="player-duration">{formatTime(duration)}</span>
           </span>
 
           {/* Volume — desktop only */}
-          <div className="hidden items-center gap-1.5 md:flex" aria-label="Volume control">
+          <div className="hidden items-center gap-1.5 md:flex" aria-label={t('volumeControlLabel')}>
             <VolumeIcon level={volume} />
             <input
               type="range"
@@ -349,7 +351,7 @@ export function PlayerBar(): React.JSX.Element {
               step={0.01}
               value={volume}
               onChange={handleVolume}
-              aria-label="Volume"
+              aria-label={t('volume')}
               aria-valuemin={0}
               aria-valuemax={1}
               aria-valuenow={Math.round(volume * 100) / 100}
@@ -363,7 +365,7 @@ export function PlayerBar(): React.JSX.Element {
           <button
             type="button"
             onClick={toggleQueue}
-            aria-label={isQueueOpen ? 'Close queue' : 'Open queue'}
+            aria-label={isQueueOpen ? t('closeQueue') : t('openQueue')}
             aria-pressed={isQueueOpen}
             tabIndex={isVisible ? 0 : -1}
             className={[

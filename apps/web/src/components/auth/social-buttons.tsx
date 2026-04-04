@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { signIn } from '@/lib/auth-client';
 import type { EnabledSocialProvider } from '@/lib/social-providers';
 
@@ -10,7 +11,7 @@ interface SocialButtonsProps {
 }
 
 interface ProviderConfig {
-  label: string;
+  labelKey: keyof ReturnType<typeof useTranslations<'auth.social'>>;
   icon: React.JSX.Element;
   /** Tailwind classes for the button */
   className: string;
@@ -66,35 +67,33 @@ function MicrosoftIcon(): React.JSX.Element {
   );
 }
 
-const PROVIDER_CONFIG: Record<EnabledSocialProvider, ProviderConfig> = {
-  google: {
-    label: 'Continue with Google',
-    icon: <GoogleIcon />,
-    className:
-      'w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  },
-  apple: {
-    // Apple HIG: black pill button, white text, system font
-    label: 'Sign in with Apple',
-    icon: <AppleIcon />,
-    className:
-      'w-full flex items-center justify-center gap-3 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  },
-  facebook: {
-    label: 'Continue with Facebook',
-    icon: <FacebookIcon />,
-    className:
-      'w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  },
-  microsoft: {
-    label: 'Continue with Microsoft',
-    icon: <MicrosoftIcon />,
-    className:
-      'w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  },
+const PROVIDER_ICONS: Record<EnabledSocialProvider, React.JSX.Element> = {
+  google: <GoogleIcon />,
+  apple: <AppleIcon />,
+  facebook: <FacebookIcon />,
+  microsoft: <MicrosoftIcon />,
+};
+
+const PROVIDER_LABEL_KEYS: Record<EnabledSocialProvider, string> = {
+  google: 'continueWithGoogle',
+  apple: 'signInWithApple',
+  facebook: 'continueWithFacebook',
+  microsoft: 'continueWithMicrosoft',
+};
+
+const PROVIDER_CLASS: Record<EnabledSocialProvider, string> = {
+  google:
+    'w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+  apple:
+    'w-full flex items-center justify-center gap-3 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+  facebook:
+    'w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+  microsoft:
+    'w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
 };
 
 export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): React.JSX.Element | null {
+  const t = useTranslations('auth.social');
   const [loadingProvider, setLoadingProvider] = useState<EnabledSocialProvider | null>(null);
 
   if (providers.length === 0) return null;
@@ -116,13 +115,14 @@ export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): R
           <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-3 text-gray-500">or continue with</span>
+          <span className="bg-white px-3 text-gray-500">{t('orContinueWith')}</span>
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-3">
         {providers.map((provider) => {
-          const config = PROVIDER_CONFIG[provider];
+          const labelKey = PROVIDER_LABEL_KEYS[provider];
+          const label = t(labelKey as Parameters<typeof t>[0]);
           const isLoading = loadingProvider === provider;
           return (
             <button
@@ -130,11 +130,11 @@ export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): R
               type="button"
               onClick={() => handleSocialSignIn(provider)}
               disabled={loadingProvider !== null}
-              className={config.className}
-              aria-label={config.label}
+              className={PROVIDER_CLASS[provider]}
+              aria-label={label}
             >
-              {config.icon}
-              {isLoading ? 'Redirecting…' : config.label}
+              {PROVIDER_ICONS[provider]}
+              {isLoading ? t('redirecting') : label}
             </button>
           );
         })}

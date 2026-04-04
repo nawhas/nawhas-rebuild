@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 
 function SunIcon(): React.JSX.Element {
   return (
@@ -49,12 +50,6 @@ const NEXT_THEME: Record<string, string> = {
   dark: 'system',
 };
 
-const ARIA_LABEL: Record<string, string> = {
-  system: 'Switch to light mode',
-  light: 'Switch to dark mode',
-  dark: 'Switch to system mode',
-};
-
 /**
  * Keyboard-accessible theme toggle button — cycles system → light → dark → system.
  *
@@ -65,6 +60,7 @@ const ARIA_LABEL: Record<string, string> = {
  * Uses a `mounted` guard to avoid hydration mismatch (server has no theme state).
  */
 export function ThemeToggle(): React.JSX.Element {
+  const t = useTranslations('common');
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -78,7 +74,7 @@ export function ThemeToggle(): React.JSX.Element {
       <button
         type="button"
         disabled
-        aria-label="Toggle theme"
+        aria-label={t('toggleThemeLabel')}
         className="rounded p-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
       >
         <span className="block h-5 w-5" aria-hidden="true" />
@@ -87,7 +83,14 @@ export function ThemeToggle(): React.JSX.Element {
   }
 
   const currentTheme = theme ?? 'system';
-  const ariaLabel = ARIA_LABEL[currentTheme] ?? 'Switch to light mode';
+
+  const ARIA_LABEL_MAP: Record<string, string> = {
+    system: t('switchToLight'),
+    light: t('switchToDark'),
+    dark: t('switchToSystem'),
+  };
+
+  const ariaLabel = ARIA_LABEL_MAP[currentTheme] ?? t('switchToLight');
 
   function handleClick(): void {
     setTheme(NEXT_THEME[currentTheme] ?? 'light');

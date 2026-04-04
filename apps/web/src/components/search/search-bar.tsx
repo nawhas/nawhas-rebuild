@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useId } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useSearchAutocomplete } from '@/hooks/use-search-autocomplete';
 
 // ---------------------------------------------------------------------------
@@ -50,6 +51,7 @@ export function Spinner() {
  * - Hidden on mobile (`hidden md:block`) — mobile search handled by MobileSearchOverlay
  */
 export function SearchBar() {
+  const t = useTranslations('search');
   const inputId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,9 +106,9 @@ export function SearchBar() {
           aria-expanded={isOpen}
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={activeOptionId}
-          aria-label="Search reciters, albums, and tracks"
+          aria-label={t('inputLabel')}
           aria-busy={isPending}
-          placeholder="Search…"
+          placeholder={t('placeholder')}
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -122,17 +124,17 @@ export function SearchBar() {
         <div
           id={listboxId}
           role="listbox"
-          aria-label="Search results"
+          aria-label={t('resultsLabel')}
           className="absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg"
         >
           {isPending ? (
             <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500" aria-live="polite">
               <Spinner />
-              Searching…
+              {t('searching')}
             </div>
           ) : !hasResults ? (
             <div className="px-4 py-3 text-sm text-gray-500" aria-live="polite">
-              No results for &ldquo;{query}&rdquo;
+              {t('noResults', { query })}
             </div>
           ) : (
             <>
@@ -180,7 +182,7 @@ export function SearchBar() {
                   onClick={closeDropdown}
                   className="flex items-center gap-1 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                 >
-                  <span>See all results for &ldquo;{query}&rdquo;</span>
+                  <span>{t('seeAllResults', { query })}</span>
                   <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path
                       fillRule="evenodd"

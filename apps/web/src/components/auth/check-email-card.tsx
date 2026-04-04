@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { sendVerificationEmail } from '@/lib/auth-client';
 
 export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element {
+  const t = useTranslations('auth.checkEmail');
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   async function handleResend(): Promise<void> {
@@ -38,20 +40,21 @@ export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element
         </svg>
       </div>
 
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Check your inbox</h1>
+      <h1 className="mb-2 text-2xl font-semibold text-gray-900">{t('heading')}</h1>
       <p className="mb-6 text-sm text-gray-600">
         {email ? (
           <>
-            We sent a verification link to{' '}
-            <span className="font-medium text-gray-900">{email}</span>. Click the link to activate
-            your account.
+            {t.rich('descriptionWithEmail', {
+              email,
+              strong: (chunks) => <span className="font-medium text-gray-900">{chunks}</span>,
+            })}
           </>
         ) : (
-          'We sent a verification link to your email address. Click the link to activate your account.'
+          t('descriptionWithoutEmail')
         )}
       </p>
 
-      <p className="mb-1 text-sm text-gray-500">Didn&apos;t receive the email?</p>
+      <p className="mb-1 text-sm text-gray-500">{t('didntReceive')}</p>
 
       {email ? (
         <button
@@ -61,22 +64,22 @@ export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element
           className="text-sm font-medium text-gray-900 underline hover:no-underline disabled:cursor-not-allowed disabled:opacity-60"
         >
           {resendStatus === 'sending'
-            ? 'Sending…'
+            ? t('resendSending')
             : resendStatus === 'sent'
-              ? 'Email sent!'
-              : 'Resend verification email'}
+              ? t('resendSent')
+              : t('resendButton')}
         </button>
       ) : null}
 
       {resendStatus === 'error' && (
         <p role="alert" className="mt-2 text-sm text-red-600">
-          Something went wrong. Please try again.
+          {t('resendError')}
         </p>
       )}
 
       <p className="mt-8 text-center text-sm text-gray-500">
         <Link href="/login" className="font-medium text-gray-900 underline hover:no-underline">
-          Back to sign in
+          {t('backToSignIn')}
         </Link>
       </p>
     </div>
