@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const cdnHostname = process.env.NEXT_PUBLIC_CDN_HOSTNAME;
 const isProd = process.env.NODE_ENV === 'production';
@@ -89,4 +90,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Sentry organisation/project slugs — set these in CI via SENTRY_ORG / SENTRY_PROJECT
+  ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
+  ...(process.env.SENTRY_PROJECT ? { project: process.env.SENTRY_PROJECT } : {}),
+
+  // Auth token used to upload source maps; set SENTRY_AUTH_TOKEN in CI
+  ...(process.env.SENTRY_AUTH_TOKEN ? { authToken: process.env.SENTRY_AUTH_TOKEN } : {}),
+
+  // Only upload source maps in production builds
+  sourcemaps: {
+    disable: process.env.NODE_ENV !== 'production',
+  },
+
+  // Hide the "Sentry is building" progress bar in CI logs
+  silent: !process.env.CI,
+
+  // Prevent Sentry from wrapping server components with extra try/catch —
+  // Next.js already surfaces those errors; double-wrapping adds noise.
+  autoInstrumentServerFunctions: false,
+});
