@@ -43,26 +43,34 @@ function MoonIcon(): React.JSX.Element {
   );
 }
 
+const NEXT_THEME: Record<string, string> = {
+  system: 'light',
+  light: 'dark',
+  dark: 'system',
+};
+
+const ARIA_LABEL: Record<string, string> = {
+  system: 'Switch to light mode',
+  light: 'Switch to dark mode',
+  dark: 'Switch to system mode',
+};
+
 /**
- * Keyboard-accessible theme toggle button — toggles between light and dark.
+ * Keyboard-accessible theme toggle button — cycles system → light → dark → system.
  *
- * Uses `resolvedTheme` so that when theme is "system" it reflects the actual
- * OS preference and a single click always switches to the opposite visual state.
+ * Uses `theme` (not `resolvedTheme`) so the 3-way cycle is testable and the
+ * aria-label always reflects the stored preference, not the OS-resolved value.
  *
  * Client Component — requires useTheme() from next-themes.
  * Uses a `mounted` guard to avoid hydration mismatch (server has no theme state).
  */
 export function ThemeToggle(): React.JSX.Element {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  function handleClick(): void {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  }
 
   if (!mounted) {
     // Render placeholder with identical dimensions to avoid layout shift
@@ -78,16 +86,21 @@ export function ThemeToggle(): React.JSX.Element {
     );
   }
 
-  const isDark = resolvedTheme === 'dark';
+  const currentTheme = theme ?? 'system';
+  const ariaLabel = ARIA_LABEL[currentTheme] ?? 'Switch to light mode';
+
+  function handleClick(): void {
+    setTheme(NEXT_THEME[currentTheme] ?? 'light');
+  }
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={ariaLabel}
       className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
     >
-      {isDark ? <SunIcon /> : <MoonIcon />}
+      {currentTheme === 'light' ? <MoonIcon /> : <SunIcon />}
     </button>
   );
 }
