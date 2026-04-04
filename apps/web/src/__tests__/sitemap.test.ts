@@ -158,11 +158,7 @@ describe('sitemap', () => {
     const { db } = await import('@nawhas/db');
     const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 
-    let callCount = 0;
-    mockDb.select.mockImplementation(() => {
-      callCount++;
-      return makeSelectChain([]);
-    });
+    mockDb.select.mockImplementation(() => makeSelectChain([]));
 
     const sitemapModule = await import('../../app/sitemap');
     const sitemap = sitemapModule.default;

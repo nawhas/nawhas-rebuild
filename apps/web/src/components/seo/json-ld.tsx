@@ -13,7 +13,6 @@ export function JsonLd({ data }: JsonLdProps): React.JSX.Element {
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );
