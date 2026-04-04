@@ -8,6 +8,7 @@ import { UserMenu } from './user-menu';
 import { MobileNav } from './mobile-nav';
 import { SearchBar } from '@/components/search/search-bar';
 import { MobileSearchOverlay } from '@/components/search/mobile-search-overlay';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export const NAV_LINKS = [
   { href: '/', label: 'Home' },
@@ -64,8 +65,9 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
           {/* Desktop search bar — hidden on mobile */}
           <SearchBar />
 
-          {/* Desktop auth state — hidden on mobile */}
-          <div className="hidden items-center gap-4 md:flex">
+          {/* Desktop auth + theme toggle — hidden on mobile */}
+          <div className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
             {user ? (
               <UserMenu user={user} />
             ) : (

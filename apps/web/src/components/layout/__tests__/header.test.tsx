@@ -58,6 +58,10 @@ vi.mock('@/components/search/mobile-search-overlay', () => ({
   MobileSearchOverlay: () => <div data-testid="mobile-search-overlay" />,
 }));
 
+vi.mock('@/components/theme/ThemeToggle', () => ({
+  ThemeToggle: () => <button data-testid="theme-toggle" aria-label="Toggle theme" />,
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -103,6 +107,11 @@ describe('SiteHeader', () => {
   it('renders MobileNav', async () => {
     render(await SiteHeader());
     expect(screen.getByTestId('mobile-nav')).toBeDefined();
+  });
+
+  it('renders ThemeToggle', async () => {
+    render(await SiteHeader());
+    expect(screen.getByTestId('theme-toggle')).toBeDefined();
   });
 
   it('renders NavLinks with the three nav links', async () => {

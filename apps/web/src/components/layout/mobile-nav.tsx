@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth-client';
 import { NavLinks } from './nav-links';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import type { User } from '@/lib/auth';
 
 interface MobileNavProps {
@@ -85,6 +86,13 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
           <NavLinks links={links} className="flex flex-col" onClick={close} />
 
           <div className="mt-4 border-t border-gray-100 pt-4">
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+              <ThemeToggle />
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-4">
             {user ? (
               <div className="space-y-1">
                 <div className="px-3 py-2">
