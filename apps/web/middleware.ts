@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './src/i18n/routing';
+
+const handleI18nRouting = createMiddleware(routing);
 
 /**
  * Routes that require authentication.
@@ -28,52 +32,52 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
 
-  // Always forward x-pathname so Server Components (e.g. ProtectedLayout) can
-  // read the current request path as a fallback in edge cases where middleware
-  // does not redirect (e.g. DB unavailable during session validation).
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-pathname', pathname);
+  if (isProtected) {
+    // Better Auth stores the session token in a cookie named 'better-auth.session_token'
+    const sessionToken = request.cookies.get('better-auth.session_token');
 
-  if (!isProtected) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
-  }
-
-  // Better Auth stores the session token in a cookie named 'better-auth.session_token'
-  const sessionToken = request.cookies.get('better-auth.session_token');
-
-  if (!sessionToken?.value) {
-    return redirectToLogin(request, pathname);
-  }
-
-  // Cookie present — validate the actual session by calling the auth endpoint.
-  // This catches stale or revoked tokens that would otherwise bypass the cookie-
-  // existence check above and reach ProtectedLayout, where x-pathname header
-  // forwarding is unreliable in the Next.js 15 dev server / Docker environment.
-  //
-  // /api/auth is excluded from the middleware matcher so this fetch does not
-  // recurse through middleware. Stays in Edge runtime — no Node.js imports needed.
-  try {
-    const sessionUrl = buildGetSessionUrl(request);
-    const sessionRes = await fetch(sessionUrl.href, {
-      headers: {
-        Cookie: request.headers.get('cookie') ?? '',
-        Origin: request.nextUrl.origin,
-      },
-    });
-    const sessionData = sessionRes.ok
-      ? (await sessionRes.json() as { user?: unknown } | null)
-      : null;
-    if (!sessionData?.user) {
+    if (!sessionToken?.value) {
       return redirectToLogin(request, pathname);
     }
-  } catch {
-    // Session probe failed (network, cold start). Do not next() into protected
-    // RSC — ProtectedLayout would redirect with callbackUrl=/ when x-pathname
-    // is missing. Send user to login with the correct callback instead.
-    return redirectToLogin(request, pathname);
+
+    // Cookie present — validate the actual session by calling the auth endpoint.
+    // This catches stale or revoked tokens that would otherwise bypass the cookie-
+    // existence check above and reach ProtectedLayout, where x-pathname header
+    // forwarding is unreliable in the Next.js 15 dev server / Docker environment.
+    //
+    // /api/auth is excluded from the middleware matcher so this fetch does not
+    // recurse through middleware. Stays in Edge runtime — no Node.js imports needed.
+    try {
+      const sessionUrl = buildGetSessionUrl(request);
+      const sessionRes = await fetch(sessionUrl.href, {
+        headers: {
+          Cookie: request.headers.get('cookie') ?? '',
+          Origin: request.nextUrl.origin,
+        },
+      });
+      const sessionData = sessionRes.ok
+        ? (await sessionRes.json() as { user?: unknown } | null)
+        : null;
+      if (!sessionData?.user) {
+        return redirectToLogin(request, pathname);
+      }
+    } catch {
+      // Session probe failed (network, cold start). Do not next() into protected
+      // RSC — ProtectedLayout would redirect with callbackUrl=/ when x-pathname
+      // is missing. Send user to login with the correct callback instead.
+      return redirectToLogin(request, pathname);
+    }
   }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  // Run i18n routing — handles locale detection and routing for all locales.
+  const response = handleI18nRouting(request);
+
+  // Forward x-pathname to RSC. next-intl's createMiddleware returns its own
+  // NextResponse.next() which sets its locale headers via x-middleware-request-*
+  // internally. We add x-pathname the same way so ProtectedLayout can read it.
+  response.headers.set('x-middleware-request-x-pathname', pathname);
+
+  return response;
 }
 
 export const config = {

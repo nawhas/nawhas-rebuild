@@ -8,6 +8,8 @@ import { PlayerBar } from '@/components/player/PlayerBar';
 import { QueuePanel } from '@/components/player/QueuePanel';
 import { MobilePlayerOverlay } from '@/components/player/MobilePlayerOverlay';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 
 // Load Inter for primary UI text.
 // display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
@@ -59,24 +61,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}): React.JSX.Element {
+}): Promise<React.JSX.Element> {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
       <body suppressHydrationWarning>
-        <ThemeProvider>
-          <AudioProvider>
-            <PageLayout header={<SiteHeader />} footer={<></>}>
-              {children}
-            </PageLayout>
-            <QueuePanel />
-            <PlayerBar />
-            <MobilePlayerOverlay />
-          </AudioProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ThemeProvider>
+            <AudioProvider>
+              <PageLayout header={<SiteHeader />} footer={<></>}>
+                {children}
+              </PageLayout>
+              <QueuePanel />
+              <PlayerBar />
+              <MobilePlayerOverlay />
+            </AudioProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
