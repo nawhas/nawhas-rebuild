@@ -7,6 +7,7 @@ import { AudioProvider } from '@/components/providers/audio-provider';
 import { PlayerBar } from '@/components/player/PlayerBar';
 import { QueuePanel } from '@/components/player/QueuePanel';
 import { MobilePlayerOverlay } from '@/components/player/MobilePlayerOverlay';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 // Load Inter for primary UI text.
 // display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
@@ -66,14 +67,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
       <body suppressHydrationWarning>
-        <AudioProvider>
-          <PageLayout header={<SiteHeader />} footer={<></>}>
-            {children}
-          </PageLayout>
-          <QueuePanel />
-          <PlayerBar />
-          <MobilePlayerOverlay />
-        </AudioProvider>
+        <ThemeProvider>
+          <AudioProvider>
+            <PageLayout header={<SiteHeader />} footer={<></>}>
+              {children}
+            </PageLayout>
+            <QueuePanel />
+            <PlayerBar />
+            <MobilePlayerOverlay />
+          </AudioProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
