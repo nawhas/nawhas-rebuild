@@ -17,7 +17,8 @@ export function getDb(): PostgresJsDatabase<Schema> {
   if (!connectionString) {
     throw new Error('DATABASE_URL environment variable is required');
   }
-  const client = postgres(connectionString);
+  const max = parseInt(process.env['DATABASE_POOL_MAX'] ?? '10', 10);
+  const client = postgres(connectionString, { max });
   _db = drizzle(client, { schema });
   return _db;
 }

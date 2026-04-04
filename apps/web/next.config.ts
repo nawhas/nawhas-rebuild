@@ -1,6 +1,36 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const cdnHostname = process.env.NEXT_PUBLIC_CDN_HOSTNAME;
+const isProd = process.env.NODE_ENV === 'production';
+
+// S3/MinIO sources used in CSP (dev: localhost + minio container, prod: CDN hostname)
+const s3Sources = [
+  'http://localhost:9000',
+  'http://minio:9000',
+  ...(cdnHostname ? [`https://${cdnHostname}`] : []),
+].join(' ');
+
+// Permissive CSP baseline — allows YouTube embeds, S3/MinIO audio, Next.js inline scripts
+function buildCsp(): string {
+  const directives = [
+    "default-src 'self'",
+    // Next.js App Router requires unsafe-inline; unsafe-eval needed for dev HMR
+    `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://www.youtube.com https://www.youtube-nocookie.com`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src 'self' data: blob: https: ${s3Sources}`,
+    `media-src 'self' blob: https: ${s3Sources}`,
+    'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
+    // connect-src: same-origin API, Sentry error reporting, S3 audio presigned URLs
+    // Localhost WebSocket (Next.js HMR) is dev-only — must not appear in production headers.
+    `connect-src 'self' https://sentry.io https://*.ingest.sentry.io ${s3Sources}${isProd ? '' : ' ws://localhost:3000 wss://localhost:3000'}`,
+    "font-src 'self' data:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ];
+  return directives.join('; ');
+}
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -38,6 +68,46 @@ const nextConfig: NextConfig = {
         : []),
     ],
   },
+  async headers() {
+    const securityHeaders = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-XSS-Protection', value: '1; mode=block' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+      { key: 'Content-Security-Policy', value: buildCsp() },
+      // HSTS only in production — not safe to preload in dev (localhost not HTTPS)
+      ...(isProd
+        ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }]
+        : []),
+    ];
+
+    return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+    ];
+  },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Sentry organisation/project slugs — set these in CI via SENTRY_ORG / SENTRY_PROJECT
+  ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
+  ...(process.env.SENTRY_PROJECT ? { project: process.env.SENTRY_PROJECT } : {}),
+
+  // Auth token used to upload source maps; set SENTRY_AUTH_TOKEN in CI
+  ...(process.env.SENTRY_AUTH_TOKEN ? { authToken: process.env.SENTRY_AUTH_TOKEN } : {}),
+
+  // Only upload source maps in production builds
+  sourcemaps: {
+    disable: process.env.NODE_ENV !== 'production',
+  },
+
+  // Hide the "Sentry is building" progress bar in CI logs
+  silent: !process.env.CI,
+
+  // Prevent Sentry from wrapping server components with extra try/catch —
+  // Next.js already surfaces those errors; double-wrapping adds noise.
+  autoInstrumentServerFunctions: false,
+});
