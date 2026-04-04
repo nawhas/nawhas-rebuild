@@ -27,11 +27,11 @@ export default async function SettingsPage(): Promise<React.JSX.Element> {
     <main id="main-content" className="py-10">
       <Container>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage your email, password, and preferences.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your email, password, and preferences.</p>
         </header>
 
-        <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+        <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-900">
           {/* Email */}
           <div className="px-6 py-8">
             <ChangeEmailForm currentEmail={user.email} />

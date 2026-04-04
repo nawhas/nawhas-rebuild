@@ -101,8 +101,8 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
         'shrink-0 rounded p-1 transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900',
         stateLoaded ? 'opacity-100' : 'opacity-0',
         isSaved
-          ? 'text-gray-900 hover:text-gray-600'
-          : 'text-gray-400 hover:text-gray-700',
+          ? 'text-gray-900 hover:text-gray-600 dark:text-white dark:hover:text-gray-300'
+          : 'text-gray-400 hover:text-gray-700 dark:text-gray-600 dark:hover:text-gray-400',
         isPending ? 'pointer-events-none opacity-60' : '',
         className,
       ]

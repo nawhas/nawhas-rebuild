@@ -25,14 +25,14 @@ export function PopularTracks({ tracks }: PopularTracksProps): React.JSX.Element
     <section aria-labelledby="popular-tracks-heading">
       <h2
         id="popular-tracks-heading"
-        className="mb-6 text-xl font-semibold text-gray-900"
+        className="mb-6 text-xl font-semibold text-gray-900 dark:text-white"
       >
         Popular Tracks
       </h2>
 
       <ol
         aria-label="Popular tracks"
-        className="divide-y divide-gray-100 rounded-lg border border-gray-200"
+        className="divide-y divide-gray-100 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-700"
       >
         {tracks.map((track, index) => (
           <li
@@ -42,19 +42,19 @@ export function PopularTracks({ tracks }: PopularTracksProps): React.JSX.Element
             {/* Track number */}
             <span
               aria-hidden="true"
-              className="w-6 shrink-0 text-center text-sm text-gray-400"
+              className="w-6 shrink-0 text-center text-sm text-gray-400 dark:text-gray-600"
             >
               {index + 1}
             </span>
 
             {/* Track title */}
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900 dark:text-white">
               {track.title}
             </span>
 
             {/* Duration */}
             {track.duration != null && (
-              <span className="shrink-0 text-xs tabular-nums text-gray-500">
+              <span className="shrink-0 text-xs tabular-nums text-gray-500 dark:text-gray-400">
                 <span className="sr-only">Duration: </span>
                 {formatDuration(track.duration)}
               </span>

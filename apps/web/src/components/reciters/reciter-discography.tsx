@@ -13,12 +13,12 @@ interface ReciterDiscographyProps {
 export function ReciterDiscography({ albums }: ReciterDiscographyProps): React.JSX.Element {
   return (
     <section aria-labelledby="discography-heading">
-      <h2 id="discography-heading" className="mb-6 text-xl font-semibold text-gray-900">
+      <h2 id="discography-heading" className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
         Discography
       </h2>
 
       {albums.length === 0 ? (
-        <p className="text-gray-500">No albums available yet.</p>
+        <p className="text-gray-500 dark:text-gray-400">No albums available yet.</p>
       ) : (
         <ul
           role="list"

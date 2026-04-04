@@ -60,7 +60,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
         {/* Profile header card */}
         <section
           aria-label="Profile"
-          className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+          className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
         >
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {/* Avatar */}
@@ -76,16 +76,16 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
             {/* Name / email */}
             <div className="flex flex-col gap-1 text-center sm:text-left">
               <DisplayNameEdit initialName={user.name} />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {user.email}{' '}
                 <Link
                   href="/settings"
-                  className="text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline"
+                  className="text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline dark:text-gray-500 dark:hover:text-gray-400"
                 >
                   (change in settings)
                 </Link>
               </p>
-              <p className="mt-1 text-xs text-gray-400">Joined {joinedDate}</p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Joined {joinedDate}</p>
             </div>
           </div>
         </section>
@@ -95,28 +95,28 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
           aria-label="Statistics"
           className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-2"
         >
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-3xl font-bold text-gray-900">{savedCount}</p>
-            <p className="mt-1 text-sm text-gray-500">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{savedCount}</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Saved track{savedCount !== 1 ? 's' : ''}
             </p>
             <Link
               href="/library/tracks"
-              className="mt-2 inline-block text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline"
+              className="mt-2 inline-block text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline dark:text-gray-500 dark:hover:text-gray-400"
             >
               View library →
             </Link>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-3xl font-bold text-gray-900">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {recentHistory.items.length}
               {recentHistory.nextCursor !== null ? '+' : ''}
             </p>
-            <p className="mt-1 text-sm text-gray-500">Tracks played</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Tracks played</p>
             <Link
               href="/history"
-              className="mt-2 inline-block text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline"
+              className="mt-2 inline-block text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline dark:text-gray-500 dark:hover:text-gray-400"
             >
               View history →
             </Link>
@@ -126,34 +126,34 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
         {/* Recent history */}
         <section aria-label="Recent listening history">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Recently Played</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recently Played</h2>
             <Link
               href="/history"
-              className="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none focus:underline"
+              className="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
             >
               See all →
             </Link>
           </div>
 
           {recentHistory.items.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-400">
+            <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
               No history yet — play a track to get started.
             </p>
           ) : (
             <ol
               aria-label="Recent tracks"
-              className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white"
+              className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-700 dark:bg-gray-900"
             >
               {recentHistory.items.map((entry) => (
                 <li key={entry.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                       {entry.track.title}
                     </p>
                   </div>
                   <time
                     dateTime={entry.playedAt}
-                    className="shrink-0 text-xs text-gray-400"
+                    className="shrink-0 text-xs text-gray-400 dark:text-gray-600"
                     title={new Date(entry.playedAt).toLocaleString()}
                   >
                     {new Date(entry.playedAt).toLocaleDateString(undefined, {

@@ -48,7 +48,7 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
   return (
     <li
       className={`group flex items-center gap-3 px-4 py-3 transition-colors ${
-        isActive ? 'bg-gray-50' : 'hover:bg-gray-50'
+        isActive ? 'bg-gray-50 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
       }`}
     >
       {/* Play/pause button — replaces track number on hover, always shows icon when active */}
@@ -58,7 +58,7 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
       <Link
         href={href}
         className={`min-w-0 flex-1 truncate text-sm font-medium focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 ${
-          isCurrentlyPlaying ? 'text-gray-900' : 'text-gray-900 hover:text-gray-700'
+          isCurrentlyPlaying ? 'text-gray-900 dark:text-white' : 'text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300'
         }`}
         tabIndex={0}
       >
@@ -66,7 +66,7 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
         {isActive && (
           <span
             aria-label={isCurrentlyPlaying ? 'currently playing' : 'paused'}
-            className="ml-2 inline-block h-2 w-2 rounded-full bg-gray-900 align-middle"
+            className="ml-2 inline-block h-2 w-2 rounded-full bg-gray-900 align-middle dark:bg-gray-100"
           />
         )}
       </Link>
@@ -74,11 +74,11 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
       {/* Save + Like — visible on hover */}
       <SaveButton
         trackId={track.id}
-        className="opacity-0 hover:bg-gray-100 focus:opacity-100 group-hover:opacity-100"
+        className="opacity-0 hover:bg-gray-100 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-700"
       />
       <LikeButton
         trackId={track.id}
-        className="opacity-0 hover:bg-gray-100 focus:opacity-100 group-hover:opacity-100"
+        className="opacity-0 hover:bg-gray-100 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-700"
       />
 
       {/* Add to queue — visible on hover */}
@@ -90,7 +90,7 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
           addToQueue(track);
         }}
         aria-label={`Add ${track.title} to queue`}
-        className="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 group-hover:opacity-100"
+        className="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 group-hover:opacity-100 dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-400"
       >
         <AddToQueueIcon />
       </button>
@@ -98,7 +98,7 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
       {/* Duration */}
       {track.duration != null && (
         <span
-          className="shrink-0 text-xs tabular-nums text-gray-500"
+          className="shrink-0 text-xs tabular-nums text-gray-500 dark:text-gray-400"
           aria-hidden="true"
         >
           {formatDuration(track.duration)}

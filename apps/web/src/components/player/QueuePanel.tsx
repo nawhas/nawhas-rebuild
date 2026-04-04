@@ -15,7 +15,7 @@ import {
 
 function SpeakerIcon(): React.JSX.Element {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-gray-900">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-gray-900 dark:text-white">
       <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
     </svg>
   );
@@ -201,17 +201,17 @@ export function QueuePanel(): React.JSX.Element {
           // Leave room for the fixed PlayerBar at the bottom (~65px)
           'h-[calc(100vh-65px)]',
           'w-full sm:w-80 md:w-96',
-          'border-l border-gray-200 bg-white shadow-xl',
+          'border-l border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900',
           'transition-transform duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : 'translate-x-full',
         ].join(' ')}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3">
-          <h2 className="text-sm font-semibold text-gray-900">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
             Up next
             {queue.length > 0 && (
-              <span className="ml-2 text-xs font-normal text-gray-500">
+              <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
                 {queue.length} track{queue.length !== 1 ? 's' : ''}
               </span>
             )}
@@ -221,7 +221,7 @@ export function QueuePanel(): React.JSX.Element {
             type="button"
             onClick={toggleQueue}
             aria-label="Close queue"
-            className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
+            className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
           >
             <CloseIcon />
           </button>
@@ -230,8 +230,8 @@ export function QueuePanel(): React.JSX.Element {
         {/* Track list */}
         {queue.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm text-gray-500">Your queue is empty.</p>
-            <p className="text-xs text-gray-500">Play a track or album to get started.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Your queue is empty.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Play a track or album to get started.</p>
           </div>
         ) : (
           <ol
@@ -253,10 +253,10 @@ export function QueuePanel(): React.JSX.Element {
                   onDragEnd={handleDragEnd}
                   className={[
                     'group flex cursor-grab items-center gap-2 px-3 py-2.5 active:cursor-grabbing',
-                    'border-b border-gray-100 last:border-b-0',
+                    'border-b border-gray-100 last:border-b-0 dark:border-gray-800',
                     'transition-colors',
-                    isActive ? 'bg-gray-50' : 'hover:bg-gray-50',
-                    isDragTarget ? 'border-t-2 border-t-gray-900' : '',
+                    isActive ? 'bg-gray-50 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
+                    isDragTarget ? 'border-t-2 border-t-gray-900 dark:border-t-gray-100' : '',
                   ].join(' ')}
                   aria-label={[
                     `Track ${index + 1}: ${track.title}`,
@@ -284,7 +284,7 @@ export function QueuePanel(): React.JSX.Element {
                   <div className="min-w-0 flex-1">
                     <p
                       className={`truncate text-sm font-medium ${
-                        isActive ? 'text-gray-900' : 'text-gray-700'
+                        isActive ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {track.title}
@@ -295,7 +295,7 @@ export function QueuePanel(): React.JSX.Element {
                   {track.duration != null && (
                     <span
                       aria-hidden="true"
-                      className="shrink-0 text-xs tabular-nums text-gray-400"
+                      className="shrink-0 text-xs tabular-nums text-gray-400 dark:text-gray-500"
                     >
                       {formatDuration(track.duration)}
                     </span>
@@ -311,7 +311,7 @@ export function QueuePanel(): React.JSX.Element {
                       onClick={() => index > 0 ? reorderQueue(index, index - 1) : undefined}
                       aria-label={`Move ${track.title} up`}
                       disabled={index === 0}
-                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30"
+                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     >
                       <ChevronUpIcon />
                     </button>
@@ -320,7 +320,7 @@ export function QueuePanel(): React.JSX.Element {
                       onClick={() => index < queue.length - 1 ? reorderQueue(index, index + 1) : undefined}
                       aria-label={`Move ${track.title} down`}
                       disabled={index === queue.length - 1}
-                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30"
+                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     >
                       <ChevronDownSmIcon />
                     </button>
@@ -331,7 +331,7 @@ export function QueuePanel(): React.JSX.Element {
                     type="button"
                     onClick={() => removeFromQueue(index)}
                     aria-label={`Remove ${track.title} from queue`}
-                    className="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 group-hover:opacity-100"
+                    className="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                   >
                     <RemoveIcon />
                   </button>

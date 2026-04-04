@@ -15,7 +15,7 @@ export default async function VerifyEmailPage({
   if (error) {
     const isExpired = error === 'TOKEN_EXPIRED';
     return (
-      <div className="rounded-lg bg-white px-8 py-10 shadow-sm ring-1 ring-gray-900/5">
+      <div className="rounded-lg bg-white px-8 py-10 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-900 dark:ring-gray-700">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -34,10 +34,10 @@ export default async function VerifyEmailPage({
           </svg>
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold text-gray-900">
+        <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
           {isExpired ? 'Link expired' : 'Invalid link'}
         </h1>
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           {isExpired
             ? 'This verification link has expired. Verification links are valid for 1 hour.'
             : 'This verification link is invalid or has already been used.'}
@@ -50,8 +50,8 @@ export default async function VerifyEmailPage({
           Resend verification email
         </Link>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          <Link href="/login" className="font-medium text-gray-900 underline hover:no-underline">
+        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <Link href="/login" className="font-medium text-gray-900 underline hover:no-underline dark:text-white">
             Back to sign in
           </Link>
         </p>
@@ -75,8 +75,8 @@ export default async function VerifyEmailPage({
         </svg>
       </div>
 
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Email verified!</h1>
-      <p className="mb-8 text-sm text-gray-600">
+      <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">Email verified!</h1>
+      <p className="mb-8 text-sm text-gray-600 dark:text-gray-400">
         Your email address has been verified. You can now sign in to your account.
       </p>
 

@@ -19,7 +19,7 @@ export function FeaturedReciters({ reciters }: FeaturedRecitersProps): React.JSX
     <section aria-labelledby="featured-reciters-heading">
       <h2
         id="featured-reciters-heading"
-        className="mb-6 text-xl font-semibold text-gray-900"
+        className="mb-6 text-xl font-semibold text-gray-900 dark:text-white"
       >
         Featured Reciters
       </h2>
