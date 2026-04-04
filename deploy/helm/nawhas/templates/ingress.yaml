@@ -1,0 +1,104 @@
+{{- if .Values.ingress.enabled }}
+# Main app ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nawhas-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: nawhas-web
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tlsSecretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nawhas-web
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}
+
+---
+{{- if .Values.minio.enabled }}
+# MinIO / S3 subdomain ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nawhas-minio
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: nawhas-minio
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - s3.{{ .Values.ingress.host }}
+      secretName: nawhas-minio-tls
+  {{- end }}
+  rules:
+    - host: s3.{{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: {{ .Values.minio.port }}
+{{- end }}
+
+---
+{{- if .Values.mailhog.enabled }}
+# MailHog SMTP trap subdomain ingress (staging only)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nawhas-mailhog
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: nawhas-mailhog
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - mail.{{ .Values.ingress.host }}
+      secretName: nawhas-mailhog-tls
+  {{- end }}
+  rules:
+    - host: mail.{{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailhog
+                port:
+                  number: 8025
+{{- end }}

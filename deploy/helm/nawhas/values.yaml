@@ -1,0 +1,68 @@
+# Base values — all optional infrastructure disabled by default.
+# Override with values-staging.yaml or values-production.yaml.
+
+image:
+  repository: ghcr.io/nawhas/nawhas-web
+  tag: "latest"           # overridden by CI at deploy time with git SHA
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: nginx
+  host: nawhas.cititech.tech
+  tls: false
+  tlsSecretName: nawhas-tls
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+# Optional infrastructure toggles — disabled by default
+minio:
+  enabled: false
+  host: ""
+  port: 9000
+
+mailhog:
+  enabled: false   # MailHog SMTP trap for staging
+
+pgbouncer:
+  enabled: false
+  maxClientConn: 100
+  defaultPoolSize: 20
+
+# Resource limits — required on all K8s deployments
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# Application environment — non-secret values only.
+# Secrets are injected from the SOPS-encrypted secrets file via a K8s Secret.
+env:
+  NEXT_PUBLIC_BASE_URL: "https://nawhas.cititech.tech"
+  NODE_ENV: "production"
+  PORT: "3000"
+
+# Name of the K8s Secret (created from SOPS-decrypted secrets) that holds all secret env vars
+secretName: nawhas-secrets
+
+# Namespace to deploy into
+namespace: nawhas
+
+# Image pull secret name (if using ghcr.io with auth)
+imagePullSecrets: []

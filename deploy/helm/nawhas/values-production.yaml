@@ -1,0 +1,28 @@
+# Production overrides — applied on top of values.yaml.
+# DO NOT store real values here — all secrets go in secrets/production.yaml.enc.
+
+image:
+  tag: "OVERRIDE_AT_DEPLOY"  # CI injects the git SHA at deploy time
+
+ingress:
+  host: nawhas.com
+  tls: true
+  tlsSecretName: nawhas-prod-tls
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+env:
+  NEXT_PUBLIC_BASE_URL: "https://nawhas.com"
+  NODE_ENV: "production"
+  PORT: "3000"
+
+secretName: nawhas-production-secrets
+namespace: nawhas-production
+
+replicaCount: 2
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70

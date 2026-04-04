@@ -1,0 +1,26 @@
+# SOPS + age encryption configuration.
+#
+# SETUP:
+#   1. Install: brew install sops age  (or apt/dnf equivalent)
+#   2. Generate keypairs:
+#        age-keygen -o staging.key      # prints public key to stdout
+#        age-keygen -o production.key
+#   3. Store PRIVATE keys as GitHub Actions secrets:
+#        AGE_PRIVATE_KEY_STAGING
+#        AGE_PRIVATE_KEY_PRODUCTION
+#   4. Replace the placeholder public keys below with the generated public keys.
+#   5. Encrypt secrets:
+#        sops --encrypt deploy/helm/nawhas/secrets/staging.yaml \
+#          > deploy/helm/nawhas/secrets/staging.yaml.enc
+#
+# NEVER commit plaintext secret files — only *.yaml.enc files are safe to commit.
+# Plaintext secrets/*.yaml files are blocked by .gitignore.
+
+creation_rules:
+  - path_regex: deploy/helm/nawhas/secrets/staging\.yaml$
+    age: >-
+      age1REPLACE_WITH_STAGING_PUBLIC_KEY
+
+  - path_regex: deploy/helm/nawhas/secrets/production\.yaml$
+    age: >-
+      age1REPLACE_WITH_PRODUCTION_PUBLIC_KEY

@@ -1,0 +1,47 @@
+# ApplicationSet — manages both staging and production from a single resource.
+# Recommended for multi-env management; replace per-env Application YAMLs when
+# ready to standardise further.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nawhas
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - environment: staging
+            namespace: nawhas-staging
+            valueFile: values-staging.yaml
+            secretFile: secrets://secrets/staging.yaml.enc
+            targetRevision: HEAD
+            automated: "true"
+          - environment: production
+            namespace: nawhas-production
+            valueFile: values-production.yaml
+            secretFile: secrets://secrets/production.yaml.enc
+            targetRevision: HEAD
+            automated: "false"
+  template:
+    metadata:
+      name: "nawhas-{{environment}}"
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/nawhas/nawhas-rebuild
+        targetRevision: "{{targetRevision}}"
+        path: deploy/helm/nawhas
+        helm:
+          valueFiles:
+            - values.yaml
+            - "{{valueFile}}"
+            - "{{secretFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true

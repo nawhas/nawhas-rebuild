@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nawhas-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: nawhas-web
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: nawhas-web
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
