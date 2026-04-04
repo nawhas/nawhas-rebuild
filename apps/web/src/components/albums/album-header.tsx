@@ -23,6 +23,7 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
             src={album.artworkUrl}
             alt={`${album.title} album cover`}
             fill
+            priority
             className="object-cover"
             sizes="(max-width: 640px) 192px, 224px"
           />
