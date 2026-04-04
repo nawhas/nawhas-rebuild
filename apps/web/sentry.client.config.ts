@@ -9,15 +9,11 @@ if (process.env.NODE_ENV === 'production') {
     // Capture 10% of transactions for performance monitoring
     tracesSampleRate: 0.1,
 
-    // Capture replays only for sessions where an error occurred
-    replaysOnErrorSampleRate: 1.0,
-    replaysSessionSampleRate: 0,
-
-    integrations: [
-      Sentry.replayIntegration({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-    ],
+    // @sentry/nextjs v10 auto-includes Replay in default integrations.
+    // Replay adds ~50 kB gz to the initial client bundle but we do not use
+    // session recording (replaysSessionSampleRate: 0). Explicitly remove it
+    // to keep the First Load JS below the 200 kB budget.
+    integrations: (integrations) =>
+      integrations.filter((integration) => integration.name !== 'Replay'),
   });
 }

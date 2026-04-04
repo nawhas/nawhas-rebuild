@@ -5,8 +5,7 @@ import { SiteHeader } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
 import { AudioProvider } from '@/components/providers/audio-provider';
 import { PlayerBar } from '@/components/player/PlayerBar';
-import { QueuePanel } from '@/components/player/QueuePanel';
-import { MobilePlayerOverlay } from '@/components/player/MobilePlayerOverlay';
+import { PlayerPanels } from '@/components/player/PlayerPanels';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
@@ -78,9 +77,8 @@ export default async function RootLayout({
               <PageLayout header={<SiteHeader />} footer={<></>}>
                 {children}
               </PageLayout>
-              <QueuePanel />
+              <PlayerPanels />
               <PlayerBar />
-              <MobilePlayerOverlay />
             </AudioProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
