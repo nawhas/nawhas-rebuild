@@ -78,6 +78,7 @@ async function uploadFixtures(): Promise<{
           Key: key,
           Body: PLACEHOLDER_MP3,
           ContentType: 'audio/mpeg',
+          CacheControl: 'public, max-age=31536000, immutable',
         }),
       );
       console.log(`  ✓ ${publicBaseUrl}/${key}`);
@@ -91,6 +92,7 @@ async function uploadFixtures(): Promise<{
           Key: key,
           Body: PLACEHOLDER_JPEG,
           ContentType: 'image/jpeg',
+          CacheControl: 'public, max-age=31536000, immutable',
         }),
       );
       console.log(`  ✓ ${publicImagesUrl}/${key}`);
