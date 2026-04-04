@@ -21,8 +21,9 @@ function buildCsp(): string {
     `img-src 'self' data: blob: https: ${s3Sources}`,
     `media-src 'self' blob: https: ${s3Sources}`,
     'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
-    // connect-src: same-origin API, S3 audio presigned URLs, Next.js dev HMR websocket
-    `connect-src 'self' https: ${s3Sources} ws://localhost:3000 wss://localhost:3000`,
+    // connect-src: same-origin API, Sentry error reporting, S3 audio presigned URLs
+    // Localhost WebSocket (Next.js HMR) is dev-only — must not appear in production headers.
+    `connect-src 'self' https://sentry.io https://*.ingest.sentry.io ${s3Sources}${isProd ? '' : ' ws://localhost:3000 wss://localhost:3000'}`,
     "font-src 'self' data:",
     "object-src 'none'",
     "base-uri 'self'",
