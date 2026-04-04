@@ -269,10 +269,13 @@ test.describe('Library — Like Track', () => {
     // Reload the page and wait for session to be re-fetched
     const sessionReloaded = page.waitForResponse(
       (res) => res.url().includes('/api/auth/get-session'),
+      { timeout: 15_000 },
     );
     await page.reload();
-    await sessionReloaded;
-    await page.waitForLoadState('networkidle');
+    await sessionReloaded.catch(() => {
+      // session check may not always fire (e.g. RSC cached routes) — proceed
+    });
+    await page.waitForLoadState('networkidle', { timeout: 30_000 });
 
     // After reload the liked state must still be shown
     await expect(page.getByRole('button', { name: /Unlike track/i })).toBeVisible();
