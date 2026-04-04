@@ -125,8 +125,7 @@ const test = base.extend<object, WorkerFixtures>({
   verifiedUser: [
     async ({}, use) => {
       const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
-      const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      const email = `library-e2e-${suffix}@example.com`;
+      const email = `library-e2e-${crypto.randomUUID()}@example.com`;
       const password = 'LibraryTest99!';
       const name = 'Library E2E User';
 
@@ -338,8 +337,7 @@ test.describe('Account — Delete Account', () => {
     // Create a dedicated user for this destructive test so we don't affect
     // the shared worker-scoped verifiedUser.
     const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
-    const suffix = `del-${Date.now()}`;
-    const email = `delete-acct-${suffix}@example.com`;
+    const email = `delete-acct-${crypto.randomUUID()}@example.com`;
     const password = 'DeleteMe99!';
 
     await registerAndVerifyUser({
