@@ -65,7 +65,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <html lang="en" className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
       <body suppressHydrationWarning>
         <ThemeProvider>
           <AudioProvider>
