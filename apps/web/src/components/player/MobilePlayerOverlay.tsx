@@ -191,12 +191,13 @@ export function MobilePlayerOverlay(): React.JSX.Element {
       aria-modal="true"
       aria-label={currentTrack ? `Now playing: ${currentTrack.title}` : 'Player'}
       aria-hidden={!isVisible}
-      // Always in the DOM; slide-up transition on open
+      // Always in the DOM; slide-up transition on open.
+      // pointer-events-none when off-screen so z-[60] never blocks PlayerBar clicks.
       className={[
         'fixed inset-0 z-[60]',
         'flex flex-col bg-white dark:bg-gray-900',
         'transition-transform duration-300 ease-in-out',
-        isVisible ? 'translate-y-0' : 'translate-y-full',
+        isVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none',
       ].join(' ')}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
