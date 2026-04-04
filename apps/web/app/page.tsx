@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { db } from '@nawhas/db';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
@@ -5,9 +6,16 @@ import { Container } from '@/components/layout/container';
 import { FeaturedReciters } from '@/components/home/featured-reciters';
 import { RecentAlbums } from '@/components/home/recent-albums';
 import { PopularTracks } from '@/components/home/popular-tracks';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
 
 // ISR: revalidate every hour so featured content stays fresh.
 export const revalidate = 3600;
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Nawhas — Discover Recitations',
+  description: 'A comprehensive digital library of nawha recitations.',
+  canonical: siteUrl(),
+});
 
 const createCaller = createCallerFactory(appRouter);
 

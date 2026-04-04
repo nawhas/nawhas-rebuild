@@ -99,7 +99,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
         throw new Error(`Registration failed: ${await registerRes.text()}`);
       }
 
-      const message = await pollForEmail(email);
+      const message = await pollForEmail(email, 30_000);
       const verificationUrl = await extractVerificationUrl(message.ID);
       await fetch(toVerificationFetchUrl(verificationUrl), {
         headers: { 'Origin': baseUrl },

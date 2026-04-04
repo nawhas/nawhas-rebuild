@@ -6,6 +6,13 @@ interface PageMetadataOptions {
   /** Absolute URL to the OG image */
   image?: string;
   noIndex?: boolean;
+  /** Absolute canonical URL for this page */
+  canonical?: string;
+}
+
+/** Returns the site base URL from the environment variable, with no trailing slash. */
+export function siteUrl(): string {
+  return (process.env.NEXT_PUBLIC_APP_URL ?? 'https://nawhas.com').replace(/\/$/, '');
 }
 
 /**
@@ -17,11 +24,13 @@ export function buildMetadata({
   description,
   image,
   noIndex = false,
+  canonical,
 }: PageMetadataOptions): Metadata {
   const metadata: Metadata = {
     title,
     ...(description !== undefined && { description }),
     ...(noIndex && { robots: { index: false, follow: false } }),
+    ...(canonical !== undefined && { alternates: { canonical } }),
   };
 
   metadata.openGraph = {

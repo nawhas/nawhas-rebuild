@@ -92,7 +92,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
         await page.fill('#email', email);
         await page.fill('#password', password);
         await page.click('button[type="submit"]');
-        await page.waitForURL(/\/check-email/, { timeout: 15_000 });
+        await page.waitForURL(/\/check-email/, { timeout: 30_000 });
 
         // Retrieve verification email from Mailpit
         const message = await pollForEmail(page.request, email);

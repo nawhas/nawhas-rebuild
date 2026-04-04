@@ -9,7 +9,9 @@ import { TrackActions } from '@/components/tracks/track-actions';
 import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
 import { MediaToggle } from '@/components/tracks/media-toggle';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
-import { buildMetadata } from '@/lib/metadata';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildTrackJsonLd } from '@/lib/jsonld';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -56,6 +58,7 @@ export async function generateMetadata({ params }: TrackPageProps): Promise<Meta
     title: track.title,
     description: `${track.title} by ${track.reciter.name} — from the album ${track.album.title} on Nawhas.`,
     ...(track.album.artworkUrl ? { image: track.album.artworkUrl } : {}),
+    canonical: `${siteUrl()}/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${trackSlug}`,
   });
 }
 
@@ -79,6 +82,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
 
   return (
     <div className="py-10">
+      <JsonLd data={buildTrackJsonLd(track, reciterSlug, albumSlug, trackSlug)} />
       <Container size="md">
         <TrackHeader track={track} />
         <TrackActions trackId={track.id} />
