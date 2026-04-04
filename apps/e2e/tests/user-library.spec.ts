@@ -101,9 +101,12 @@ async function registerAndVerifyUser(params: {
     if (registerRes.ok) {
       const message = await pollForEmail(email);
       const verificationUrl = await extractVerificationUrl(message.ID);
-      await fetch(toVerificationFetchUrl(verificationUrl), {
+      const verifyRes = await fetch(toVerificationFetchUrl(verificationUrl), {
         headers: { 'Origin': baseUrl },
       });
+      if (!verifyRes.ok) {
+        throw new Error(`Email verification failed: ${verifyRes.status} ${await verifyRes.text()}`);
+      }
       return;
     }
     lastError = `${registerRes.status} ${bodyText}`;
