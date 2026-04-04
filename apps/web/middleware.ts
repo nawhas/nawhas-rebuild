@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import createMiddleware from 'next-intl/middleware';
-import { routing } from './src/i18n/routing';
-
-const handleI18nRouting = createMiddleware(routing);
 
 /**
  * Routes that require authentication.
@@ -69,14 +65,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // Run i18n routing — handles locale detection and routing for all locales.
-  const response = handleI18nRouting(request);
-
-  // Forward x-pathname to RSC. next-intl's createMiddleware returns its own
-  // NextResponse.next() which sets its locale headers via x-middleware-request-*
-  // internally. We add x-pathname the same way so ProtectedLayout can read it.
+  // Pass through — no locale rewriting needed (app has no [locale] segment).
+  // getRequestConfig in src/i18n/request.ts falls back to defaultLocale: 'en'.
+  const response = NextResponse.next();
   response.headers.set('x-middleware-request-x-pathname', pathname);
-
   return response;
 }
 
