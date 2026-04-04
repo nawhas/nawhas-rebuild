@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, desc, asc, eq, gt, lt, or, sql } from 'drizzle-orm';
+import { and, desc, asc, eq, gte, gt, lt, or } from 'drizzle-orm';
 import { listeningHistory, tracks } from '@nawhas/db';
 import { router, protectedProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
@@ -29,7 +29,7 @@ export const historyRouter = router({
           and(
             eq(listeningHistory.userId, ctx.user.id),
             eq(listeningHistory.trackId, input.trackId),
-            sql`${listeningHistory.playedAt} >= ${windowStart}`,
+            gte(listeningHistory.playedAt, windowStart),
           ),
         )
         .limit(1);

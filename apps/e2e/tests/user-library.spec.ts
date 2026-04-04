@@ -161,6 +161,24 @@ async function signIn(
   await expect(page).toHaveURL('/', { timeout: 30_000 });
 }
 
+/**
+ * Navigate to a page and wait for the Better Auth session to be loaded in the
+ * client.  Without this, auth-dependent UI (SaveButton, LikeButton, history
+ * recording) may interact before `useSession()` has updated React state,
+ * causing unauthenticated redirects.
+ */
+async function gotoWithSession(
+  page: import('@playwright/test').Page,
+  url: string,
+): Promise<void> {
+  const sessionLoaded = page.waitForResponse(
+    (res) => res.url().includes('/api/auth/get-session'),
+  );
+  await page.goto(url);
+  await sessionLoaded;
+  await page.waitForLoadState('networkidle');
+}
+
 // ---------------------------------------------------------------------------
 // Save / Unsave track
 // ---------------------------------------------------------------------------
@@ -169,8 +187,9 @@ test.describe('Library — Save & Unsave', () => {
   test('save track → appears in /library/tracks', async ({ page, seedData, verifiedUser }) => {
     await signIn(page, verifiedUser);
 
-    // Navigate to track detail page
-    await page.goto(
+    // Navigate to track detail page and wait for session
+    await gotoWithSession(
+      page,
       `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`,
     );
 
@@ -194,7 +213,8 @@ test.describe('Library — Save & Unsave', () => {
     await signIn(page, verifiedUser);
 
     // First save the track
-    await page.goto(
+    await gotoWithSession(
+      page,
       `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`,
     );
     const saveButton = page.getByRole('button', { name: /Save to library/i });
@@ -223,7 +243,7 @@ test.describe('Library — Like Track', () => {
     await signIn(page, verifiedUser);
 
     const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
-    await page.goto(trackUrl);
+    await gotoWithSession(page, trackUrl);
 
     // Click the Like button (aria-label: "Like track")
     const likeButton = page.getByRole('button', { name: /Like track/i });
@@ -233,8 +253,13 @@ test.describe('Library — Like Track', () => {
     // Wait for the button state to update (aria-label: "Unlike track")
     await expect(page.getByRole('button', { name: /Unlike track/i })).toBeVisible();
 
-    // Reload the page
+    // Reload the page and wait for session to be re-fetched
+    const sessionReloaded = page.waitForResponse(
+      (res) => res.url().includes('/api/auth/get-session'),
+    );
     await page.reload();
+    await sessionReloaded;
+    await page.waitForLoadState('networkidle');
 
     // After reload the liked state must still be shown
     await expect(page.getByRole('button', { name: /Unlike track/i })).toBeVisible();
@@ -251,15 +276,20 @@ test.describe('Listening History', () => {
 
     // Navigate to track detail and trigger playback
     const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
-    await page.goto(trackUrl);
+    await gotoWithSession(page, trackUrl);
 
-    // Click the play button to start playback (audio is intercepted as silent MP3)
+    // Click the play button to start playback (audio is intercepted as silent MP3).
+    // The useListeningHistory hook fires a recordPlay server action (POST to page URL)
+    // when currentTrack changes.  We must wait for React to process the state change,
+    // run the effect, and for the server action to complete before navigating away.
     const playButton = page.getByRole('button', { name: new RegExp(`Play ${seedData.track.title}`, 'i') });
     await expect(playButton).toBeVisible();
     await playButton.click();
 
-    // Allow the useListeningHistory hook time to fire the record call
-    await page.waitForTimeout(500);
+    // Give React time to re-render and fire the useListeningHistory effect,
+    // then wait for the recordPlay server action POST to settle.
+    await page.waitForTimeout(1_000);
+    await page.waitForLoadState('networkidle');
 
     // Navigate to history
     await page.goto('/history');
@@ -274,10 +304,11 @@ test.describe('Listening History', () => {
 
     // Play a track so there is something in history
     const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
-    await page.goto(trackUrl);
+    await gotoWithSession(page, trackUrl);
     const playButton = page.getByRole('button', { name: new RegExp(`Play ${seedData.track.title}`, 'i') });
     await playButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1_000);
+    await page.waitForLoadState('networkidle');
 
     await page.goto('/history');
     await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 10_000 });
