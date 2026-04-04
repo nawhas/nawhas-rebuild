@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   usePlayerStore,
   selectCurrentTrack,
@@ -108,6 +109,7 @@ function ChevronDownIcon(): React.JSX.Element {
  * Client Component — reads from and dispatches to Zustand player store.
  */
 export function MobilePlayerOverlay(): React.JSX.Element {
+  const t = useTranslations('player');
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const currentLyrics = usePlayerStore(selectCurrentLyrics);
   const isPlaying = usePlayerStore(selectIsPlaying);
@@ -189,7 +191,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={currentTrack ? `Now playing: ${currentTrack.title}` : 'Player'}
+      aria-label={currentTrack ? t('nowPlaying', { trackTitle: currentTrack.title }) : t('playerLabel')}
       aria-hidden={!isVisible}
       // Always in the DOM; slide-up transition on open.
       // pointer-events-none when off-screen so z-[60] never blocks PlayerBar clicks.
@@ -215,7 +217,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           ref={closeButtonRef}
           type="button"
           onClick={closeMobileOverlay}
-          aria-label="Collapse to mini player"
+          aria-label={t('collapseMiniPlayer')}
           className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
           tabIndex={isVisible ? 0 : -1}
         >
@@ -226,7 +228,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
         <button
           type="button"
           onClick={closeMobileOverlay}
-          aria-label="Dismiss player"
+          aria-label={t('dismissPlayer')}
           className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
           tabIndex={isVisible ? 0 : -1}
         >
@@ -268,7 +270,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
                 step={1}
                 value={position}
                 onChange={handleSeek}
-                aria-label="Seek"
+                aria-label={t('seek')}
                 aria-valuemin={0}
                 aria-valuemax={duration}
                 aria-valuenow={Math.round(position)}
@@ -280,11 +282,11 @@ export function MobilePlayerOverlay(): React.JSX.Element {
             {/* Time display */}
             <div className="mt-1 flex justify-between tabular-nums text-xs text-gray-500 dark:text-gray-400" aria-live="off">
               <span>
-                <span className="sr-only">Position: </span>
+                <span className="sr-only">{t('position')}</span>
                 {formatTime(position)}
               </span>
               <span>
-                <span className="sr-only">Duration: </span>
+                <span className="sr-only">{t('duration')}</span>
                 {formatTime(duration)}
               </span>
             </div>
@@ -296,7 +298,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
             <button
               type="button"
               onClick={toggleShuffle}
-              aria-label={isShuffle ? 'Disable shuffle' : 'Enable shuffle'}
+              aria-label={isShuffle ? t('shuffleDisable') : t('shuffleEnable')}
               aria-pressed={isShuffle}
               tabIndex={isVisible ? 0 : -1}
               className={[
@@ -313,7 +315,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
             <button
               type="button"
               onClick={previous}
-              aria-label="Previous track"
+              aria-label={t('previousTrack')}
               tabIndex={isVisible ? 0 : -1}
               className="rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
             >
@@ -324,7 +326,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
             <button
               type="button"
               onClick={isPlaying ? pause : resume}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
+              aria-label={isPlaying ? t('pause') : t('play')}
               tabIndex={isVisible ? 0 : -1}
               className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-white"
             >
@@ -335,7 +337,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
             <button
               type="button"
               onClick={next}
-              aria-label="Next track"
+              aria-label={t('nextTrack')}
               tabIndex={isVisible ? 0 : -1}
               className="rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
             >

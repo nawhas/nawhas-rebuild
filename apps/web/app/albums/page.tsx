@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
@@ -25,13 +26,14 @@ const createCaller = createCallerFactory(appRouter);
  * client component for "Load More" pagination.
  */
 export default async function AlbumsPage(): Promise<React.JSX.Element> {
+  const t = await getTranslations('common');
   const caller = createCaller({ db, session: null, user: null });
   const { items, nextCursor } = await caller.album.list({ limit: 24 });
 
   return (
     <div className="py-10">
       <Container>
-        <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-white">Albums</h1>
+        <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-white">{t('albums')}</h1>
         <AlbumGrid initialItems={items} initialCursor={nextCursor} />
       </Container>
     </div>

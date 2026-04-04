@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Email verified',
@@ -10,6 +11,7 @@ export default async function VerifyEmailPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }): Promise<React.JSX.Element> {
+  const t = await getTranslations('auth.verifyEmail');
   const { error } = await searchParams;
 
   if (error) {
@@ -35,24 +37,24 @@ export default async function VerifyEmailPage({
         </div>
 
         <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
-          {isExpired ? 'Link expired' : 'Invalid link'}
+          {isExpired ? t('errorExpiredHeading') : t('errorInvalidHeading')}
         </h1>
         <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           {isExpired
-            ? 'This verification link has expired. Verification links are valid for 1 hour.'
-            : 'This verification link is invalid or has already been used.'}
+            ? t('errorExpiredDescription')
+            : t('errorInvalidDescription')}
         </p>
 
         <Link
           href="/check-email"
           className="inline-block w-full rounded-md bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
         >
-          Resend verification email
+          {t('resendButton')}
         </Link>
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           <Link href="/login" className="font-medium text-gray-900 underline hover:no-underline dark:text-white">
-            Back to sign in
+            {t('backToSignIn')}
           </Link>
         </p>
       </div>
@@ -75,16 +77,16 @@ export default async function VerifyEmailPage({
         </svg>
       </div>
 
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">Email verified!</h1>
+      <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">{t('successHeading')}</h1>
       <p className="mb-8 text-sm text-gray-600 dark:text-gray-400">
-        Your email address has been verified. You can now sign in to your account.
+        {t('successDescription')}
       </p>
 
       <Link
         href="/"
         className="inline-block w-full rounded-md bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
       >
-        Go to Nawhas.com
+        {t('goToNawhas')}
       </Link>
     </div>
   );

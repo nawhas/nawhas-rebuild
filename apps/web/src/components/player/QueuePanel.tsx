@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   usePlayerStore,
   selectQueue,
@@ -84,6 +85,7 @@ function formatDuration(seconds: number): string {
  * Client Component — all state from Zustand player store.
  */
 export function QueuePanel(): React.JSX.Element {
+  const t = useTranslations('queue');
   const queue = usePlayerStore(selectQueue);
   const queueIndex = usePlayerStore(selectQueueIndex);
   const isOpen = usePlayerStore(selectIsQueueOpen);
@@ -193,7 +195,7 @@ export function QueuePanel(): React.JSX.Element {
       <div
         ref={panelRef}
         role="dialog"
-        aria-label="Playback queue"
+        aria-label={t('panelLabel')}
         aria-modal="true"
         // Keep panel in DOM so the CSS transition works; slide off-screen when closed
         className={[
@@ -209,10 +211,10 @@ export function QueuePanel(): React.JSX.Element {
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Up next
+            {t('upNext')}
             {queue.length > 0 && (
               <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
-                {queue.length} track{queue.length !== 1 ? 's' : ''}
+                {queue.length === 1 ? t('trackCountSingular', { count: queue.length }) : t('trackCount', { count: queue.length })}
               </span>
             )}
           </h2>
@@ -220,7 +222,7 @@ export function QueuePanel(): React.JSX.Element {
             ref={closeButtonRef}
             type="button"
             onClick={toggleQueue}
-            aria-label="Close queue"
+            aria-label={t('closeQueue')}
             className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
           >
             <CloseIcon />
@@ -230,12 +232,12 @@ export function QueuePanel(): React.JSX.Element {
         {/* Track list */}
         {queue.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Your queue is empty.</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Play a track or album to get started.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('emptyTitle')}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('emptySubtitle')}</p>
           </div>
         ) : (
           <ol
-            aria-label="Queue tracks"
+            aria-label={t('queueTracksLabel')}
             className="flex-1 overflow-y-auto"
           >
             {queue.map((track, index) => {
@@ -259,8 +261,8 @@ export function QueuePanel(): React.JSX.Element {
                     isDragTarget ? 'border-t-2 border-t-gray-900 dark:border-t-gray-100' : '',
                   ].join(' ')}
                   aria-label={[
-                    `Track ${index + 1}: ${track.title}`,
-                    isCurrentlyPlaying ? '(currently playing)' : isActive ? '(paused)' : '',
+                    t('trackLabel', { number: index + 1, title: track.title }),
+                    isCurrentlyPlaying ? t('currentlyPlaying') : isActive ? t('paused') : '',
                   ].join(' ')}
                   aria-current={isActive ? 'true' : undefined}
                 >
@@ -304,12 +306,12 @@ export function QueuePanel(): React.JSX.Element {
                   {/* Keyboard reorder buttons — always visible to keyboard users (WCAG 2.1 SC 2.1.1) */}
                   <div
                     className="flex shrink-0 flex-col opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-                    aria-label={`Reorder ${track.title}`}
+                    aria-label={t('reorderLabel', { title: track.title })}
                   >
                     <button
                       type="button"
                       onClick={() => index > 0 ? reorderQueue(index, index - 1) : undefined}
-                      aria-label={`Move ${track.title} up`}
+                      aria-label={t('moveUp', { title: track.title })}
                       disabled={index === 0}
                       className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     >
@@ -318,7 +320,7 @@ export function QueuePanel(): React.JSX.Element {
                     <button
                       type="button"
                       onClick={() => index < queue.length - 1 ? reorderQueue(index, index + 1) : undefined}
-                      aria-label={`Move ${track.title} down`}
+                      aria-label={t('moveDown', { title: track.title })}
                       disabled={index === queue.length - 1}
                       className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:pointer-events-none disabled:opacity-30 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     >
@@ -330,7 +332,7 @@ export function QueuePanel(): React.JSX.Element {
                   <button
                     type="button"
                     onClick={() => removeFromQueue(index)}
-                    aria-label={`Remove ${track.title} from queue`}
+                    aria-label={t('remove', { title: track.title })}
                     className="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                   >
                     <RemoveIcon />

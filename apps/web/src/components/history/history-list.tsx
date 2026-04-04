@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import type { ListenHistoryEntryDTO } from '@nawhas/types';
 import { LoadMore } from '@/components/pagination/load-more';
 import { fetchMoreHistoryEntries, clearHistory } from '@/server/actions/history';
@@ -14,11 +15,11 @@ function formatPlayedAt(isoDate: string): string {
   const diffHours = Math.floor(diffMin / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMin < 1) return 'Just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  if (diffMin < 1) return 'just_now';
+  if (diffMin < 60) return `minutes:${diffMin}`;
+  if (diffHours < 24) return `hours:${diffHours}`;
+  if (diffDays < 7) return `days:${diffDays}`;
+  return `date:${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
 }
 
 function ClockIcon(): React.JSX.Element {
@@ -45,6 +46,7 @@ export function HistoryList({
   initialItems,
   initialCursor,
 }: HistoryListProps): React.JSX.Element {
+  const t = useTranslations('history');
   const [items, setItems] = useState<ListenHistoryEntryDTO[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoadingMore, startLoadMore] = useTransition();
@@ -75,8 +77,8 @@ export function HistoryList({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
           <ClockIcon />
         </div>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">No history yet</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Tracks you play will appear here.</p>
+        <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t('emptyTitle')}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('emptySubtitle')}</p>
       </div>
     );
   }
@@ -86,7 +88,7 @@ export function HistoryList({
       {/* Header row with count + clear button */}
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {items.length} track{items.length !== 1 ? 's' : ''} played
+          {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
           {cursor !== null ? '+' : ''}
         </p>
 
@@ -97,26 +99,26 @@ export function HistoryList({
             disabled={isClearing}
             className="text-sm text-red-600 hover:text-red-700 focus:outline-none focus:underline disabled:opacity-50"
           >
-            Clear history
+            {t('clearHistory')}
           </button>
         )}
 
         {showConfirm && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-300">Clear all history?</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">{t('clearConfirmPrompt')}</span>
             <button
               type="button"
               onClick={handleClearConfirm}
               className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1"
             >
-              Yes, clear
+              {t('clearConfirm')}
             </button>
             <button
               type="button"
               onClick={() => setShowConfirm(false)}
               className="text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
             >
-              Cancel
+              {t('clearCancel')}
             </button>
           </div>
         )}
@@ -124,7 +126,7 @@ export function HistoryList({
 
       {/* History list */}
       <ol
-        aria-label={`${items.length} played track${items.length !== 1 ? 's' : ''}`}
+        aria-label={items.length === 1 ? t('playedTracksListLabel', { count: items.length }) : t('playedTracksListLabelPlural', { count: items.length })}
         className="divide-y divide-gray-100 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-700"
       >
         {items.map((entry) => (
@@ -146,7 +148,23 @@ interface HistoryEntryRowProps {
 }
 
 function HistoryEntryRow({ entry }: HistoryEntryRowProps): React.JSX.Element {
+  const t = useTranslations('history');
   const { track } = entry;
+
+  const rawLabel = formatPlayedAt(entry.playedAt);
+  let timeLabel: string;
+  if (rawLabel === 'just_now') {
+    timeLabel = t('justNow');
+  } else if (rawLabel.startsWith('minutes:')) {
+    timeLabel = t('minutesAgo', { count: parseInt(rawLabel.split(':')[1]!, 10) });
+  } else if (rawLabel.startsWith('hours:')) {
+    timeLabel = t('hoursAgo', { count: parseInt(rawLabel.split(':')[1]!, 10) });
+  } else if (rawLabel.startsWith('days:')) {
+    timeLabel = t('daysAgo', { count: parseInt(rawLabel.split(':')[1]!, 10) });
+  } else {
+    // date: prefix — use the date string directly
+    timeLabel = rawLabel.replace('date:', '');
+  }
 
   return (
     <li className="flex items-center gap-3 px-4 py-3">
@@ -163,7 +181,7 @@ function HistoryEntryRow({ entry }: HistoryEntryRowProps): React.JSX.Element {
         className="shrink-0 text-xs text-gray-400 dark:text-gray-600"
         title={new Date(entry.playedAt).toLocaleString()}
       >
-        {formatPlayedAt(entry.playedAt)}
+        {timeLabel}
       </time>
     </li>
   );

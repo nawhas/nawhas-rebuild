@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -28,6 +29,7 @@ const createCaller = createCallerFactory(appRouter);
 export const dynamic = 'force-dynamic';
 
 export default async function HistoryPage(): Promise<React.JSX.Element> {
+  const t = await getTranslations('history');
   const reqHeaders = await headers();
   const sessionData = await auth.api.getSession({ headers: reqHeaders });
 
@@ -44,8 +46,8 @@ export default async function HistoryPage(): Promise<React.JSX.Element> {
     <main id="main-content" className="py-10">
       <Container>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Listening History</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Tracks you&apos;ve recently played</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('pageTitle')}</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('pageSubtitle')}</p>
         </header>
 
         <HistoryList initialItems={items} initialCursor={nextCursor} />

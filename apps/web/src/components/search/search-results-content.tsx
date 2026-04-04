@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import type {
   SearchResultDTO,
   SearchHitDTO,
@@ -278,11 +279,13 @@ function SearchTabs({
   typeCounts: TypeCounts;
   totalFound: number;
 }) {
+  const t = useTranslations('search');
+
   const tabs: TabItem[] = [
-    { type: 'all', label: 'All', count: totalFound },
-    { type: 'reciters', label: 'Reciters', count: typeCounts.reciters },
-    { type: 'albums', label: 'Albums', count: typeCounts.albums },
-    { type: 'tracks', label: 'Tracks', count: typeCounts.tracks },
+    { type: 'all', label: t('tabs.all'), count: totalFound },
+    { type: 'reciters', label: t('tabs.reciters'), count: typeCounts.reciters },
+    { type: 'albums', label: t('tabs.albums'), count: typeCounts.albums },
+    { type: 'tracks', label: t('tabs.tracks'), count: typeCounts.tracks },
   ];
 
   function tabHref(tabType: SearchType): string {
@@ -292,7 +295,7 @@ function SearchTabs({
   }
 
   return (
-    <nav aria-label="Search result categories" className="mb-6">
+    <nav aria-label={t('tabsNavLabel')} className="mb-6">
       <ul role="tablist" className="flex gap-1 border-b border-gray-200">
         {tabs.map((tab) => {
           const isActive = currentType === tab.type;
@@ -311,7 +314,7 @@ function SearchTabs({
                 {tab.label}
                 {tab.count > 0 && (
                   <span
-                    aria-label={`${tab.count} results`}
+                    aria-label={t('resultsCount', { count: tab.count })}
                     className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${
                       isActive
                         ? 'bg-gray-900 text-white'
@@ -345,6 +348,8 @@ function Pagination({
   currentPage: number;
   totalPages: number;
 }) {
+  const t = useTranslations('search.pagination');
+
   if (totalPages <= 1) return null;
 
   function pageHref(page: number): string {
@@ -359,47 +364,47 @@ function Pagination({
 
   return (
     <nav
-      aria-label="Search results pagination"
+      aria-label={t('navLabel')}
       className="mt-10 flex items-center justify-center gap-4"
     >
       {hasPrev ? (
         <Link
           href={pageHref(currentPage - 1)}
           className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-          aria-label="Previous page"
+          aria-label={t('previousLabel')}
         >
-          ← Previous
+          {t('previous')}
         </Link>
       ) : (
         <button
           disabled
           className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"
-          aria-label="Previous page"
+          aria-label={t('previousLabel')}
         >
-          ← Previous
+          {t('previous')}
         </button>
       )}
 
       <span className="text-sm text-gray-600" aria-live="polite" aria-atomic="true">
-        Page {currentPage} of {totalPages}
+        {t('pageOf', { current: currentPage, total: totalPages })}
       </span>
 
       {hasNext ? (
         <Link
           href={pageHref(currentPage + 1)}
           className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-          aria-label="Next page"
+          aria-label={t('nextLabel')}
           scroll={false}
         >
-          Next →
+          {t('next')}
         </Link>
       ) : (
         <button
           disabled
           className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"
-          aria-label="Next page"
+          aria-label={t('nextLabel')}
         >
-          Next →
+          {t('next')}
         </button>
       )}
     </nav>
@@ -411,6 +416,8 @@ function Pagination({
 // ---------------------------------------------------------------------------
 
 function EmptyState({ query }: { query: string }) {
+  const t = useTranslations('search.empty');
+
   return (
     <div
       role="status"
@@ -419,13 +426,15 @@ function EmptyState({ query }: { query: string }) {
     >
       <div aria-hidden="true" className="text-5xl">🔍</div>
       <p className="text-lg font-medium text-gray-900">
-        No results for{' '}
-        <span className="italic">"{query}"</span>
+        {t.rich('noResults', {
+          query,
+          italic: (chunks) => <span className="italic">&ldquo;{chunks}&rdquo;</span>,
+        })}
       </p>
       <ul className="mt-2 space-y-1 text-sm text-gray-500">
-        <li>Try searching in English, Arabic, or Urdu</li>
-        <li>Check for spelling mistakes</li>
-        <li>Try a broader term (e.g. a reciter's first name)</li>
+        <li>{t('tip1')}</li>
+        <li>{t('tip2')}</li>
+        <li>{t('tip3')}</li>
       </ul>
     </div>
   );
@@ -442,11 +451,11 @@ interface HitGroup {
   hits: SearchHitDTO[];
 }
 
-function groupHits(hits: SearchHitDTO[]): HitGroup[] {
+function groupHits(hits: SearchHitDTO[], labels: { reciters: string; albums: string; tracks: string }): HitGroup[] {
   const groups: Record<string, HitGroup> = {
-    reciter: { label: 'Reciters', type: 'reciter', hits: [] },
-    album: { label: 'Albums', type: 'album', hits: [] },
-    track: { label: 'Tracks', type: 'track', hits: [] },
+    reciter: { label: labels.reciters, type: 'reciter', hits: [] },
+    album: { label: labels.albums, type: 'album', hits: [] },
+    track: { label: labels.tracks, type: 'track', hits: [] },
   };
 
   for (const hit of hits) {
@@ -463,6 +472,8 @@ function ResultsGrid({
   hits: SearchHitDTO[];
   currentType: SearchType;
 }) {
+  const t = useTranslations('search');
+
   if (currentType === 'tracks') {
     // Track results displayed as a list (like AlbumDetail track list).
     return (
@@ -480,7 +491,7 @@ function ResultsGrid({
     return (
       <ul
         className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-        aria-label="Reciter results"
+        aria-label={t('reciterResultsLabel')}
       >
         {hits.map((hit) => (
           <li key={`${hit.type}-${hit.item.id}`}>
@@ -495,7 +506,7 @@ function ResultsGrid({
     return (
       <ul
         className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-        aria-label="Album results"
+        aria-label={t('albumResultsLabel')}
       >
         {hits.map((hit) => (
           <li key={`${hit.type}-${hit.item.id}`}>
@@ -507,7 +518,12 @@ function ResultsGrid({
   }
 
   // currentType === 'all' — group by type with section headers.
-  const groups = groupHits(hits);
+  const groupLabels = {
+    reciters: t('groups.reciters'),
+    albums: t('groups.albums'),
+    tracks: t('groups.tracks'),
+  };
+  const groups = groupHits(hits, groupLabels);
 
   return (
     <div className="space-y-10">

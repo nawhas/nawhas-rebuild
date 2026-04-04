@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { changePassword } from '@/server/actions/account';
 
 export function ChangePasswordForm(): React.JSX.Element {
+  const t = useTranslations('settings');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +33,13 @@ export function ChangePasswordForm(): React.JSX.Element {
   return (
     <section aria-labelledby="password-heading">
       <h2 id="password-heading" className="text-base font-semibold text-gray-900">
-        Password
+        {t('passwordHeading')}
       </h2>
 
       <form onSubmit={handleSubmit} noValidate className="mt-4 max-w-sm space-y-3">
         <div>
           <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
-            Current password
+            {t('currentPasswordLabel')}
           </label>
           <input
             id="current-password"
@@ -53,7 +55,7 @@ export function ChangePasswordForm(): React.JSX.Element {
 
         <div>
           <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-            New password
+            {t('newPasswordLabel')}
           </label>
           <input
             id="new-password"
@@ -66,7 +68,7 @@ export function ChangePasswordForm(): React.JSX.Element {
             disabled={loading}
             className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
           />
-          <p className="mt-1 text-xs text-gray-500">Minimum 8 characters.</p>
+          <p className="mt-1 text-xs text-gray-500">{t('passwordMinLength')}</p>
         </div>
 
         {error && (
@@ -77,7 +79,7 @@ export function ChangePasswordForm(): React.JSX.Element {
 
         {success && (
           <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
-            Password updated successfully.
+            {t('updatePasswordSuccess')}
           </p>
         )}
 
@@ -86,7 +88,7 @@ export function ChangePasswordForm(): React.JSX.Element {
           disabled={loading || !currentPassword || !newPassword}
           className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? 'Updating…' : 'Update password'}
+          {loading ? t('updatePasswordSubmitting') : t('updatePasswordSubmit')}
         </button>
       </form>
     </section>

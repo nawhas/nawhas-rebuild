@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { auth } from '@/lib/auth';
 import type { User } from '@/lib/auth';
 import { Container } from './container';
@@ -10,12 +11,6 @@ import { SearchBar } from '@/components/search/search-bar';
 import { MobileSearchOverlay } from '@/components/search/mobile-search-overlay';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
-export const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/reciters', label: 'Browse Reciters' },
-  { href: '/albums', label: 'Browse Albums' },
-] as const satisfies ReadonlyArray<{ href: string; label: string }>;
-
 /**
  * Persistent top navigation header rendered on every page via the root layout.
  *
@@ -25,6 +20,8 @@ export const NAV_LINKS = [
  * Interactive sub-trees (UserMenu, MobileNav) are Client Components.
  */
 export async function SiteHeader(): Promise<React.JSX.Element> {
+  const t = await getTranslations('nav');
+
   let user: User | null = null;
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -34,10 +31,16 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
     user = null;
   }
 
+  const NAV_LINKS = [
+    { href: '/', label: t('home') },
+    { href: '/reciters', label: t('browseReciters') },
+    { href: '/albums', label: t('browseAlbums') },
+  ] as const satisfies ReadonlyArray<{ href: string; label: string }>;
+
   return (
     <nav
       role="navigation"
-      aria-label="Main navigation"
+      aria-label={t('mainNavLabel')}
       className="relative sticky top-0 z-40 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
     >
       {/* Skip link for keyboard users — visible only on focus */}
@@ -45,7 +48,7 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-gray-900 focus:ring-2 focus:ring-gray-900 dark:focus:bg-gray-900 dark:focus:text-white"
       >
-        Skip to main content
+        {t('skipToMainContent')}
       </a>
 
       <Container>
@@ -53,10 +56,10 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
           {/* Logo */}
           <Link
             href="/"
-            aria-label="Nawhas — go to home page"
+            aria-label={t('logoLabel')}
             className="rounded text-lg font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-white"
           >
-            Nawhas
+            {t('logoText')}
           </Link>
 
           {/* Desktop nav links — hidden on mobile */}
@@ -75,7 +78,7 @@ export async function SiteHeader(): Promise<React.JSX.Element> {
                 href="/login"
                 className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
               >
-                Sign In
+                {t('signIn')}
               </Link>
             )}
           </div>
