@@ -154,8 +154,7 @@ async function signIn(
   page: import('@playwright/test').Page,
   user: VerifiedUser,
 ): Promise<void> {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#email')).toBeVisible({ timeout: 30_000 });
+  await page.goto('/login');
   await page.fill('#email', user.email);
   await page.fill('#password', user.password);
   await clickLoginSubmitAndWaitForAuth(page);
@@ -326,8 +325,7 @@ test.describe('Account — Delete Account', () => {
     const page = await context.newPage();
 
     try {
-      await page.goto('/login', { waitUntil: 'domcontentloaded' });
-      await expect(page.locator('#email')).toBeVisible({ timeout: 30_000 });
+      await page.goto('/login');
       await page.fill('#email', email);
       await page.fill('#password', password);
       await clickLoginSubmitAndWaitForAuth(page);
