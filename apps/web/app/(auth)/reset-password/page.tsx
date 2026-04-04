@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export default async function ResetPasswordPage({
 }: {
   searchParams: Promise<{ token?: string; error?: string }>;
 }): Promise<React.JSX.Element> {
+  const t = await getTranslations('auth.resetPassword');
   const { token, error } = await searchParams;
 
   if (!token) {
@@ -39,24 +41,24 @@ export default async function ResetPasswordPage({
         </div>
 
         <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
-          {error === 'TOKEN_EXPIRED' ? 'Link expired' : 'Invalid link'}
+          {error === 'TOKEN_EXPIRED' ? t('tokenExpiredHeading') : t('tokenInvalidHeading')}
         </h1>
         <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           {error === 'TOKEN_EXPIRED'
-            ? 'This password reset link has expired. Reset links are valid for 1 hour.'
-            : 'This password reset link is invalid or has already been used.'}
+            ? t('tokenExpiredDescription')
+            : t('tokenInvalidDescription')}
         </p>
 
         <a
           href="/forgot-password"
           className="inline-block w-full rounded-md bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
         >
-          Request a new link
+          {t('requestNewLinkButton')}
         </a>
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           <a href="/login" className="font-medium text-gray-900 underline hover:no-underline dark:text-white">
-            Back to sign in
+            {t('backToSignIn')}
           </a>
         </p>
       </div>

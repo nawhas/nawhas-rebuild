@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Container } from '@/components/layout/container';
 
 export const metadata: Metadata = {
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
  *
  * Server Component.
  */
-export default function NotFound(): React.JSX.Element {
+export default async function NotFound(): Promise<React.JSX.Element> {
+  const t = await getTranslations('errors');
+
   return (
     <main
       id="main-content"
@@ -30,26 +33,25 @@ export default function NotFound(): React.JSX.Element {
 
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Page not found
+              {t('pageNotFound')}
             </h1>
             <p className="text-base text-gray-600 dark:text-gray-300">
-              We couldn&apos;t find the page you&apos;re looking for. It may
-              have been moved or doesn&apos;t exist.
+              {t('pageNotFoundDescription')}
             </p>
           </div>
 
-          <nav aria-label="Recovery navigation" className="flex flex-col gap-3 sm:flex-row">
+          <nav aria-label={t('recoveryNavLabel')} className="flex flex-col gap-3 sm:flex-row">
             <Link
               href="/"
               className="rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
             >
-              Go to home
+              {t('goToHome')}
             </Link>
             <Link
               href="/reciters"
               className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
-              Browse reciters
+              {t('browseReciters')}
             </Link>
           </nav>
         </div>

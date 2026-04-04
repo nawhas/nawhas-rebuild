@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { signOut } from '@/lib/auth-client';
 import { NavLinks } from './nav-links';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
@@ -19,6 +20,7 @@ interface MobileNavProps {
  * Client Component — requires useState for open/close toggle.
  */
 export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
+  const t = useTranslations('nav');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -49,7 +51,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
         aria-controls="mobile-menu"
-        aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+        aria-label={open ? t('closeMenu') : t('openMenu')}
         className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
       >
         <svg
@@ -79,7 +81,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
         <div
           id="mobile-menu"
           role="navigation"
-          aria-label="Mobile navigation"
+          aria-label={t('mobileNavLabel')}
           onKeyDown={handleMenuKeyDown}
           className="absolute inset-x-0 top-16 z-40 border-b border-gray-200 bg-white px-4 pb-4 pt-2 shadow-md dark:border-gray-700 dark:bg-gray-900"
         >
@@ -87,7 +89,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
 
           <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
             <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">{t('theme')}</span>
               <ThemeToggle />
             </div>
           </div>
@@ -106,14 +108,14 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                   onClick={close}
                   className="block rounded px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                 >
-                  Profile
+                  {t('profile')}
                 </Link>
                 <button
                   type="button"
                   onClick={handleSignOut}
                   className="block w-full rounded px-3 py-2 text-left text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                 >
-                  Sign Out
+                  {t('signOut')}
                 </button>
               </div>
             ) : (
@@ -122,7 +124,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                 onClick={close}
                 className="block w-full rounded-md bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
               >
-                Sign In
+                {t('signIn')}
               </Link>
             )}
           </div>

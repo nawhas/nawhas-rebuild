@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useSession } from '@/lib/auth-client';
 import { saveTrack, unsaveTrack, getIsSaved } from '@/server/actions/library';
 
@@ -36,6 +37,7 @@ interface SaveButtonProps {
  * Client Component — requires interaction and auth session.
  */
 export function SaveButton({ trackId, initialSaved, onSavedChange, className = '' }: SaveButtonProps): React.JSX.Element {
+  const t = useTranslations('common');
   const { data: session, isPending: sessionLoading } = useSession();
   const [isSaved, setIsSaved] = useState(initialSaved ?? false);
   const [stateLoaded, setStateLoaded] = useState(initialSaved !== undefined);
@@ -88,7 +90,7 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
     });
   }
 
-  const label = isSaved ? 'Remove from library' : 'Save to library';
+  const label = isSaved ? t('unsave') : t('save');
 
   return (
     <button

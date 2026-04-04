@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useId } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useSearchAutocomplete } from '@/hooks/use-search-autocomplete';
 import { HighlightedText, Spinner } from './search-bar';
 
@@ -24,6 +25,7 @@ import { HighlightedText, Spinner } from './search-bar';
  * - Screen reader announces the dialog via `role="dialog"`
  */
 export function MobileSearchOverlay(): React.JSX.Element {
+  const t = useTranslations('search');
   const [overlayOpen, setOverlayOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -131,7 +133,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
         ref={triggerRef}
         type="button"
         onClick={() => setOverlayOpen(true)}
-        aria-label="Open search"
+        aria-label={t('openSearch')}
         aria-haspopup="dialog"
         className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 md:hidden"
       >
@@ -156,7 +158,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
           ref={overlayRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Search"
+          aria-label={t('dialogLabel')}
           className="fixed inset-0 z-50 flex flex-col bg-white"
         >
           {/* Header row: input + close button */}
@@ -182,9 +184,9 @@ export function MobileSearchOverlay(): React.JSX.Element {
               aria-expanded={dropdownOpen}
               aria-controls={dropdownOpen ? listboxId : undefined}
               aria-activedescendant={activeOptionId}
-              aria-label="Search reciters, albums, and tracks"
+              aria-label={t('inputLabel')}
               aria-busy={isPending}
-              placeholder="Search…"
+              placeholder={t('placeholder')}
               value={query}
               onChange={handleChange}
               onKeyDown={handleInputKeyDown}
@@ -198,7 +200,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
             <button
               type="button"
               onClick={closeOverlay}
-              aria-label="Close search"
+              aria-label={t('closeSearch')}
               className="flex-shrink-0 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
             >
               <svg
@@ -223,16 +225,16 @@ export function MobileSearchOverlay(): React.JSX.Element {
               <div
                 id={listboxId}
                 role="listbox"
-                aria-label="Search results"
+                aria-label={t('resultsLabel')}
               >
                 {isPending ? (
                   <div className="flex items-center gap-2 px-4 py-4 text-sm text-gray-500" aria-live="polite">
                     <Spinner />
-                    Searching…
+                    {t('searching')}
                   </div>
                 ) : !hasResults ? (
                   <div className="px-4 py-4 text-sm text-gray-500" aria-live="polite">
-                    No results for &ldquo;{query}&rdquo;
+                    {t('noResults', { query })}
                   </div>
                 ) : (
                   <>
@@ -280,7 +282,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
                         onClick={closeOverlay}
                         className="flex items-center gap-1 px-4 py-3 text-sm text-gray-500 active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                       >
-                        <span>See all results for &ldquo;{query}&rdquo;</span>
+                        <span>{t('seeAllResults', { query })}</span>
                         <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                           <path
                             fillRule="evenodd"
@@ -298,7 +300,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
             {/* Empty state — no query entered yet */}
             {!dropdownOpen && !query && (
               <div className="px-4 py-8 text-center text-sm text-gray-400">
-                Start typing to search reciters, albums, and tracks
+                {t('emptyPromptMobile')}
               </div>
             )}
           </div>

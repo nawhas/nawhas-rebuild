@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { SavedTrackDTO, TrackDTO } from '@nawhas/types';
 import { usePlayerStore } from '@/store/player';
 import { LoadMore } from '@/components/pagination/load-more';
@@ -48,6 +49,7 @@ export function LibraryTracksList({
   initialItems,
   initialCursor,
 }: LibraryTracksListProps): React.JSX.Element {
+  const t = useTranslations('library');
   const [items, setItems] = useState<SavedTrackDTO[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoadingMore, startLoadMore] = useTransition();
@@ -79,15 +81,15 @@ export function LibraryTracksList({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400">
           <MusicNoteIcon />
         </div>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900">No saved tracks yet</h2>
+        <h2 className="mb-2 text-lg font-semibold text-gray-900">{t('emptyTitle')}</h2>
         <p className="mb-6 text-sm text-gray-500">
-          Save tracks from any album page — tap the heart icon to add them here.
+          {t('emptyDescription')}
         </p>
         <Link
           href="/albums"
           className="inline-flex items-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
         >
-          Browse Albums
+          {t('browseAlbums')}
         </Link>
       </div>
     );
@@ -98,7 +100,7 @@ export function LibraryTracksList({
       {/* Play All button */}
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-gray-500">
-          {items.length} track{items.length !== 1 ? 's' : ''} saved
+          {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
         </p>
         <button
           type="button"
@@ -108,13 +110,13 @@ export function LibraryTracksList({
           className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:opacity-60"
         >
           <PlayAllIcon />
-          {isPlayingAll ? 'Loading…' : 'Play All'}
+          {isPlayingAll ? t('playAllLoading') : t('playAll')}
         </button>
       </div>
 
       {/* Track list */}
       <ol
-        aria-label={`${items.length} saved track${items.length !== 1 ? 's' : ''}`}
+        aria-label={items.length === 1 ? t('savedTracksListLabel', { count: items.length }) : t('savedTracksListLabelPlural', { count: items.length })}
         className="divide-y divide-gray-100 rounded-lg border border-gray-200"
       >
         {items.map((item) => (

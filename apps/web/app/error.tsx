@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Container } from '@/components/layout/container';
 
 interface ErrorPageProps {
@@ -16,6 +17,8 @@ interface ErrorPageProps {
  * Must be a Client Component (Next.js requirement for error boundaries).
  */
 export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.Element {
+  const t = useTranslations('errors');
+
   useEffect(() => {
     // Log the error to the console for debugging; replace with a monitoring
     // service call (e.g. Sentry) once observability is wired up.
@@ -39,27 +42,26 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
 
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Something went wrong
+              {t('somethingWentWrong')}
             </h1>
             <p className="text-base text-gray-600 dark:text-gray-300">
-              An unexpected error occurred. Please try again or return to the
-              home page.
+              {t('unexpectedError')}
             </p>
           </div>
 
-          <nav aria-label="Recovery navigation" className="flex flex-col gap-3 sm:flex-row">
+          <nav aria-label={t('recoveryNavLabel')} className="flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={reset}
               className="rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
             >
-              Try again
+              {t('tryAgain')}
             </button>
             <Link
               href="/"
               className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
-              Go to home
+              {t('goToHome')}
             </Link>
           </nav>
         </div>

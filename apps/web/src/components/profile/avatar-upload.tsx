@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface AvatarUploadProps {
   /** Current avatar URL — null renders initials placeholder. */
@@ -28,6 +29,7 @@ function getInitials(name: string): string {
  * Shows an overlay on hover. Error message rendered inline.
  */
 export function AvatarUpload({ imageUrl, name, onUploaded }: AvatarUploadProps): React.JSX.Element {
+  const t = useTranslations('profile');
   const [currentUrl, setCurrentUrl] = useState<string | null>(imageUrl);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded }: AvatarUploadProps):
     <div className="flex flex-col items-center gap-2">
       <button
         type="button"
-        aria-label="Change avatar"
+        aria-label={t('avatarChangeLabel')}
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         className="group relative h-24 w-24 overflow-hidden rounded-full focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:opacity-60"
@@ -93,7 +95,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded }: AvatarUploadProps):
           className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100"
         >
           {uploading ? (
-            <span className="text-xs font-medium text-white">Uploading…</span>
+            <span className="text-xs font-medium text-white">{t('avatarUploadingLabel')}</span>
           ) : (
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-white">
               <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />

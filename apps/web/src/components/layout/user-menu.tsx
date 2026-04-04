@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { signOut } from '@/lib/auth-client';
 import type { User } from '@/lib/auth';
 
@@ -16,6 +17,7 @@ interface UserMenuProps {
  * Client Component — requires interactivity for the dropdown toggle.
  */
 export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
+  const t = useTranslations('nav');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -92,7 +94,7 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
             onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
           >
-            Profile
+            {t('profile')}
           </Link>
 
           <button
@@ -101,7 +103,7 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
             onClick={handleSignOut}
             className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
           >
-            Sign Out
+            {t('signOut')}
           </button>
         </div>
       )}

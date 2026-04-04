@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useSession } from '@/lib/auth-client';
 import { likeTrack, unlikeTrack, getIsLiked } from '@/server/actions/likes';
 
@@ -34,6 +35,7 @@ interface LikeButtonProps {
  * Client Component — requires interaction and auth session.
  */
 export function LikeButton({ trackId, initialLiked, className = '' }: LikeButtonProps): React.JSX.Element {
+  const t = useTranslations('common');
   const { data: session, isPending: sessionLoading } = useSession();
   const [isLiked, setIsLiked] = useState(initialLiked ?? false);
   const [stateLoaded, setStateLoaded] = useState(initialLiked !== undefined);
@@ -84,7 +86,7 @@ export function LikeButton({ trackId, initialLiked, className = '' }: LikeButton
     });
   }
 
-  const label = isLiked ? 'Unlike track' : 'Like track';
+  const label = isLiked ? t('unlike') : t('like');
 
   return (
     <button
