@@ -38,19 +38,20 @@ test.describe('Dark mode — system preference', () => {
 // Tests 2–4: Manual ThemeToggle
 // ---------------------------------------------------------------------------
 
+// Helper: seed localStorage with light theme and reload so next-themes
+// initialises with that value. Using page.evaluate() (not addInitScript)
+// ensures the seed does NOT fire again on subsequent reloads within the test.
+async function seedLightTheme(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('theme', 'light'));
+  await page.reload();
+}
+
 test.describe('Dark mode — manual toggle', () => {
-  test.beforeEach(async ({ page }) => {
-    // Ensure each test starts in explicit light mode so that the first toggle
-    // click transitions light → dark (3-way cycle: system → light → dark → system).
-    await page.addInitScript(() => {
-      localStorage.setItem('theme', 'light');
-    });
-  });
-
   test('clicking toggle switches to dark mode', async ({ page }) => {
-    await page.goto('/');
+    await seedLightTheme(page);
 
-    // Default state: light (system preference is light in standard headless browser).
+    // Starts in light mode — no dark class.
     await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
 
     // The ThemeToggle aria-label reflects the current mode (e.g. "Switch to dark mode").
@@ -62,7 +63,7 @@ test.describe('Dark mode — manual toggle', () => {
   });
 
   test('dark mode preference persists across page reload', async ({ page }) => {
-    await page.goto('/');
+    await seedLightTheme(page);
 
     const toggle = page.getByRole('button', { name: /switch to/i });
     await expect(toggle).toBeVisible();
@@ -80,7 +81,7 @@ test.describe('Dark mode — manual toggle', () => {
   });
 
   test('clicking toggle again restores light mode', async ({ page }) => {
-    await page.goto('/');
+    await seedLightTheme(page);
 
     const toggle = page.getByRole('button', { name: /switch to/i });
     await expect(toggle).toBeVisible();
