@@ -72,11 +72,11 @@ export function HistoryList({
   if (items.length === 0 && !isClearing) {
     return (
       <div className="py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
           <ClockIcon />
         </div>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900">No history yet</h2>
-        <p className="text-sm text-gray-500">Tracks you play will appear here.</p>
+        <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">No history yet</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Tracks you play will appear here.</p>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export function HistoryList({
     <div>
       {/* Header row with count + clear button */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {items.length} track{items.length !== 1 ? 's' : ''} played
           {cursor !== null ? '+' : ''}
         </p>
@@ -103,7 +103,7 @@ export function HistoryList({
 
         {showConfirm && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">Clear all history?</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Clear all history?</span>
             <button
               type="button"
               onClick={handleClearConfirm}
@@ -114,7 +114,7 @@ export function HistoryList({
             <button
               type="button"
               onClick={() => setShowConfirm(false)}
-              className="text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:underline"
+              className="text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
             >
               Cancel
             </button>
@@ -125,7 +125,7 @@ export function HistoryList({
       {/* History list */}
       <ol
         aria-label={`${items.length} played track${items.length !== 1 ? 's' : ''}`}
-        className="divide-y divide-gray-100 rounded-lg border border-gray-200"
+        className="divide-y divide-gray-100 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-700"
       >
         {items.map((entry) => (
           <HistoryEntryRow key={entry.id} entry={entry} />
@@ -150,17 +150,17 @@ function HistoryEntryRow({ entry }: HistoryEntryRowProps): React.JSX.Element {
 
   return (
     <li className="flex items-center gap-3 px-4 py-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
         <ClockIcon />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900">{track.title}</p>
+        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{track.title}</p>
       </div>
 
       <time
         dateTime={entry.playedAt}
-        className="shrink-0 text-xs text-gray-400"
+        className="shrink-0 text-xs text-gray-400 dark:text-gray-600"
         title={new Date(entry.playedAt).toLocaleString()}
       >
         {formatPlayedAt(entry.playedAt)}

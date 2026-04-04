@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* --------------------------------------------------------------------------
    * Fonts
@@ -81,6 +83,21 @@
   --color-error-800: #991b1b;
   --color-error-900: #7f1d1d;
   --color-error-950: #450a0a;
+}
+
+/* --------------------------------------------------------------------------
+ * Dark mode overrides
+ * Applied when next-themes sets class="dark" on <html>
+ * -------------------------------------------------------------------------- */
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  .dark body {
+    color: var(--color-neutral-100);
+    background-color: var(--color-neutral-950);
+  }
 }
 
 /* --------------------------------------------------------------------------

@@ -66,8 +66,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps): Pro
     return (
       <div className="py-10">
         <Container>
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">Search</h1>
-          <p className="mt-2 text-gray-500">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Search</h1>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
             Enter a query in the search bar above to find reciters, albums, and tracks.
           </p>
         </Container>
@@ -95,9 +95,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps): Pro
   return (
     <div className="py-10">
       <Container>
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">
+        <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
           Results for{' '}
-          <span className="italic text-gray-600">"{query}"</span>
+          <span className="italic text-gray-600 dark:text-gray-400">"{query}"</span>
         </h1>
         <SearchResultsContent
           query={query}

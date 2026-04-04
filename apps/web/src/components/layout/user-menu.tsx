@@ -76,21 +76,21 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
         <div
           role="menu"
           aria-label="Account menu"
-          className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5"
+          className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 dark:bg-gray-800 dark:ring-gray-700"
         >
           {/* User info header */}
-          <div className="border-b border-gray-100 px-4 py-2">
+          <div className="border-b border-gray-100 px-4 py-2 dark:border-gray-700">
             {user.name && (
-              <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+              <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
             )}
-            <p className="truncate text-xs text-gray-500">{user.email}</p>
+            <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
           </div>
 
           <Link
             href="/profile"
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
           >
             Profile
           </Link>
@@ -99,7 +99,7 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
             type="button"
             role="menuitem"
             onClick={handleSignOut}
-            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
           >
             Sign Out
           </button>

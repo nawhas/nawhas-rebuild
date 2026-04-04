@@ -31,7 +31,7 @@ export default async function AlbumsPage(): Promise<React.JSX.Element> {
   return (
     <div className="py-10">
       <Container>
-        <h1 className="mb-8 text-2xl font-bold text-gray-900">Albums</h1>
+        <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-white">Albums</h1>
         <AlbumGrid initialItems={items} initialCursor={nextCursor} />
       </Container>
     </div>

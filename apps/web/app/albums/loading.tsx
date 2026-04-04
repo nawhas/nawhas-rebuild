@@ -5,7 +5,7 @@ export default function AlbumsLoading(): React.JSX.Element {
   return (
     <main className="py-10" aria-busy="true" aria-label="Loading albums">
       <Container>
-        <div aria-hidden="true" className="mb-8 h-8 w-28 animate-pulse rounded bg-gray-200" />
+        <div aria-hidden="true" className="mb-8 h-8 w-28 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
         <ul
           role="list"
           className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"

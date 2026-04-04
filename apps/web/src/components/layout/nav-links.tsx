@@ -36,8 +36,8 @@ export function NavLinks({ links, className = '', onClick }: NavLinksProps): Rea
             aria-current={isActive ? 'page' : undefined}
             className={`rounded px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 ${
               isActive
-                ? 'bg-gray-100 text-gray-900'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
             }`}
           >
             {label}

@@ -44,8 +44,8 @@ export default async function LibraryTracksPage(): Promise<React.JSX.Element> {
     <main id="main-content" className="py-10">
       <Container>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Library</h1>
-          <p className="mt-1 text-sm text-gray-500">Tracks you&apos;ve saved</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Library</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Tracks you&apos;ve saved</p>
         </header>
 
         <LibraryTracksList initialItems={items} initialCursor={nextCursor} />

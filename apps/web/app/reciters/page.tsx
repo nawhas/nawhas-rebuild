@@ -30,7 +30,7 @@ export default async function RecitersPage(): Promise<React.JSX.Element> {
   return (
     <div className="py-10">
       <Container>
-        <h1 className="mb-8 text-2xl font-bold text-gray-900">Reciters</h1>
+        <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-white">Reciters</h1>
         <ReciterGrid initialItems={items} initialCursor={nextCursor} />
       </Container>
     </div>

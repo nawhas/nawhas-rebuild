@@ -19,7 +19,7 @@ export function RecentAlbums({ albums }: RecentAlbumsProps): React.JSX.Element |
     <section aria-labelledby="recent-albums-heading">
       <h2
         id="recent-albums-heading"
-        className="mb-6 text-xl font-semibold text-gray-900"
+        className="mb-6 text-xl font-semibold text-gray-900 dark:text-white"
       >
         Recent Albums
       </h2>

@@ -23,16 +23,16 @@ export default function NotFound(): React.JSX.Element {
           {/* Visual indicator */}
           <div
             aria-hidden="true"
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl font-bold text-gray-400"
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl font-bold text-gray-400 dark:bg-gray-800 dark:text-gray-600"
           >
             404
           </div>
 
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Page not found
             </h1>
-            <p className="text-base text-gray-600">
+            <p className="text-base text-gray-600 dark:text-gray-300">
               We couldn&apos;t find the page you&apos;re looking for. It may
               have been moved or doesn&apos;t exist.
             </p>
@@ -47,7 +47,7 @@ export default function NotFound(): React.JSX.Element {
             </Link>
             <Link
               href="/reciters"
-              className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Browse reciters
             </Link>

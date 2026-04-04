@@ -24,14 +24,14 @@ export function ReciterHeader({ reciter }: ReciterHeaderProps): React.JSX.Elemen
       {/* Avatar — initials placeholder */}
       <div
         aria-hidden="true"
-        className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gray-200 text-3xl font-semibold text-gray-700"
+        className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gray-200 text-3xl font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-300"
       >
         {initials}
       </div>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-gray-900">{reciter.name}</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{reciter.name}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {albumCount === 0
             ? 'No albums yet'
             : albumCount === 1

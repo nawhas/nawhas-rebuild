@@ -32,11 +32,11 @@ export function EmptyState({
       {/* Icon placeholder */}
       <div
         aria-hidden="true"
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8 text-gray-400"
+          className="h-8 w-8 text-gray-400 dark:text-gray-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -52,14 +52,14 @@ export function EmptyState({
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="text-base font-semibold text-gray-900">{title}</p>
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-base font-semibold text-gray-900 dark:text-white">{title}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
       </div>
 
       {action && (
         <a
           href={action.href}
-          className="mt-2 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          className="mt-2 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:bg-gray-700 dark:hover:bg-gray-600"
         >
           {action.label}
         </a>

@@ -1,0 +1,98 @@
+/**
+ * E2E Tests — Dark Mode
+ *
+ * Validates dark mode behaviour: system preference detection via
+ * prefers-color-scheme media query and manual ThemeToggle persistence.
+ *
+ * Requires:
+ *   - web service running at BASE_URL
+ *   - next-themes ThemeProvider in the root layout
+ *   - ThemeToggle component accessible in the navigation header
+ */
+
+import { test, expect } from '@playwright/test';
+
+// ---------------------------------------------------------------------------
+// Test 1: System dark preference
+// ---------------------------------------------------------------------------
+
+test.describe('Dark mode — system preference', () => {
+  test.use({ colorScheme: 'dark' });
+
+  test('html gets dark class when system preference is dark', async ({ page }) => {
+    await page.goto('/');
+
+    // next-themes applies the dark class to <html> via an inline blocking script,
+    // so it is present as soon as the page is ready.
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+
+    // Verify the page renders with a dark background — not white with invisible text.
+    const bodyBg = await page.evaluate(() =>
+      window.getComputedStyle(document.body).backgroundColor,
+    );
+    expect(bodyBg).not.toBe('rgb(255, 255, 255)');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests 2–4: Manual ThemeToggle
+// ---------------------------------------------------------------------------
+
+// Helper: seed localStorage with light theme and reload so next-themes
+// initialises with that value. Using page.evaluate() (not addInitScript)
+// ensures the seed does NOT fire again on subsequent reloads within the test.
+async function seedLightTheme(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('theme', 'light'));
+  await page.reload();
+}
+
+test.describe('Dark mode — manual toggle', () => {
+  test('clicking toggle switches to dark mode', async ({ page }) => {
+    await seedLightTheme(page);
+
+    // Starts in light mode — no dark class.
+    await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
+
+    // The ThemeToggle aria-label reflects the current mode (e.g. "Switch to dark mode").
+    const toggle = page.getByRole('button', { name: /switch to/i });
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  });
+
+  test('dark mode preference persists across page reload', async ({ page }) => {
+    await seedLightTheme(page);
+
+    const toggle = page.getByRole('button', { name: /switch to/i });
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+
+    await page.reload();
+
+    // next-themes persists the choice in localStorage under the key "theme".
+    const storedTheme = await page.evaluate(() => localStorage.getItem('theme'));
+    expect(storedTheme).toBe('dark');
+
+    // Class must be restored immediately after reload (via inline blocking script).
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  });
+
+  test('clicking toggle again restores light mode', async ({ page }) => {
+    await seedLightTheme(page);
+
+    const toggle = page.getByRole('button', { name: /switch to/i });
+    await expect(toggle).toBeVisible();
+
+    // Switch to dark.
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+
+    // Switch back — whether the cycle is light/dark or light/dark/system, the
+    // html element must no longer carry the dark class when system pref is light.
+    await toggle.click();
+    await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
+  });
+});

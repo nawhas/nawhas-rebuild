@@ -32,6 +32,10 @@ vi.mock('@/lib/auth-client', () => ({
   signOut: (...args: unknown[]) => mockSignOut(...args),
 }));
 
+vi.mock('@/components/theme/ThemeToggle', () => ({
+  ThemeToggle: () => <button data-testid="theme-toggle" aria-label="Toggle theme" />,
+}));
+
 const LINKS = [
   { href: '/', label: 'Home' },
   { href: '/reciters', label: 'Browse Reciters' },
@@ -111,6 +115,12 @@ describe('MobileNav', () => {
     fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
     fireEvent.click(screen.getByRole('link', { name: 'Home' }));
     expect(screen.queryByRole('navigation', { name: /mobile navigation/i })).toBeNull();
+  });
+
+  it('renders ThemeToggle in the mobile menu when open', () => {
+    render(<MobileNav links={LINKS} user={null} />);
+    fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+    expect(screen.getByTestId('theme-toggle')).toBeDefined();
   });
 
   it('button has aria-expanded=false when closed', () => {

@@ -38,10 +38,10 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
           </div>
 
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Something went wrong
             </h1>
-            <p className="text-base text-gray-600">
+            <p className="text-base text-gray-600 dark:text-gray-300">
               An unexpected error occurred. Please try again or return to the
               home page.
             </p>
@@ -57,7 +57,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
             </button>
             <Link
               href="/"
-              className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Go to home
             </Link>
