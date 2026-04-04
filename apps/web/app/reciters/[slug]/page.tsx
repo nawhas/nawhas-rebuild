@@ -7,6 +7,8 @@ import { Container } from '@/components/layout/container';
 import { ReciterHeader } from '@/components/reciters/reciter-header';
 import { ReciterDiscography } from '@/components/reciters/reciter-discography';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildReciterJsonLd } from '@/lib/jsonld';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -57,6 +59,7 @@ export default async function ReciterPage({ params }: ReciterPageProps): Promise
 
   return (
     <div className="py-10">
+      <JsonLd data={buildReciterJsonLd(reciter)} />
       <Container>
         <ReciterHeader reciter={reciter} />
         <div className="mt-8">

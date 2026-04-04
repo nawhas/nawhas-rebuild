@@ -10,6 +10,8 @@ import { TrackDetailPlayButton } from '@/components/player/track-detail-play-but
 import { MediaToggle } from '@/components/tracks/media-toggle';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildTrackJsonLd } from '@/lib/jsonld';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -80,6 +82,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
 
   return (
     <div className="py-10">
+      <JsonLd data={buildTrackJsonLd(track, reciterSlug, albumSlug, trackSlug)} />
       <Container size="md">
         <TrackHeader track={track} />
         <TrackActions trackId={track.id} />

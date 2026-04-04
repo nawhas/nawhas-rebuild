@@ -8,6 +8,8 @@ import { AlbumHeader } from '@/components/albums/album-header';
 import { TrackList } from '@/components/albums/track-list';
 import { PlayAllButton } from '@/components/player/play-all-button';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildAlbumJsonLd } from '@/lib/jsonld';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -58,6 +60,7 @@ export default async function AlbumPage({ params }: AlbumPageProps): Promise<Rea
 
   return (
     <main id="main-content" className="py-10">
+      <JsonLd data={buildAlbumJsonLd(album)} />
       <Container>
         <AlbumHeader album={album} />
         <div className="mt-4 flex justify-start">
