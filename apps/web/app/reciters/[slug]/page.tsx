@@ -6,7 +6,7 @@ import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { ReciterHeader } from '@/components/reciters/reciter-header';
 import { ReciterDiscography } from '@/components/reciters/reciter-discography';
-import { buildMetadata } from '@/lib/metadata';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: ReciterPageProps): Promise<Me
   return buildMetadata({
     title: reciter.name,
     description: `Browse the full discography of ${reciter.name} on Nawhas.`,
+    canonical: `${siteUrl()}/reciters/${slug}`,
   });
 }
 

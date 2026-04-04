@@ -4,7 +4,7 @@ import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { SearchResultsContent } from '@/components/search/search-results-content';
-import { buildMetadata } from '@/lib/metadata';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
 
 const createCaller = createCallerFactory(appRouter);
 
@@ -20,13 +20,14 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
   const query = q?.trim() ?? '';
 
   if (!query) {
-    return buildMetadata({ title: 'Search', noIndex: true });
+    return buildMetadata({ title: 'Search', noIndex: true, canonical: `${siteUrl()}/search` });
   }
 
   return buildMetadata({
     title: `"${query}" — Search`,
     description: `Search results for "${query}" on Nawhas.com`,
     noIndex: true,
+    canonical: `${siteUrl()}/search?q=${encodeURIComponent(query)}`,
   });
 }
 

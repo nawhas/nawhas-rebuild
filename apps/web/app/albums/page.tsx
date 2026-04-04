@@ -4,7 +4,7 @@ import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { AlbumGrid } from '@/components/albums/album-grid';
-import { buildMetadata } from '@/lib/metadata';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -12,6 +12,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = buildMetadata({
   title: 'Albums',
   description: 'Browse all nawha albums in our comprehensive digital library.',
+  canonical: `${siteUrl()}/albums`,
 });
 
 const createCaller = createCallerFactory(appRouter);

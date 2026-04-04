@@ -7,7 +7,7 @@ import { Container } from '@/components/layout/container';
 import { AlbumHeader } from '@/components/albums/album-header';
 import { TrackList } from '@/components/albums/track-list';
 import { PlayAllButton } from '@/components/player/play-all-button';
-import { buildMetadata } from '@/lib/metadata';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: AlbumPageProps): Promise<Meta
     title: album.title,
     description: `Listen to ${album.title} by ${album.reciterName} on Nawhas.`,
     ...(album.artworkUrl != null && { image: album.artworkUrl }),
+    canonical: `${siteUrl()}/albums/${slug}`,
   });
 }
 

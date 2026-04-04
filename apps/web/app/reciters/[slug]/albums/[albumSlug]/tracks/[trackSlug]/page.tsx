@@ -9,7 +9,7 @@ import { TrackActions } from '@/components/tracks/track-actions';
 import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
 import { MediaToggle } from '@/components/tracks/media-toggle';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
-import { buildMetadata } from '@/lib/metadata';
+import { buildMetadata, siteUrl } from '@/lib/metadata';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -56,6 +56,7 @@ export async function generateMetadata({ params }: TrackPageProps): Promise<Meta
     title: track.title,
     description: `${track.title} by ${track.reciter.name} — from the album ${track.album.title} on Nawhas.`,
     ...(track.album.artworkUrl ? { image: track.album.artworkUrl } : {}),
+    canonical: `${siteUrl()}/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${trackSlug}`,
   });
 }
 
