@@ -165,6 +165,11 @@ async function signIn(
  * client.  Without this, auth-dependent UI (SaveButton, LikeButton, history
  * recording) may interact before `useSession()` has updated React state,
  * causing unauthenticated redirects.
+ *
+ * The waitForResponse has a timeout and is caught: in some CI environments
+ * the session check is skipped for cached routes, and hanging indefinitely
+ * would exhaust the test's 60 s budget and cause subsequent page.goto calls
+ * to fail with "Test ended".
  */
 async function gotoWithSession(
   page: import('@playwright/test').Page,
@@ -172,10 +177,13 @@ async function gotoWithSession(
 ): Promise<void> {
   const sessionLoaded = page.waitForResponse(
     (res) => res.url().includes('/api/auth/get-session'),
+    { timeout: 15_000 },
   );
   await page.goto(url);
-  await sessionLoaded;
-  await page.waitForLoadState('networkidle');
+  await sessionLoaded.catch(() => {
+    // session check may not always fire (e.g. RSC cached routes) — proceed
+  });
+  await page.waitForLoadState('networkidle', { timeout: 30_000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -197,8 +205,12 @@ test.describe('Library — Save & Unsave', () => {
     await expect(saveButton).toBeVisible();
     await saveButton.click();
 
-    // Button label should change to indicate it's saved (aria-label: "Remove from library")
+    // Button label changes immediately (optimistic UI); we must also wait for
+    // it to re-enable — that happens once isPending→false, meaning the server
+    // action has committed.  Navigating before commit causes the library page
+    // to render stale data and the track title never appears.
     await expect(page.getByRole('button', { name: /Remove from library/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 10_000 });
 
     // Navigate to library
     await page.goto('/library/tracks');
@@ -219,6 +231,8 @@ test.describe('Library — Save & Unsave', () => {
     const saveButton = page.getByRole('button', { name: /Save to library/i });
     await saveButton.click();
     await expect(page.getByRole('button', { name: /Remove from library/i })).toBeVisible();
+    // Wait for the save server action to commit before navigating (see save test comment)
+    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 10_000 });
 
     // Navigate to library to confirm it's there
     await page.goto('/library/tracks');
@@ -279,16 +293,20 @@ test.describe('Listening History', () => {
 
     // Click the play button to start playback (audio is intercepted as silent MP3).
     // The useListeningHistory hook fires a recordPlay server action (POST to page URL)
-    // when currentTrack changes.  We must wait for React to process the state change,
-    // run the effect, and for the server action to complete before navigating away.
+    // when currentTrack changes.  We register the waitForResponse listener BEFORE
+    // clicking so we don't miss the response when CI is fast.  A timeout+catch guards
+    // against the rare case where the effect fires before the listener is installed.
     const playButton = page.getByRole('button', { name: new RegExp(`Play ${seedData.track.title}`, 'i') });
     await expect(playButton).toBeVisible();
+    const recordPlaySettled = page.waitForResponse(
+      (res) => res.request().method() === 'POST' && !!res.request().headers()['next-action'],
+      { timeout: 15_000 },
+    ).catch(() => null);
     await playButton.click();
 
-    // Give React time to re-render and fire the useListeningHistory effect,
-    // then wait for the recordPlay server action POST to settle.
-    await page.waitForTimeout(1_000);
-    await page.waitForLoadState('networkidle');
+    // Wait for the recordPlay server action to complete before navigating.
+    await recordPlaySettled;
+    await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
     // Navigate to history
     await page.goto('/history');
@@ -305,9 +323,13 @@ test.describe('Listening History', () => {
     const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
     await gotoWithSession(page, trackUrl);
     const playButton = page.getByRole('button', { name: new RegExp(`Play ${seedData.track.title}`, 'i') });
+    const recordPlaySettled = page.waitForResponse(
+      (res) => res.request().method() === 'POST' && !!res.request().headers()['next-action'],
+      { timeout: 15_000 },
+    ).catch(() => null);
     await playButton.click();
-    await page.waitForTimeout(1_000);
-    await page.waitForLoadState('networkidle');
+    await recordPlaySettled;
+    await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
     await page.goto('/history');
     await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 10_000 });
