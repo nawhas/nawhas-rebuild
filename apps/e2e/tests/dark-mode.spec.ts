@@ -40,9 +40,10 @@ test.describe('Dark mode — system preference', () => {
 
 test.describe('Dark mode — manual toggle', () => {
   test.beforeEach(async ({ page }) => {
-    // Ensure each test starts in clean light mode — no stored preference.
+    // Ensure each test starts in explicit light mode so that the first toggle
+    // click transitions light → dark (3-way cycle: system → light → dark → system).
     await page.addInitScript(() => {
-      localStorage.removeItem('theme');
+      localStorage.setItem('theme', 'light');
     });
   });
 
