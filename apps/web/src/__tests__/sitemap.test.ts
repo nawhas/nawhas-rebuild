@@ -44,8 +44,6 @@ function makeSelectChain(rows: unknown[]) {
   };
   // Make the chain itself a thenable (for `await chain`)
   Object.defineProperty(chain, Symbol.toStringTag, { value: 'MockChain' });
-  // Allow the chain to be awaited directly
-  (chain as unknown as Promise<unknown>)[Symbol.iterator as unknown as keyof typeof chain];
   return chain;
 }
 
@@ -56,7 +54,7 @@ describe('sitemap', () => {
 
   it('includes static routes', async () => {
     const { db } = await import('@nawhas/db');
-    const mockDb = db as { select: ReturnType<typeof vi.fn> };
+    const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 
     // Three sequential select calls: reciters, albums, tracks
     let callCount = 0;
@@ -86,7 +84,7 @@ describe('sitemap', () => {
 
   it('includes reciter, album, and track URLs from the database', async () => {
     const { db } = await import('@nawhas/db');
-    const mockDb = db as { select: ReturnType<typeof vi.fn> };
+    const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 
     let callCount = 0;
     mockDb.select.mockImplementation(() => {
@@ -126,7 +124,7 @@ describe('sitemap', () => {
 
   it('populates lastmod from updatedAt for each entry', async () => {
     const { db } = await import('@nawhas/db');
-    const mockDb = db as { select: ReturnType<typeof vi.fn> };
+    const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 
     const updatedAt = new Date('2024-06-15T12:00:00.000Z');
     let callCount = 0;
@@ -158,7 +156,7 @@ describe('sitemap', () => {
     vi.mocked(siteUrl).mockReturnValue('https://staging.nawhas.com');
 
     const { db } = await import('@nawhas/db');
-    const mockDb = db as { select: ReturnType<typeof vi.fn> };
+    const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 
     let callCount = 0;
     mockDb.select.mockImplementation(() => {
