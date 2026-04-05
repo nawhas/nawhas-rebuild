@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nawhas-staging
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/nawhas/nawhas-rebuild
+    targetRevision: HEAD
+    path: deploy/helm/nawhas
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-staging.yaml
+        # SOPS-encrypted secrets — decrypted by helm-secrets plugin at sync time.
+        # Requires helm-secrets ArgoCD plugin + age private key as K8s secret in argocd namespace.
+        - secrets://secrets/staging.yaml.enc
+      parameters:
+        # Overridden at deploy time by CI with the git SHA
+        - name: image.tag
+          value: "latest"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nawhas-staging
+  syncPolicy:
+    automated:
+      prune: true
+      # selfHeal: false — allows manual hotfixes without ArgoCD immediately reverting.
+      # Revisit and enable after production launch when the deploy pipeline is stable.
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true

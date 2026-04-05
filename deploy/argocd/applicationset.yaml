@@ -1,0 +1,58 @@
+# ApplicationSet — manages both staging and production from a single resource.
+# Recommended for multi-env management; replace per-env Application YAMLs when
+# ready to standardise further.
+#
+# goTemplate: true enables Go template conditionals so staging gets automated
+# sync (prune + selfHeal) while production remains manual-approval-only.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nawhas
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - list:
+        elements:
+          - environment: staging
+            namespace: nawhas-staging
+            valueFile: values-staging.yaml
+            secretFile: secrets://secrets/staging.yaml.enc
+            targetRevision: HEAD
+            automated: true
+          - environment: production
+            namespace: nawhas-production
+            valueFile: values-production.yaml
+            secretFile: secrets://secrets/production.yaml.enc
+            targetRevision: HEAD
+            automated: false
+  template:
+    metadata:
+      name: "nawhas-{{.environment}}"
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/nawhas/nawhas-rebuild
+        targetRevision: "{{.targetRevision}}"
+        path: deploy/helm/nawhas
+        helm:
+          valueFiles:
+            - values.yaml
+            - "{{.valueFile}}"
+            - "{{.secretFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.namespace}}"
+      syncPolicy:
+        # staging auto-syncs on every push with pruning and self-healing.
+        # production requires manual ArgoCD approval — automated is false.
+        {{- if .automated }}
+        automated:
+          prune: true
+          selfHeal: true
+        {{- end }}
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true

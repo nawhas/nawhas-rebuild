@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
@@ -94,7 +95,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(withSentryConfig(nextConfig, {
+const withAnalyzer = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true' });
+
+export default withAnalyzer(withNextIntl(withSentryConfig(nextConfig, {
   // Sentry organisation/project slugs — set these in CI via SENTRY_ORG / SENTRY_PROJECT
   ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
   ...(process.env.SENTRY_PROJECT ? { project: process.env.SENTRY_PROJECT } : {}),
@@ -113,4 +116,11 @@ export default withNextIntl(withSentryConfig(nextConfig, {
   // Prevent Sentry from wrapping server components with extra try/catch —
   // Next.js already surfaces those errors; double-wrapping adds noise.
   autoInstrumentServerFunctions: false,
-}));
+
+  // Exclude Replay worker from the client bundle — we do not use session
+  // replay (replaysSessionSampleRate: 0) so the ~50 kB gz Replay SDK is
+  // pure dead weight on every page load.
+  bundleSizeOptimizations: {
+    excludeReplayWorker: true,
+  },
+})));

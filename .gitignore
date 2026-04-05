@@ -19,7 +19,9 @@ dist/
 
 # Playwright
 **/test-results/
+**/test-results-root-bak/
 **/playwright-report/
+**/playwright-report-root-bak/
 **/blob-report/
 **/playwright/.cache/
 
@@ -33,3 +35,11 @@ coverage/
 *.log
 .DS_Store
 *.tsbuildinfo
+
+# SOPS — plaintext secrets must NEVER be committed; only *.yaml.enc files are safe
+deploy/helm/nawhas/secrets/*.yaml
+!deploy/helm/nawhas/secrets/*.yaml.enc
+!deploy/helm/nawhas/secrets/*.yaml.example
+
+# age private key files
+*.key

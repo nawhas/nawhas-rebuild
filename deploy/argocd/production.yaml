@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nawhas-production
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/nawhas/nawhas-rebuild
+    targetRevision: HEAD
+    path: deploy/helm/nawhas
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-production.yaml
+        # SOPS-encrypted secrets — decrypted by helm-secrets plugin at sync time.
+        - secrets://secrets/production.yaml.enc
+      parameters:
+        # Overridden at deploy time by CI with the git SHA
+        - name: image.tag
+          value: "latest"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nawhas-production
+  syncPolicy:
+    # Production: no automated sync — require explicit approval via ArgoCD UI or CLI.
+    # This prevents accidental deploys to production from bad commits.
+    automated: null
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true

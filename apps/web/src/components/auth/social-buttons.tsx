@@ -10,13 +10,6 @@ interface SocialButtonsProps {
   callbackUrl?: string | undefined;
 }
 
-interface ProviderConfig {
-  labelKey: keyof ReturnType<typeof useTranslations<'auth.social'>>;
-  icon: React.JSX.Element;
-  /** Tailwind classes for the button */
-  className: string;
-}
-
 function GoogleIcon(): React.JSX.Element {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

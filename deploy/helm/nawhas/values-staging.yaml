@@ -1,0 +1,43 @@
+# Staging overrides — applied on top of values.yaml for staging environment.
+
+image:
+  tag: "OVERRIDE_AT_DEPLOY"  # CI injects the git SHA at deploy time
+
+ingress:
+  host: staging.nawhas.cititech.tech
+  tls: true
+  tlsSecretName: nawhas-staging-tls
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+# MailHog SMTP trap — catches all outbound email on staging
+mailhog:
+  enabled: true
+
+# MinIO for S3-compatible storage on staging
+minio:
+  enabled: true
+  host: minio.nawhas-staging.svc.cluster.local
+  port: 9000
+
+env:
+  NEXT_PUBLIC_BASE_URL: "https://staging.nawhas.cititech.tech"
+  NODE_ENV: "production"
+  PORT: "3000"
+  SMTP_HOST: "mailhog.nawhas-staging.svc.cluster.local"
+  SMTP_PORT: "1025"
+  SMTP_SECURE: "false"
+  S3_ENDPOINT: "http://minio.nawhas-staging.svc.cluster.local:9000"
+  S3_BUCKET_AUDIO: "nawhas-audio"
+  S3_BUCKET_IMAGES: "nawhas-images"
+  TYPESENSE_HOST: "typesense.nawhas-staging.svc.cluster.local"
+  TYPESENSE_PORT: "8108"
+  TYPESENSE_PROTOCOL: "http"
+
+secretName: nawhas-staging-secrets
+namespace: nawhas-staging
+
+replicaCount: 1
+autoscaling:
+  enabled: false

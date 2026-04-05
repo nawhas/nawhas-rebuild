@@ -1,0 +1,39 @@
+# Secrets and environment files — never bundle into Docker image
+.env
+.env.*
+!.env.example
+
+# Encrypted secrets skeleton (actual encrypted files are git-tracked but
+# should not be baked into the image — they are mounted at runtime)
+deploy/helm/nawhas/secrets/*.enc
+
+# Development dependencies
+node_modules
+**/node_modules
+
+# Build artefacts that will be rebuilt inside the image
+apps/web/.next
+packages/*/dist
+
+# VCS and editor metadata
+.git
+.gitignore
+.github
+
+# Local dev tooling
+.dockerignore
+docker-compose*.yml
+Makefile
+
+# Test output
+apps/e2e/playwright-report*
+apps/e2e/test-results*
+coverage
+
+# Docs and non-runtime files
+*.md
+!apps/web/public/**/*.md
+
+# OS metadata
+.DS_Store
+Thumbs.db

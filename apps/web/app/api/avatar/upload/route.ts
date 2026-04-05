@@ -66,6 +66,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       Key: key,
       Body: resized,
       ContentType: 'image/webp',
+      CacheControl: 'public, max-age=31536000, immutable',
     }),
   );
 

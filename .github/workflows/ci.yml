@@ -146,6 +146,81 @@ jobs:
           path: apps/e2e/playwright-report/
           retention-days: 7
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # Build + push the production Docker image to ghcr.io on every main merge.
+  # The image tag is the git SHA so deploys are always traceable to a commit.
+  # ──────────────────────────────────────────────────────────────────────────
+  docker-push:
+    name: Docker Push (ghcr.io)
+    runs-on: ubuntu-latest
+    needs: [quality, build, docker-build]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/nawhas/nawhas-web:${{ github.sha }}
+            ghcr.io/nawhas/nawhas-web:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Deploy to staging via ArgoCD after the image is pushed to ghcr.io.
+  # Required GitHub secrets: ARGOCD_SERVER, ARGOCD_TOKEN
+  # ──────────────────────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-push]
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - name: Install ArgoCD CLI
+        env:
+          # Pin to a specific release and verify SHA256 to prevent supply chain attacks.
+          # To upgrade: update ARGOCD_VERSION and ARGOCD_SHA256 together.
+          ARGOCD_VERSION: "v2.13.3"
+          ARGOCD_SHA256: "24699b29efe24ef7cce463b54fc0341f6496d97a7c54c9fccaa737e8eb99296f"
+        run: |
+          curl -sSL -o argocd \
+            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
+          echo "${ARGOCD_SHA256}  argocd" | sha256sum -c -
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
+
+      - name: Login to ArgoCD
+        run: |
+          argocd login "${{ secrets.ARGOCD_SERVER }}" \
+            --auth-token "${{ secrets.ARGOCD_TOKEN }}" \
+            --grpc-web
+
+      - name: Set image tag and sync
+        run: |
+          argocd app set nawhas-staging \
+            --helm-set "image.tag=${{ github.sha }}"
+          argocd app sync nawhas-staging --timeout 300
+          argocd app wait nawhas-staging --health --timeout 300
+
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest

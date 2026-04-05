@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nawhas-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: nawhas-web
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: nawhas-web
