@@ -9,10 +9,7 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { join } from 'node:path';
 
 const connectionString = process.env['DATABASE_URL'];
 if (!connectionString) {
@@ -25,9 +22,11 @@ const db = drizzle(client);
 
 console.log('Running database migrations...');
 
-await migrate(db, {
-  migrationsFolder: join(__dirname, 'migrations'),
-});
+void (async () => {
+  await migrate(db, {
+    migrationsFolder: join(__dirname, 'migrations'),
+  });
 
-console.log('Migrations complete.');
-await client.end();
+  console.log('Migrations complete.');
+  await client.end();
+})();
