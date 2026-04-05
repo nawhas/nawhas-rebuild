@@ -39,6 +39,12 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 # Copy full source
 COPY . .
 
+# Ensure hoisted binaries (tsc, etc.) are on PATH.
+# With shamefully-hoist=true, deps land in /app/node_modules/.bin but pnpm's
+# script runner only prepends {package}/node_modules/.bin — which doesn't exist
+# for packages without their own node_modules dir. Explicitly extend PATH here.
+ENV PATH="/app/node_modules/.bin:${PATH}"
+
 # Build internal packages first, then the web app
 RUN pnpm --filter @nawhas/types build && \
     pnpm --filter @nawhas/db build && \
