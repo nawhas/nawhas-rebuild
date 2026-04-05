@@ -21,53 +21,58 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/albums`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
   ];
 
-  // Fetch all reciters
-  const allReciters = await db
-    .select({ slug: reciters.slug, updatedAt: reciters.updatedAt })
-    .from(reciters);
+  try {
+    // Fetch all reciters
+    const allReciters = await db
+      .select({ slug: reciters.slug, updatedAt: reciters.updatedAt })
+      .from(reciters);
 
-  const reciterRoutes: MetadataRoute.Sitemap = allReciters.map((reciter) => ({
-    url: `${base}/reciters/${reciter.slug}`,
-    lastModified: reciter.updatedAt,
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }));
+    const reciterRoutes: MetadataRoute.Sitemap = allReciters.map((reciter) => ({
+      url: `${base}/reciters/${reciter.slug}`,
+      lastModified: reciter.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
 
-  // Fetch all albums joined with their reciter slug
-  const allAlbums = await db
-    .select({
-      slug: albums.slug,
-      updatedAt: albums.updatedAt,
-      reciterSlug: reciters.slug,
-    })
-    .from(albums)
-    .innerJoin(reciters, eq(albums.reciterId, reciters.id));
+    // Fetch all albums joined with their reciter slug
+    const allAlbums = await db
+      .select({
+        slug: albums.slug,
+        updatedAt: albums.updatedAt,
+        reciterSlug: reciters.slug,
+      })
+      .from(albums)
+      .innerJoin(reciters, eq(albums.reciterId, reciters.id));
 
-  const albumRoutes: MetadataRoute.Sitemap = allAlbums.map((album) => ({
-    url: `${base}/albums/${album.slug}`,
-    lastModified: album.updatedAt,
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
+    const albumRoutes: MetadataRoute.Sitemap = allAlbums.map((album) => ({
+      url: `${base}/albums/${album.slug}`,
+      lastModified: album.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
 
-  // Fetch all tracks joined with their album and reciter slugs
-  const allTracks = await db
-    .select({
-      slug: tracks.slug,
-      updatedAt: tracks.updatedAt,
-      albumSlug: albums.slug,
-      reciterSlug: reciters.slug,
-    })
-    .from(tracks)
-    .innerJoin(albums, eq(tracks.albumId, albums.id))
-    .innerJoin(reciters, eq(albums.reciterId, reciters.id));
+    // Fetch all tracks joined with their album and reciter slugs
+    const allTracks = await db
+      .select({
+        slug: tracks.slug,
+        updatedAt: tracks.updatedAt,
+        albumSlug: albums.slug,
+        reciterSlug: reciters.slug,
+      })
+      .from(tracks)
+      .innerJoin(albums, eq(tracks.albumId, albums.id))
+      .innerJoin(reciters, eq(albums.reciterId, reciters.id));
 
-  const trackRoutes: MetadataRoute.Sitemap = allTracks.map((track) => ({
-    url: `${base}/reciters/${track.reciterSlug}/albums/${track.albumSlug}/tracks/${track.slug}`,
-    lastModified: track.updatedAt,
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+    const trackRoutes: MetadataRoute.Sitemap = allTracks.map((track) => ({
+      url: `${base}/reciters/${track.reciterSlug}/albums/${track.albumSlug}/tracks/${track.slug}`,
+      lastModified: track.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }));
 
-  return [...staticRoutes, ...reciterRoutes, ...albumRoutes, ...trackRoutes];
+    return [...staticRoutes, ...reciterRoutes, ...albumRoutes, ...trackRoutes];
+  } catch {
+    // Build-time fallback: DB is unavailable (e.g. Docker build), return static routes only
+    return staticRoutes;
+  }
 }
