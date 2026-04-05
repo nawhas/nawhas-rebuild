@@ -4,6 +4,7 @@ import type { AlbumDTO } from '@nawhas/types';
 
 interface AlbumCardProps {
   album: AlbumDTO;
+  priority?: boolean;
 }
 
 /**
@@ -12,7 +13,7 @@ interface AlbumCardProps {
  *
  * Server Component — no interactivity required.
  */
-export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
+export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JSX.Element {
   return (
     <Link
       href={`/albums/${album.slug}`}
@@ -26,6 +27,7 @@ export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
             src={album.artworkUrl}
             alt={`${album.title} album cover`}
             fill
+            priority={priority}
             className="object-cover transition-transform duration-200 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />

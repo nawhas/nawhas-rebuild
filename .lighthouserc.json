@@ -2,7 +2,11 @@
   "ci": {
     "collect": {
       "url": ["http://localhost:3000"],
-      "numberOfRuns": 3
+      "numberOfRuns": 3,
+      "settings": {
+        "throttlingMethod": "devtools",
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
+      }
     },
     "assert": {
       "assertions": {
