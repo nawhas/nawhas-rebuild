@@ -196,9 +196,15 @@ jobs:
     environment: staging
     steps:
       - name: Install ArgoCD CLI
+        env:
+          # Pin to a specific release and verify SHA256 to prevent supply chain attacks.
+          # To upgrade: update ARGOCD_VERSION and ARGOCD_SHA256 together.
+          ARGOCD_VERSION: "v2.13.3"
+          ARGOCD_SHA256: "c5fdce1e2f806174a48b946ca5eebc0a29acca0a2f9b94bd4af81afbd3571905"
         run: |
           curl -sSL -o argocd \
-            https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
+          echo "${ARGOCD_SHA256}  argocd" | sha256sum -c -
           chmod +x argocd
           sudo mv argocd /usr/local/bin/
 
@@ -206,8 +212,7 @@ jobs:
         run: |
           argocd login "${{ secrets.ARGOCD_SERVER }}" \
             --auth-token "${{ secrets.ARGOCD_TOKEN }}" \
-            --grpc-web \
-            --insecure
+            --grpc-web
 
       - name: Set image tag and sync
         run: |
