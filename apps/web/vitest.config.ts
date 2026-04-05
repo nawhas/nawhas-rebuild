@@ -10,6 +10,7 @@ export default defineConfig({
     },
   },
   test: {
+    setupFiles: ['./vitest.setup.ts'],
     // Playwright specs under src/tests/ use @playwright/test; Vitest must not load them.
     exclude: ['**/node_modules/**', '**/dist/**', '**/src/tests/**'],
     // DATABASE_URL for tests.
