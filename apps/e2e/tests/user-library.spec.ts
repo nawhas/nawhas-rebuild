@@ -175,14 +175,17 @@ async function gotoWithSession(
   page: import('@playwright/test').Page,
   url: string,
 ): Promise<void> {
+  // Attach .catch() synchronously before awaiting page.goto so that if the
+  // 15 s timeout fires while goto is still in-flight, Node.js does not emit
+  // an unhandledRejection that Playwright surfaces as a hard test failure.
   const sessionLoaded = page.waitForResponse(
     (res) => res.url().includes('/api/auth/get-session'),
     { timeout: 15_000 },
-  );
-  await page.goto(url);
-  await sessionLoaded.catch(() => {
+  ).catch(() => {
     // session check may not always fire (e.g. RSC cached routes) — proceed
   });
+  await page.goto(url);
+  await sessionLoaded;
   await page.waitForLoadState('networkidle', { timeout: 30_000 });
 }
 
