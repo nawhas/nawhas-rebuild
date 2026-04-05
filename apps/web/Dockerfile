@@ -45,9 +45,14 @@ COPY . .
 # for packages without their own node_modules dir. Explicitly extend PATH here.
 ENV PATH="/app/node_modules/.bin:${PATH}"
 
-# Build internal packages first, then the web app
-RUN pnpm --filter @nawhas/types build && \
-    pnpm --filter @nawhas/db build && \
+# Build internal packages first, then the web app.
+# Use absolute tsc path to bypass pnpm's script runner PATH isolation:
+# pnpm's spawned child process does not reliably inherit the ENV PATH above,
+# so packages/types and packages/db (which have no local node_modules/.bin with
+# shamefully-hoist) cannot find tsc via pnpm script. Calling tsc directly avoids
+# this entirely. The web build still uses pnpm (Next.js handles its own tooling).
+RUN /app/node_modules/.bin/tsc --build packages/types/tsconfig.json && \
+    /app/node_modules/.bin/tsc --build packages/db/tsconfig.json && \
     pnpm --filter @nawhas/web build
 
 # ──────────────────────────────────────────────────────────────────────────────
