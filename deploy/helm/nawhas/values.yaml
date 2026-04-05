@@ -21,6 +21,8 @@ ingress:
   tlsSecretName: nawhas-tls
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cloudflare.com/dns-enabled: "true"
 
 # Optional infrastructure toggles — disabled by default
 minio:

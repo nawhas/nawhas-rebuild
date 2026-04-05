@@ -10,6 +10,7 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    cloudflare.com/dns-enabled: "true"
 
 # MailHog SMTP trap — catches all outbound email on staging
 mailhog:
