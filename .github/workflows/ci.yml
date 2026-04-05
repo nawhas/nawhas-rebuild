@@ -211,7 +211,8 @@ jobs:
       - name: Login to ArgoCD
         run: |
           argocd login "${{ secrets.ARGOCD_SERVER }}" \
-            --auth-token "${{ secrets.ARGOCD_TOKEN }}" \
+            --username "${{ secrets.ARGOCD_USERNAME }}" \
+            --password "${{ secrets.ARGOCD_PASSWORD }}" \
             --grpc-web
 
       - name: Set image tag and sync
