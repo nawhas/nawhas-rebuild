@@ -87,3 +87,14 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'en',
   NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
+
+vi.mock('next-intl/server', () => ({
+  getTranslations: async (namespaceOrOptions?: string | { namespace?: string }) => {
+    const ns =
+      typeof namespaceOrOptions === 'string'
+        ? namespaceOrOptions
+        : (namespaceOrOptions?.namespace ?? '');
+    return makeTranslator(ns);
+  },
+  getLocale: async () => 'en',
+}));
