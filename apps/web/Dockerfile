@@ -53,6 +53,13 @@ ENV PATH="/app/node_modules/.bin:${PATH}"
 # this entirely. The web build still uses pnpm (Next.js handles its own tooling).
 RUN /app/node_modules/.bin/tsc --build packages/types/tsconfig.json && \
     /app/node_modules/.bin/tsc --build packages/db/tsconfig.json && \
+    BETTER_AUTH_SECRET=build-placeholder \
+    BETTER_AUTH_URL=http://localhost:3000 \
+    DATABASE_URL=postgresql://localhost/nawhas \
+    TYPESENSE_HOST=localhost \
+    TYPESENSE_PORT=8108 \
+    TYPESENSE_PROTOCOL=http \
+    TYPESENSE_API_KEY=build-placeholder \
     pnpm --filter @nawhas/web build
 
 # ──────────────────────────────────────────────────────────────────────────────
