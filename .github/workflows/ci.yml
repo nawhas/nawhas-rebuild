@@ -186,7 +186,7 @@ jobs:
 
   # ──────────────────────────────────────────────────────────────────────────
   # Deploy to staging via ArgoCD after the image is pushed to ghcr.io.
-  # Required GitHub secrets: ARGOCD_SERVER, ARGOCD_TOKEN
+  # Required GitHub secrets: ARGOCD_SERVER, ARGOCD_USERNAME, ARGOCD_PASSWORD
   # ──────────────────────────────────────────────────────────────────────────
   deploy-staging:
     name: Deploy to Staging
@@ -211,8 +211,10 @@ jobs:
       - name: Login to ArgoCD
         run: |
           argocd login "${{ secrets.ARGOCD_SERVER }}" \
-            --auth-token "${{ secrets.ARGOCD_TOKEN }}" \
-            --grpc-web
+            --username "${{ secrets.ARGOCD_USERNAME }}" \
+            --password "${{ secrets.ARGOCD_PASSWORD }}" \
+            --grpc-web \
+            --insecure
 
       - name: Set image tag and sync
         run: |

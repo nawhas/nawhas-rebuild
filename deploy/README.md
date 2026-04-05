@@ -91,7 +91,8 @@ kubectl apply -f deploy/argocd/applicationset.yaml
 | Secret | Description |
 |--------|-------------|
 | `ARGOCD_SERVER` | ArgoCD server hostname (no https://) |
-| `ARGOCD_TOKEN` | ArgoCD API token with sync permissions |
+| `ARGOCD_USERNAME` | ArgoCD login username (default: `admin`) |
+| `ARGOCD_PASSWORD` | ArgoCD login password |
 | `AGE_PRIVATE_KEY_STAGING` | age private key for staging secrets |
 | `AGE_PRIVATE_KEY_PRODUCTION` | age private key for production secrets |
 
