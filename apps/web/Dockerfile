@@ -30,11 +30,9 @@ WORKDIR /app
 RUN corepack enable
 
 # Copy installed node_modules from deps stage
+# With shamefully-hoist=true in .npmrc, pnpm hoists all deps to /app/node_modules.
+# Per-package node_modules dirs do not exist — only the root copy is needed.
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
-COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
-COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 
 # Copy full source
 COPY . .
