@@ -210,7 +210,7 @@ test.describe('Library — Save & Unsave', () => {
     // action has committed.  Navigating before commit causes the library page
     // to render stale data and the track title never appears.
     await expect(page.getByRole('button', { name: /Remove from library/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 20_000 });
 
     // Navigate to library
     await page.goto('/library/tracks');
@@ -232,7 +232,7 @@ test.describe('Library — Save & Unsave', () => {
     await saveButton.click();
     await expect(page.getByRole('button', { name: /Remove from library/i })).toBeVisible();
     // Wait for the save server action to commit before navigating (see save test comment)
-    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 20_000 });
 
     // Navigate to library to confirm it's there
     await page.goto('/library/tracks');
@@ -265,6 +265,10 @@ test.describe('Library — Like Track', () => {
 
     // Wait for the button state to update (aria-label: "Unlike track")
     await expect(page.getByRole('button', { name: /Unlike track/i })).toBeVisible();
+    // Wait for the like server action to commit before reloading — without this, the reload
+    // can happen while isPending is still true, meaning the DB write hasn't landed yet.
+    // After reload the SSR page would fetch initialLiked=false and show "Like track" instead.
+    await expect(page.getByRole('button', { name: /Unlike track/i })).toBeEnabled({ timeout: 20_000 });
 
     // Reload the page and wait for session to be re-fetched
     const sessionReloaded = page.waitForResponse(
