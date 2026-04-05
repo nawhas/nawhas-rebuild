@@ -31,8 +31,10 @@ RUN corepack enable
 
 # Copy installed node_modules from deps stage
 # With shamefully-hoist=true in .npmrc, pnpm hoists all deps to /app/node_modules.
-# Per-package node_modules dirs do not exist — only the root copy is needed.
+# apps/web/node_modules is also required — pnpm creates @nawhas/* symlinks there
+# pointing to the workspace packages (db, types, ui, config) even with hoisting.
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 
 # Copy full source
 COPY . .
