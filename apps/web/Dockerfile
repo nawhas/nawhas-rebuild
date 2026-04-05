@@ -32,9 +32,9 @@ RUN corepack enable
 # Copy installed node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules 2>/dev/null || true
-COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules 2>/dev/null || true
-COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules 2>/dev/null || true
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 
 # Copy full source
 COPY . .
