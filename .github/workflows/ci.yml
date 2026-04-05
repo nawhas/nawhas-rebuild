@@ -200,7 +200,7 @@ jobs:
           # Pin to a specific release and verify SHA256 to prevent supply chain attacks.
           # To upgrade: update ARGOCD_VERSION and ARGOCD_SHA256 together.
           ARGOCD_VERSION: "v2.13.3"
-          ARGOCD_SHA256: "c5fdce1e2f806174a48b946ca5eebc0a29acca0a2f9b94bd4af81afbd3571905"
+          ARGOCD_SHA256: "24699b29efe24ef7cce463b54fc0341f6496d97a7c54c9fccaa737e8eb99296f"
         run: |
           curl -sSL -o argocd \
             "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
