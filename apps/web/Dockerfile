@@ -11,7 +11,7 @@ WORKDIR /app
 RUN corepack enable
 
 # Copy workspace manifests first for better layer caching
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/db/package.json ./packages/db/
 COPY packages/types/package.json ./packages/types/
@@ -53,6 +53,16 @@ ENV PATH="/app/node_modules/.bin:${PATH}"
 # this entirely. The web build still uses pnpm (Next.js handles its own tooling).
 RUN /app/node_modules/.bin/tsc --build packages/types/tsconfig.json && \
     /app/node_modules/.bin/tsc --build packages/db/tsconfig.json && \
+    BETTER_AUTH_SECRET=build-placeholder \
+    BETTER_AUTH_URL=http://localhost:3000 \
+    DATABASE_URL=postgresql://localhost/nawhas \
+    TYPESENSE_HOST=localhost \
+    TYPESENSE_PORT=8108 \
+    TYPESENSE_PROTOCOL=http \
+    TYPESENSE_API_KEY=build-placeholder \
+    S3_ENDPOINT=http://localhost:9000 \
+    S3_ACCESS_KEY_ID=build-placeholder \
+    S3_SECRET_ACCESS_KEY=build-placeholder \
     pnpm --filter @nawhas/web build
 
 # ──────────────────────────────────────────────────────────────────────────────

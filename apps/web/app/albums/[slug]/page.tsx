@@ -21,9 +21,14 @@ interface AlbumPageProps {
 }
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const caller = createCaller({ db, session: null, user: null });
-  const { items } = await caller.album.list({ limit: 100 });
-  return items.map((album) => ({ slug: album.slug }));
+  try {
+    const caller = createCaller({ db, session: null, user: null });
+    const { items } = await caller.album.list({ limit: 100 });
+    return items.map((album) => ({ slug: album.slug }));
+  } catch {
+    // No DB at build time (e.g. Docker build) — pages will be generated on demand.
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: AlbumPageProps): Promise<Metadata> {

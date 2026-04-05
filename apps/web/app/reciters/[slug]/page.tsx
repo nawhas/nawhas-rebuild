@@ -20,10 +20,15 @@ interface ReciterPageProps {
 }
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const caller = createCaller({ db, session: null, user: null });
-  // Fetch up to the maximum allowed limit for static generation.
-  const { items } = await caller.reciter.list({ limit: 100 });
-  return items.map((reciter) => ({ slug: reciter.slug }));
+  try {
+    const caller = createCaller({ db, session: null, user: null });
+    // Fetch up to the maximum allowed limit for static generation.
+    const { items } = await caller.reciter.list({ limit: 100 });
+    return items.map((reciter) => ({ slug: reciter.slug }));
+  } catch {
+    // No DB at build time (e.g. Docker build) — pages will be generated on demand.
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ReciterPageProps): Promise<Metadata> {
