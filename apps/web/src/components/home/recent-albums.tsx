@@ -28,9 +28,9 @@ export function RecentAlbums({ albums }: RecentAlbumsProps): React.JSX.Element |
         role="list"
         className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
       >
-        {albums.map((album) => (
+        {albums.map((album, index) => (
           <li key={album.id}>
-            <AlbumCard album={album} />
+            <AlbumCard album={album} priority={index === 0} />
           </li>
         ))}
       </ul>
