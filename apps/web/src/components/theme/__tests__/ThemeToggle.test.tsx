@@ -9,6 +9,16 @@ vi.mock('next-themes', () => ({
   useTheme: () => ({ theme: mockTheme, setTheme: mockSetTheme }),
 }));
 
+const translations: Record<string, string> = {
+  toggleThemeLabel: 'Toggle theme',
+  switchToLight: 'Switch to light mode',
+  switchToDark: 'Switch to dark mode',
+  switchToSystem: 'Switch to system mode',
+};
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => translations[key] ?? key,
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
