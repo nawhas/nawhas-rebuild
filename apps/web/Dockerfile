@@ -60,6 +60,9 @@ RUN /app/node_modules/.bin/tsc --build packages/types/tsconfig.json && \
     TYPESENSE_PORT=8108 \
     TYPESENSE_PROTOCOL=http \
     TYPESENSE_API_KEY=build-placeholder \
+    S3_ENDPOINT=http://localhost:9000 \
+    S3_ACCESS_KEY_ID=build-placeholder \
+    S3_SECRET_ACCESS_KEY=build-placeholder \
     pnpm --filter @nawhas/web build
 
 # ──────────────────────────────────────────────────────────────────────────────
