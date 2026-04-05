@@ -25,24 +25,29 @@ interface TrackPageProps {
 export async function generateStaticParams(): Promise<
   { slug: string; albumSlug: string; trackSlug: string }[]
 > {
-  const caller = createCaller({ db, session: null, user: null });
-  const { items: albums } = await caller.album.list({ limit: 100 });
+  try {
+    const caller = createCaller({ db, session: null, user: null });
+    const { items: albums } = await caller.album.list({ limit: 100 });
 
-  const paramSets = await Promise.all(
-    albums.map(async (album) => {
-      const tracks = await caller.track.listByAlbum({
-        reciterSlug: album.reciterSlug,
-        albumSlug: album.slug,
-      });
-      return tracks.map((track) => ({
-        slug: album.reciterSlug,
-        albumSlug: album.slug,
-        trackSlug: track.slug,
-      }));
-    }),
-  );
+    const paramSets = await Promise.all(
+      albums.map(async (album) => {
+        const tracks = await caller.track.listByAlbum({
+          reciterSlug: album.reciterSlug,
+          albumSlug: album.slug,
+        });
+        return tracks.map((track) => ({
+          slug: album.reciterSlug,
+          albumSlug: album.slug,
+          trackSlug: track.slug,
+        }));
+      }),
+    );
 
-  return paramSets.flat();
+    return paramSets.flat();
+  } catch {
+    // No DB at build time (e.g. Docker build) — pages will be generated on demand.
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: TrackPageProps): Promise<Metadata> {
