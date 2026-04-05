@@ -34,7 +34,7 @@ function parseRichText(template: string, values: MessageObj = {}): React.ReactNo
       parts.push(interpolate(remaining, values));
       break;
     }
-    const [fullMatch, before, tagName, innerContent] = tagMatch;
+    const [fullMatch, before, tagName, innerContent] = tagMatch as [string, string, string, string];
     if (before) parts.push(interpolate(before, values));
 
     const tagFn = values[tagName];
