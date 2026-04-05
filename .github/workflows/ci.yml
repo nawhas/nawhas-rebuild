@@ -181,8 +181,8 @@ jobs:
           tags: |
             ghcr.io/nawhas/nawhas-web:${{ github.sha }}
             ghcr.io/nawhas/nawhas-web:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=nawhas-web
+          cache-to: type=gha,mode=max,scope=nawhas-web
 
   # ──────────────────────────────────────────────────────────────────────────
   # Deploy to staging via ArgoCD after the image is pushed to ghcr.io.
