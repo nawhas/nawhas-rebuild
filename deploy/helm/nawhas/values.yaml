@@ -29,6 +29,10 @@ minio:
   enabled: false
   host: ""
   port: 9000
+  consolePort: 9001
+  storage: 10Gi
+  rootUser: nawhas-admin   # override via secret (MINIO_ROOT_USER)
+  rootPassword: ""         # always from secret (MINIO_ROOT_PASSWORD)
 
 mailhog:
   enabled: false   # MailHog SMTP trap for staging
