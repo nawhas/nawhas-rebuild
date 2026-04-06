@@ -33,7 +33,9 @@ spec:
     spec:
       containers:
         - name: minio
-          image: quay.io/minio/minio:latest
+          # Pin to a specific stable release — update intentionally when upgrading MinIO.
+          # minio/minio: https://github.com/minio/minio/releases
+          image: quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z
           args:
             - server
             - /data
@@ -119,7 +121,9 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: mc
-          image: quay.io/minio/mc:latest
+          # Pin to a specific stable release — update intentionally when upgrading mc.
+          # minio/mc: https://github.com/minio/mc/releases
+          image: quay.io/minio/mc:RELEASE.2025-02-21T16-00-46Z
           env:
             - name: MINIO_ROOT_USER
               valueFrom:
