@@ -96,6 +96,11 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules
 # @aws-sdk/client-s3 is required by the seed script to upload fixtures to MinIO/S3
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@aws-sdk ./node_modules/@aws-sdk
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@smithy ./node_modules/@smithy
+# typesense is required by the seed script to index data into Typesense
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/typesense ./node_modules/typesense
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/axios ./node_modules/axios
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/loglevel ./node_modules/loglevel
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/tslib ./node_modules/tslib
 
 USER nextjs
 
