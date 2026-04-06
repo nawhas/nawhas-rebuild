@@ -41,6 +41,8 @@ env:
 # DATABASE_URL (pointing to this service) must be set in the staging SOPS secret.
 postgresql:
   enabled: true
+  global:
+    imageRegistry: registry.bitnami.com
   auth:
     database: nawhas
     username: nawhas
