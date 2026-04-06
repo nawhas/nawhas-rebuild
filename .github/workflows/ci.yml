@@ -223,8 +223,8 @@ jobs:
             --path deploy/helm/nawhas \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace nawhas-staging \
-            --helm-values-file values.yaml \
-            --helm-values-file values-staging.yaml \
+            --values values.yaml \
+            --values values-staging.yaml \
             --sync-policy automated \
             --auto-prune \
             --upsert
