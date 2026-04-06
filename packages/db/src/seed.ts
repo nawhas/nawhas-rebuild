@@ -121,7 +121,7 @@ async function seedModerator(): Promise<void> {
       },
     });
 
-  console.log(`  ✓ Moderator: ${MODERATOR_EMAIL} / ${MODERATOR_PASSWORD}`);
+  console.log(`  ✓ Moderator: ${MODERATOR_EMAIL} / ****`);
 }
 
 // ---------------------------------------------------------------------------
@@ -431,7 +431,7 @@ async function main() {
   console.log('\nSeed complete.');
   console.log(`  MinIO console : http://localhost:9001  (minioadmin / minioadmin)`);
   console.log(`  Audio bucket  : ${publicBaseUrl}`);
-  console.log(`  Moderator     : ${MODERATOR_EMAIL}  /  ${MODERATOR_PASSWORD}`);
+  console.log(`  Moderator     : ${MODERATOR_EMAIL}  /  ****`);
 }
 
 main().catch((err) => {
