@@ -21,7 +21,7 @@ spec:
             - name: custom-tools
               mountPath: /custom-tools
       containers:
-        - name: argocd-repo-server
+        - name: repo-server
           env:
             - name: SOPS_AGE_KEY_FILE
               value: /helm-secrets-private-keys/key.txt
