@@ -17,10 +17,10 @@
 # Plaintext secrets/*.yaml files are blocked by .gitignore.
 
 creation_rules:
-  - path_regex: deploy/helm/nawhas/secrets/staging\.yaml$
+  - path_regex: deploy/helm/nawhas/secrets/staging\.yaml(\.enc)?$
     age: >-
       age1y2p22nqt87j2me0eh09tkyjdefg2p07zw05zue3xgv47zata0ehqy09cy8
 
-  - path_regex: deploy/helm/nawhas/secrets/production\.yaml$
+  - path_regex: deploy/helm/nawhas/secrets/production\.yaml(\.enc)?$
     age: >-
       age1q00l947kg6gwzllcn9wngt75paj6n7a5n344sm9k82vgc6y2jatqmmn527
