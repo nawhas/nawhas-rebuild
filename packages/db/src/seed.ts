@@ -28,8 +28,8 @@ const scryptAsync = promisify(scrypt) as unknown as ScryptWithOptions;
 // Config — all values come from env vars.
 // ---------------------------------------------------------------------------
 const endpoint = process.env['S3_ENDPOINT'] ?? 'http://localhost:9000';
-const accessKeyId = process.env['S3_ACCESS_KEY_ID'] ?? 'minioadmin';
-const secretAccessKey = process.env['S3_SECRET_ACCESS_KEY'] ?? 'minioadmin';
+const accessKeyId = process.env['S3_ACCESS_KEY_ID'] ?? 'minio-user';
+const secretAccessKey = process.env['S3_SECRET_ACCESS_KEY'] ?? 'minio-local';
 const bucketAudio = process.env['S3_BUCKET_AUDIO'] ?? 'nawhas-audio';
 const bucketImages = process.env['S3_BUCKET_IMAGES'] ?? 'nawhas-images';
 const publicBaseUrl = process.env['S3_PUBLIC_BASE_URL'] ?? `${endpoint}/${bucketAudio}`;
@@ -69,7 +69,10 @@ async function hashPassword(password: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 const MODERATOR_EMAIL = 'admin@nawhas.com';
-const MODERATOR_PASSWORD = 'Nawhas@Mod2024!';
+const MODERATOR_PASSWORD = process.env['SEED_MODERATOR_PASSWORD'];
+if (!MODERATOR_PASSWORD) {
+  throw new Error('SEED_MODERATOR_PASSWORD env var is required');
+}
 const MODERATOR_USER_ID = 'seed-moderator-00000000-0000-0001';
 const MODERATOR_ACCOUNT_ID = 'seed-moderator-account-00000000-0001';
 
