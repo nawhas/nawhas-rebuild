@@ -15,9 +15,9 @@ spec:
       valueFiles:
         - values.yaml
         - values-staging.yaml
-        # SOPS-encrypted secrets — decrypted by helm-secrets plugin at sync time.
-        # Requires helm-secrets ArgoCD plugin + age private key as K8s secret in argocd namespace.
-        - secrets://secrets/staging.yaml.enc
+        # secrets://secrets/staging.yaml.enc removed — SOPS/helm-secrets bypassed for now.
+        # Secrets are applied manually as a K8s Secret (nawhas-staging-secrets).
+        # Proper SOPS automation (pre-built sidecar) will be implemented in a follow-up issue.
       parameters:
         # Overridden at deploy time by CI with the git SHA
         - name: image.tag

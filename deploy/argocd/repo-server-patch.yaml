@@ -1,42 +1,9 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: argocd-repo-server
-  namespace: argocd
-spec:
-  template:
-    spec:
-      initContainers:
-        - name: install-helm-secrets
-          image: alpine/helm:3.14
-          command: [sh, -c]
-          args:
-            - |
-              helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0 || true
-              wget -qO /custom-tools/sops \
-                https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
-              chmod +x /custom-tools/sops
-              cp -r ~/.local/share/helm/plugins /custom-tools/helm-plugins
-          volumeMounts:
-            - name: custom-tools
-              mountPath: /custom-tools
-      containers:
-        - name: repo-server
-          env:
-            - name: SOPS_AGE_KEY_FILE
-              value: /helm-secrets-private-keys/key.txt
-            - name: HELM_PLUGINS
-              value: /custom-tools/helm-plugins
-          volumeMounts:
-            - name: helm-secrets-private-keys
-              mountPath: /helm-secrets-private-keys
-              readOnly: true
-            - name: custom-tools
-              mountPath: /usr/local/sbin/sops
-              subPath: sops
-      volumes:
-        - name: helm-secrets-private-keys
-          secret:
-            secretName: helm-secrets-age-key
-        - name: custom-tools
-          emptyDir: {}
+# repo-server-patch.yaml — no-op placeholder
+#
+# The helm-secrets init-container approach was removed (NAW-296):
+#   1. Cluster has no external internet access — wget/curl of sops/helm-secrets fails
+#   2. ArgoCD ≥ 2.6 removed ConfigManagementPlugin CRD (v1alpha1 API gone)
+#
+# SOPS secret decryption will be re-implemented in a follow-up issue using a
+# pre-built sidecar image that already contains sops + helm-secrets.
+# Until then, secrets are applied manually as a K8s Secret (nawhas-staging-secrets).
