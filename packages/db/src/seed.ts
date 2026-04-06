@@ -69,10 +69,11 @@ async function hashPassword(password: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 const MODERATOR_EMAIL = 'admin@nawhas.com';
-const MODERATOR_PASSWORD = process.env['SEED_MODERATOR_PASSWORD'];
-if (!MODERATOR_PASSWORD) {
-  throw new Error('SEED_MODERATOR_PASSWORD env var is required');
-}
+const MODERATOR_PASSWORD = (() => {
+  const p = process.env['SEED_MODERATOR_PASSWORD'];
+  if (!p) throw new Error('SEED_MODERATOR_PASSWORD env var is required');
+  return p;
+})();
 const MODERATOR_USER_ID = 'seed-moderator-00000000-0000-0001';
 const MODERATOR_ACCOUNT_ID = 'seed-moderator-account-00000000-0001';
 
