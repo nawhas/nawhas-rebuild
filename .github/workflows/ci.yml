@@ -225,6 +225,7 @@ jobs:
             --dest-namespace nawhas-staging \
             --values values.yaml \
             --values values-staging.yaml \
+            --helm-set image.tag=${{ github.sha }} \
             --sync-policy automated \
             --auto-prune \
             --upsert

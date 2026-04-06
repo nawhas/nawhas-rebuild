@@ -48,6 +48,10 @@ postgresql:
     secretKeys:
       adminPasswordKey: POSTGRES_PASSWORD
       userPasswordKey: POSTGRES_PASSWORD
+  primary:
+    persistence:
+      storageClass: nfs-client
+      size: 10Gi
 
 secretName: nawhas-staging-secrets
 namespace: nawhas-staging
