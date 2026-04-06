@@ -38,17 +38,17 @@ pgbouncer:
   maxClientConn: 100
   defaultPoolSize: 20
 
-# Bitnami PostgreSQL subchart — disabled by default, enabled per-environment.
+# Standalone PostgreSQL StatefulSet (docker.io/library/postgres:16) — disabled by default.
 # Production should use an external managed PostgreSQL (RDS/Cloud SQL/etc.).
+# Password is read from the K8s Secret at .Values.secretName (key: POSTGRES_PASSWORD).
 postgresql:
   enabled: false
   auth:
     database: nawhas
     username: nawhas
-    # password injected via existingSecret — never set plaintext here
   primary:
     persistence:
-      enabled: true
+      storageClass: ""
       size: 10Gi
 
 # Resource limits — required on all K8s deployments

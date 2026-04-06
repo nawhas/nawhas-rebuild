@@ -36,20 +36,14 @@ env:
   TYPESENSE_PORT: "8108"
   TYPESENSE_PROTOCOL: "http"
 
-# In-cluster PostgreSQL via Bitnami subchart
-# Password is read from nawhas-staging-secrets (key: POSTGRES_PASSWORD) by the subchart.
-# DATABASE_URL (pointing to this service) must be set in the staging SOPS secret.
+# In-cluster PostgreSQL via standalone StatefulSet (docker.io/library/postgres:16).
+# Password is read from nawhas-staging-secrets (key: POSTGRES_PASSWORD).
+# DATABASE_URL (pointing to nawhas-postgresql service) is set in the staging SOPS secret.
 postgresql:
   enabled: true
-  global:
-    imageRegistry: registry.bitnami.com
   auth:
     database: nawhas
     username: nawhas
-    existingSecret: nawhas-staging-secrets
-    secretKeys:
-      adminPasswordKey: POSTGRES_PASSWORD
-      userPasswordKey: POSTGRES_PASSWORD
   primary:
     persistence:
       storageClass: nfs-client
