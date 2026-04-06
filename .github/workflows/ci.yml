@@ -130,6 +130,8 @@ jobs:
 
       # Seed the test database (nawhas_test). -T targets the test stack.
       - name: Seed fixtures
+        env:
+          SEED_MODERATOR_PASSWORD: ci-test-moderator-password
         run: ./dev -T db:seed
 
       - name: Run E2E tests
