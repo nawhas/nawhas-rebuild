@@ -90,6 +90,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=nextjs:nodejs /app/packages/db/dist ./packages/db/dist
 COPY --from=builder --chown=nextjs:nodejs /app/packages/db/src/migrations ./packages/db/dist/migrations
 
+# Copy node_modules needed by the migration script at runtime
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules/postgres
+
 USER nextjs
 
 EXPOSE 3000
