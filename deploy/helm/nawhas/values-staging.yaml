@@ -12,6 +12,10 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     cloudflare.com/dns-enabled: "true"
 
+# Seed sample data on staging (moderator account, demo content)
+seed:
+  enabled: true
+
 # MailHog SMTP trap — catches all outbound email on staging
 mailhog:
   enabled: true
