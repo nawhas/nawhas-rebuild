@@ -3,6 +3,8 @@ paths-ignore:
   - docker-compose.yml
   - docker-compose.test.yml
   - apps/e2e/**
+  - deploy/helm/nawhas/secrets/*.yaml.example
+  - deploy/helm/nawhas/charts/**
 
 # Excluded paths rationale:
 # - docker-compose.yml / docker-compose.test.yml: local dev infrastructure with
@@ -13,3 +15,9 @@ paths-ignore:
 #   the intentional local default — not a real credential. Real CI uses DATABASE_URL
 #   from environment. Inline // gitguardian:ignore comments are also present on
 #   each occurrence for belt-and-suspenders suppression.
+# - deploy/helm/nawhas/secrets/*.yaml.example: Helm secrets templates with intentional
+#   CHANGE_ME placeholder values. Real secrets are SOPS-encrypted and never committed
+#   in plaintext. These files document the required structure only.
+# - deploy/helm/nawhas/charts/**: Vendored Bitnami subchart archives (.tgz). These are
+#   upstream chart packages — any credential-looking strings are template placeholders,
+#   not real secrets. Bitnami charts are open source and publicly available.

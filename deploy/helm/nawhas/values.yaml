@@ -38,6 +38,19 @@ pgbouncer:
   maxClientConn: 100
   defaultPoolSize: 20
 
+# Bitnami PostgreSQL subchart — disabled by default, enabled per-environment.
+# Production should use an external managed PostgreSQL (RDS/Cloud SQL/etc.).
+postgresql:
+  enabled: false
+  auth:
+    database: nawhas
+    username: nawhas
+    # password injected via existingSecret — never set plaintext here
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+
 # Resource limits — required on all K8s deployments
 resources:
   requests:

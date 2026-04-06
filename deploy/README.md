@@ -111,6 +111,52 @@ kubectl apply -f deploy/argocd/applicationset.yaml
 | `staging.nawhas.cititech.tech` | Next.js web app |
 | `s3.staging.nawhas.cititech.tech` | MinIO (S3-compatible storage) |
 | `mail.staging.nawhas.cititech.tech` | MailHog (SMTP trap) |
+| `nawhas-postgresql.nawhas-staging.svc` | PostgreSQL (in-cluster only, no external ingress) |
+
+## PostgreSQL (Bitnami subchart)
+
+The chart includes an optional [Bitnami PostgreSQL](https://artifacthub.io/packages/helm/bitnami/postgresql) subchart, enabled per-environment.
+
+| Environment | `postgresql.enabled` | Notes |
+|-------------|----------------------|-------|
+| Production  | `false` (default)    | Use an external managed DB (RDS, Cloud SQL, etc.) |
+| Staging     | `true`               | In-cluster PostgreSQL via Bitnami subchart |
+
+### Staging database setup
+
+The Bitnami subchart reads the postgres password from the existing `nawhas-staging-secrets` K8s secret (key: `POSTGRES_PASSWORD`). Ensure that key is present in your SOPS-encrypted staging secrets before deploying.
+
+The in-cluster service hostname is:
+```
+nawhas-postgresql.nawhas-staging.svc.cluster.local:5432
+```
+
+Set `DATABASE_URL` in your SOPS staging secrets to the in-cluster connection string pointing to the hostname above. The password must match `POSTGRES_PASSWORD` in the same secret. See `deploy/helm/nawhas/secrets/staging.yaml.example` for the template.
+
+### Helm dependency management
+
+The `charts/` directory is **not committed** — subcharts are downloaded at deploy time. ArgoCD automatically runs `helm dependency build` before syncing when a `Chart.lock` is present.
+
+`Chart.lock` is committed to pin the exact subchart version (currently `15.5.38`).
+
+To upgrade the subchart version:
+
+```bash
+# Edit Chart.yaml to update the version constraint, then:
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm dependency update deploy/helm/nawhas/
+```
+
+Commit only the updated `Chart.lock` — do not commit the `charts/` directory.
+
+### PVC storage class requirements
+
+The postgresql subchart creates a PersistentVolumeClaim (`10Gi` by default on staging). Your cluster must have a default `StorageClass` that supports `ReadWriteOnce` access mode. On most managed Kubernetes providers (GKE, EKS, AKS) this is available by default.
+
+To check:
+```bash
+kubectl get storageclass
+```
 
 ## Migrations
 

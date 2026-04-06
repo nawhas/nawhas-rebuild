@@ -41,5 +41,9 @@ deploy/helm/nawhas/secrets/*.yaml
 !deploy/helm/nawhas/secrets/*.yaml.enc
 !deploy/helm/nawhas/secrets/*.yaml.example
 
+# Helm subchart archives — downloaded at deploy time via `helm dependency build`
+# Chart.lock is committed to pin versions; ArgoCD runs helm dep build automatically
+deploy/helm/nawhas/charts/
+
 # age private key files
 *.key
