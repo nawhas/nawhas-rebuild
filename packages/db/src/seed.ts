@@ -429,7 +429,7 @@ async function main() {
   await client.end();
 
   console.log('\nSeed complete.');
-  console.log(`  MinIO console : http://localhost:9001  (minioadmin / minioadmin)`);
+  console.log(`  MinIO console : http://localhost:9001  (see .env for credentials)`);
   console.log(`  Audio bucket  : ${publicBaseUrl}`);
   console.log(`  Moderator     : ${MODERATOR_EMAIL}  /  ****`);
 }
