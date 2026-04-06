@@ -216,6 +216,19 @@ jobs:
             --grpc-web \
             --insecure
 
+      - name: Create or update ArgoCD application
+        run: |
+          argocd app create nawhas-staging \
+            --repo https://github.com/nawhas/nawhas-rebuild.git \
+            --path deploy/helm/nawhas \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace nawhas-staging \
+            --helm-values-file values.yaml \
+            --helm-values-file values-staging.yaml \
+            --sync-policy automated \
+            --auto-prune \
+            --upsert
+
       - name: Set image tag and sync
         run: |
           argocd app set nawhas-staging \
