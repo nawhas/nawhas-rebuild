@@ -110,7 +110,7 @@ cmd_db_migrate() {
 cmd_db_seed() {
   require_docker
   # shellcheck disable=SC2086
-  docker compose $COMPOSE_FILES exec web pnpm --filter @nawhas/db db:seed
+  docker compose $COMPOSE_FILES exec -e SEED_MODERATOR_PASSWORD web pnpm --filter @nawhas/db db:seed
 }
 
 cmd_db_reset() {
