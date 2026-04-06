@@ -11,6 +11,8 @@ export const users = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('emailVerified').notNull(),
   image: text('image'),
+  /** Application-level role. Values: 'user' | 'moderator' | 'admin'. */
+  role: text('role').notNull().default('user'),
   createdAt: timestamp('createdAt').notNull(),
   updatedAt: timestamp('updatedAt').notNull(),
 });
