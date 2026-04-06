@@ -96,11 +96,35 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules
 # @aws-sdk/client-s3 is required by the seed script to upload fixtures to MinIO/S3
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@aws-sdk ./node_modules/@aws-sdk
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@smithy ./node_modules/@smithy
-# typesense is required by the seed script to index data into Typesense
+# typesense is required by the seed script to index data into Typesense.
+# axios is typesense's HTTP client; the remaining packages are its transitive deps.
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/typesense ./node_modules/typesense
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/axios ./node_modules/axios
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/loglevel ./node_modules/loglevel
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/tslib ./node_modules/tslib
+# axios and its transitive runtime deps
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/axios ./node_modules/axios
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/follow-redirects ./node_modules/follow-redirects
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/proxy-from-env ./node_modules/proxy-from-env
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/form-data ./node_modules/form-data
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/asynckit ./node_modules/asynckit
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/combined-stream ./node_modules/combined-stream
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/delayed-stream ./node_modules/delayed-stream
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/mime-types ./node_modules/mime-types
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/mime-db ./node_modules/mime-db
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/call-bind-apply-helpers ./node_modules/call-bind-apply-helpers
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/dunder-proto ./node_modules/dunder-proto
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/es-define-property ./node_modules/es-define-property
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/es-errors ./node_modules/es-errors
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/es-object-atoms ./node_modules/es-object-atoms
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/es-set-tostringtag ./node_modules/es-set-tostringtag
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/function-bind ./node_modules/function-bind
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/get-intrinsic ./node_modules/get-intrinsic
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/get-proto ./node_modules/get-proto
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/gopd ./node_modules/gopd
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/has-symbols ./node_modules/has-symbols
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/has-tostringtag ./node_modules/has-tostringtag
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/hasown ./node_modules/hasown
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/math-intrinsics ./node_modules/math-intrinsics
 
 USER nextjs
 
