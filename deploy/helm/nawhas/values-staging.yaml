@@ -32,7 +32,7 @@ env:
   S3_ENDPOINT: "http://minio.nawhas-staging.svc.cluster.local:9000"
   S3_BUCKET_AUDIO: "nawhas-audio"
   S3_BUCKET_IMAGES: "nawhas-images"
-  TYPESENSE_HOST: "typesense.nawhas-staging.svc.cluster.local"
+  TYPESENSE_HOST: "nawhas-typesense.nawhas-staging.svc.cluster.local"
   TYPESENSE_PORT: "8108"
   TYPESENSE_PROTOCOL: "http"
 
@@ -48,6 +48,13 @@ postgresql:
     persistence:
       storageClass: nfs-client
       size: 10Gi
+
+# Typesense search engine — enabled on staging with nfs-client storage
+typesense:
+  enabled: true
+  storage:
+    storageClass: nfs-client
+    size: 5Gi
 
 secretName: nawhas-staging-secrets
 namespace: nawhas-staging

@@ -51,6 +51,15 @@ postgresql:
       storageClass: ""
       size: 10Gi
 
+# Typesense search engine — disabled by default.
+# API key is read from the K8s Secret at .Values.secretName (key: TYPESENSE_API_KEY).
+typesense:
+  enabled: false
+  port: 8108
+  storage:
+    storageClass: ""
+    size: 5Gi
+
 # Resource limits — required on all K8s deployments
 resources:
   requests:
