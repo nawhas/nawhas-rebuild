@@ -38,7 +38,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
     async ({}, use) => {
       const user: TestUser = {
         email: `m6-sub-contrib-${suffix()}@example.com`,
-        password: 'M6SubmitTest99!',
+        password: 'M6SubmitTest99!', // gitguardian:ignore — test-only credential, not a real secret
         name: 'M6 Submission Contributor',
       };
       await registerAndVerify(user);

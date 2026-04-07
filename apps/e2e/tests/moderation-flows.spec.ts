@@ -50,7 +50,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
     async ({}, use) => {
       const user: TestUser = {
         email: `m6-mod-contrib-${suffix()}@example.com`,
-        password: 'M6ModTest99!',
+        password: 'M6ModTest99!', // gitguardian:ignore — test-only credential, not a real secret
         name: 'M6 Moderation Contributor',
       };
       await registerAndVerify(user);
@@ -65,7 +65,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
     async ({}, use) => {
       const user: TestUser = {
         email: `m6-mod-moder-${suffix()}@example.com`,
-        password: 'M6ModTest99!',
+        password: 'M6ModTest99!', // gitguardian:ignore — test-only credential, not a real secret
         name: 'M6 Moderation Moderator',
       };
       await registerAndVerify(user);
@@ -80,7 +80,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
     async ({}, use) => {
       const user: TestUser = {
         email: `m6-mod-promote-${suffix()}@example.com`,
-        password: 'M6ModTest99!',
+        password: 'M6ModTest99!', // gitguardian:ignore — test-only credential, not a real secret
         name: 'M6 Promotable User',
       };
       await registerAndVerify(user);
