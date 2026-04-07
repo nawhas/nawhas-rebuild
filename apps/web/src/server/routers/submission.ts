@@ -15,22 +15,22 @@ const MAX_LIMIT = 100;
 // ---------------------------------------------------------------------------
 
 export const reciterDataSchema = z.object({
-  name: z.string().min(1),
-  slug: z.string().min(1).optional(),
+  name: z.string().min(1).max(500),
+  slug: z.string().min(1).max(500).optional(),
 });
 
 export const albumDataSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().min(1).max(500),
   reciterId: z.string().uuid(),
-  slug: z.string().min(1).optional(),
+  slug: z.string().min(1).max(500).optional(),
   year: z.number().int().optional(),
   artworkUrl: z.string().url().optional(),
 });
 
 export const trackDataSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().min(1).max(500),
   albumId: z.string().uuid(),
-  slug: z.string().min(1).optional(),
+  slug: z.string().min(1).max(500).optional(),
   trackNumber: z.number().int().optional(),
   audioUrl: z.string().url().optional(),
   youtubeId: z.string().optional(),
@@ -138,7 +138,8 @@ export const submissionRouter = router({
       // Notify the submitter — fire-and-forget.
       sendSubmissionReceived({ to: ctx.user.email, submissionId: row.id, type: input.type });
 
-      return row as SubmissionDTO;
+      // Contributors never see moderator-only notes.
+      return { ...row, notes: null } as SubmissionDTO;
     }),
 
   /**
@@ -181,7 +182,8 @@ export const submissionRouter = router({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update submission.' });
       }
 
-      return updated as SubmissionDTO;
+      // Contributors never see moderator-only notes.
+      return { ...updated, notes: null } as SubmissionDTO;
     }),
 
   /**
@@ -222,7 +224,8 @@ export const submissionRouter = router({
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
 
-      return { items: items as SubmissionDTO[], nextCursor };
+      // Strip moderator-only notes from all history items.
+      return { items: items.map((item) => ({ ...item, notes: null })) as SubmissionDTO[], nextCursor };
     }),
 
   /**
@@ -247,6 +250,11 @@ export const submissionRouter = router({
 
       if (role !== 'moderator' && !isOwner) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied.' });
+      }
+
+      // Strip moderator-only notes field for non-moderators.
+      if (role !== 'moderator') {
+        return { ...row, notes: null } as SubmissionDTO;
       }
 
       return row as SubmissionDTO;

@@ -1,4 +1,5 @@
 import { jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { users } from './users';
 
 /**
  * Immutable audit log for moderation and administrative actions.
@@ -6,8 +7,8 @@ import { jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
  */
 export const auditLog = pgTable('audit_log', {
   id: uuid('id').primaryKey().defaultRandom(),
-  /** The user who performed the action. */
-  actorUserId: text('actor_user_id').notNull(),
+  /** The user who performed the action. Restricted deletion — users with audit history cannot be deleted. */
+  actorUserId: text('actor_user_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   /** Dot-namespaced action identifier, e.g. "submission.approved". */
   action: text('action').notNull(),
   /** The type of entity affected, e.g. "submission", "user". */

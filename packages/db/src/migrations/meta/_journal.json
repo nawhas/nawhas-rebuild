@@ -50,6 +50,13 @@
       "when": 1775570919781,
       "tag": "0006_secret_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744037400000,
+      "tag": "0007_audit_log_actor_fk",
+      "breakpoints": true
     }
   ]
 }

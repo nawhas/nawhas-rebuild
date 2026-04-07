@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
  * Routes that require authentication.
  * Add patterns here as protected features are built out.
  */
-const PROTECTED_PATHS = ['/admin', '/library', '/history', '/profile', '/settings'];
+const PROTECTED_PATHS = ['/admin', '/library', '/history', '/profile', '/settings', '/contribute', '/mod'];
 
 function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
   const loginUrl = new URL('/login', request.url);

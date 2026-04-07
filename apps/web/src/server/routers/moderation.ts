@@ -214,10 +214,12 @@ export const moderationRouter = router({
         } else {
           // edit
           if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-          await ctx.db
+          const [updated] = await ctx.db
             .update(reciters)
             .set({ name: data.name, slug, updatedAt: new Date() })
-            .where(eq(reciters.id, submission.targetId));
+            .where(eq(reciters.id, submission.targetId))
+            .returning({ id: reciters.id });
+          if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reciter not found — it may have been deleted.' });
           entityId = submission.targetId;
         }
       } else if (submission.type === 'album') {
@@ -239,7 +241,7 @@ export const moderationRouter = router({
           entityId = inserted.id;
         } else {
           if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-          await ctx.db
+          const [updated] = await ctx.db
             .update(albums)
             .set({
               title: data.title,
@@ -249,7 +251,9 @@ export const moderationRouter = router({
               artworkUrl: data.artworkUrl ?? null,
               updatedAt: new Date(),
             })
-            .where(eq(albums.id, submission.targetId));
+            .where(eq(albums.id, submission.targetId))
+            .returning({ id: albums.id });
+          if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Album not found — it may have been deleted.' });
           entityId = submission.targetId;
         }
       } else {
@@ -274,7 +278,7 @@ export const moderationRouter = router({
           entityId = inserted.id;
         } else {
           if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-          await ctx.db
+          const [updated] = await ctx.db
             .update(tracks)
             .set({
               title: data.title,
@@ -286,7 +290,9 @@ export const moderationRouter = router({
               duration: data.duration ?? null,
               updatedAt: new Date(),
             })
-            .where(eq(tracks.id, submission.targetId));
+            .where(eq(tracks.id, submission.targetId))
+            .returning({ id: tracks.id });
+          if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Track not found — it may have been deleted.' });
           entityId = submission.targetId;
         }
       }
@@ -331,22 +337,24 @@ export const moderationRouter = router({
   setRole: moderatorProcedure
     .input(
       z.object({
-        userId: z.string().min(1),
+        userId: z.string().uuid(),
         // Moderators can only grant 'user' or 'contributor' roles.
         // Promoting to 'moderator' requires out-of-band admin action (DB seed or admin-only endpoint).
         role: z.enum(['user', 'contributor']),
       }),
     )
     .mutation(async ({ ctx, input }): Promise<{ success: true }> => {
-      const targetUser = await ctx.db
-        .select({ id: users.id })
+      const [targetUser] = await ctx.db
+        .select({ id: users.id, role: users.role })
         .from(users)
         .where(eq(users.id, input.userId))
         .limit(1);
 
-      if (targetUser.length === 0) {
+      if (!targetUser) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found.' });
       }
+
+      const oldRole = targetUser.role;
 
       // Update role directly — our app uses 'user' | 'contributor' | 'moderator'
       // which extends the Better Auth admin plugin's role model.
@@ -355,13 +363,13 @@ export const moderationRouter = router({
         .set({ role: input.role, updatedAt: new Date() })
         .where(eq(users.id, input.userId));
 
-      // Write audit log.
+      // Write audit log with both old and new role for full history.
       await ctx.db.insert(auditLog).values({
         actorUserId: ctx.user.id,
         action: 'role.changed',
         targetType: 'user',
         targetId: input.userId,
-        meta: { newRole: input.role },
+        meta: { oldRole, newRole: input.role },
       });
 
       return { success: true };
