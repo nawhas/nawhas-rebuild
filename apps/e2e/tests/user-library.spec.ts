@@ -170,12 +170,6 @@ async function signIn(
  * the session check is skipped for cached routes, and hanging indefinitely
  * would exhaust the test's 60 s budget and cause subsequent page.goto calls
  * to fail with "Test ended".
- *
- * A second networkidle pass is required because SaveButton / LikeButton fire
- * getIsSaved / getIsLiked server actions only after React processes the session
- * response.  In slow CI environments this can happen after the first networkidle
- * window closes, causing recordPlaySettled (set up by callers) to accidentally
- * catch those POSTs instead of the intended recordPlay response.
  */
 async function gotoWithSession(
   page: import('@playwright/test').Page,
@@ -193,9 +187,6 @@ async function gotoWithSession(
   await page.goto(url);
   await sessionLoaded;
   await page.waitForLoadState('networkidle', { timeout: 30_000 });
-  // Second pass: catch server actions triggered by session load (SaveButton /
-  // LikeButton fire getIsSaved / getIsLiked after React processes the session).
-  await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 }
 
 // ---------------------------------------------------------------------------
@@ -338,17 +329,19 @@ test.describe('Listening History', () => {
   test('clear history → empty state shown', async ({ page, seedData, verifiedUser }) => {
     await signIn(page, verifiedUser);
 
-    // Play a track so there is something in history
-    const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
-    await gotoWithSession(page, trackUrl);
-    const playButton = page.getByRole('button', { name: new RegExp(`Play ${seedData.track.title}`, 'i') });
-    const recordPlaySettled = page.waitForResponse(
-      (res) => res.request().method() === 'POST' && !!res.request().headers()['next-action'],
-      { timeout: 15_000 },
-    ).catch(() => null);
-    await playButton.click();
-    await recordPlaySettled;
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    // Seed a history entry directly via the DB so this test is independent of
+    // the recordPlay server-action timing (which is covered by the prior test).
+    // This also avoids the race where SaveButton/LikeButton server actions fire
+    // between gotoWithSession and the recordPlaySettled listener, causing the
+    // listener to resolve on the wrong response.
+    const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
+    try {
+      const [dbUser] = await sql<{ id: string }[]>`SELECT id FROM "user" WHERE email = ${verifiedUser.email}`;
+      if (!dbUser) throw new Error(`User not found in DB: ${verifiedUser.email}`);
+      await sql`INSERT INTO listening_history (user_id, track_id) VALUES (${dbUser.id}, ${seedData.track.id})`;
+    } finally {
+      await sql.end();
+    }
 
     await page.goto('/history');
     await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 10_000 });
