@@ -572,8 +572,10 @@ test.describe('Audit log', () => {
     // Navigate to audit log — should contain a 'submission.applied' or similar entry
     await page.goto('/mod/audit');
     await expect(page).toHaveURL('/mod/audit', { timeout: 10_000 });
+    // Use .first() — the audit log accumulates entries across tests (shared worker state);
+    // strict mode would fail if multiple approval entries exist from earlier test runs.
     await expect(
-      page.getByRole('cell', { name: /submission\.(applied|approved)/i }),
+      page.getByRole('cell', { name: /submission\.(applied|approved)/i }).first(),
     ).toBeVisible({ timeout: 20_000 });
   });
 
@@ -588,8 +590,13 @@ test.describe('Audit log', () => {
     const row = page.locator('tr').filter({ hasText: promotableUser.email });
     await expect(row).toBeVisible({ timeout: 10_000 });
     const roleSelect = row.getByRole('combobox', { name: /Change user role/i });
-    await roleSelect.selectOption('contributor');
-    await expect(roleSelect).toHaveValue('contributor', { timeout: 10_000 });
+    // The 'User role management' test earlier in this worker may have already promoted
+    // promotableUser to 'contributor'. Read the current value and pick the other option
+    // so a role change always actually fires (handleChange returns early if same value).
+    const currentRole = await roleSelect.inputValue();
+    const targetRole = currentRole === 'contributor' ? 'user' : 'contributor';
+    await roleSelect.selectOption(targetRole);
+    await expect(roleSelect).toHaveValue(targetRole, { timeout: 10_000 });
     // Wait for the server action to settle — the select is disabled while isPending=true,
     // then becomes enabled again once the mutation has committed to the DB.
     await expect(roleSelect).toBeEnabled({ timeout: 10_000 });
@@ -599,8 +606,9 @@ test.describe('Audit log', () => {
     // Check audit log
     await page.goto('/mod/audit');
     await expect(page).toHaveURL('/mod/audit', { timeout: 10_000 });
+    // Use .first() — multiple role.changed entries may exist across worker-reused tests.
     await expect(
-      page.getByRole('cell', { name: /role\.(changed|set)/i }),
+      page.getByRole('cell', { name: /role\.(changed|set)/i }).first(),
     ).toBeVisible({ timeout: 20_000 });
   });
 });
