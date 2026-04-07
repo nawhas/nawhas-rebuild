@@ -17,6 +17,8 @@ import { trackRouter } from '../track';
 import { libraryRouter } from '../library';
 import { likesRouter } from '../likes';
 import { historyRouter } from '../history';
+import { submissionRouter } from '../submission';
+import { moderationRouter } from '../moderation';
 
 export type TestDb = PostgresJsDatabase<typeof schema>;
 
@@ -83,7 +85,19 @@ export function makeHistoryCaller(db: TestDb, userId: string) {
   return createCallerFactory(historyRouter)(makeAuthCtx(db, userId));
 }
 
-export function makeAuthCtx(db: TestDb, userId: string) {
+export function makeSubmissionCaller(db: TestDb, userId: string, role: 'user' | 'contributor' | 'moderator' = 'contributor') {
+  return createCallerFactory(submissionRouter)(makeAuthCtx(db, userId, role));
+}
+
+export function makeModerationCaller(db: TestDb, userId: string) {
+  return createCallerFactory(moderationRouter)(makeAuthCtx(db, userId, 'moderator'));
+}
+
+export function makeAuthCtx(
+  db: TestDb,
+  userId: string,
+  role: 'user' | 'contributor' | 'moderator' = 'user',
+) {
   const now = new Date();
   const user = {
     id: userId,
@@ -91,7 +105,7 @@ export function makeAuthCtx(db: TestDb, userId: string) {
     email: `test-${userId}@example.com`,
     emailVerified: true,
     image: null,
-    role: 'user' as const,
+    role,
     banned: null,
     banReason: null,
     banExpires: null,

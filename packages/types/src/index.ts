@@ -221,3 +221,63 @@ export interface AutocompleteDTO {
   albums: Array<AlbumSearchItemDTO & { highlights: SearchHighlightDTO[] }>;
   tracks: Array<TrackSearchItemDTO & { highlights: SearchHighlightDTO[] }>;
 }
+
+// ---------------------------------------------------------------------------
+// Community Contributions — Submissions & Moderation
+// ---------------------------------------------------------------------------
+
+export type SubmissionStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested';
+export type SubmissionType = 'reciter' | 'album' | 'track';
+export type SubmissionAction = 'create' | 'edit';
+export type ReviewAction = 'approved' | 'rejected' | 'changes_requested';
+
+/** Reciter fields submitted for creation or edit. */
+export interface ReciterSubmissionData {
+  name: string;
+  slug?: string;
+}
+
+/** Album fields submitted for creation or edit. */
+export interface AlbumSubmissionData {
+  title: string;
+  reciterId: string;
+  slug?: string;
+  year?: number;
+  artworkUrl?: string;
+}
+
+/** Track fields submitted for creation or edit. */
+export interface TrackSubmissionData {
+  title: string;
+  albumId: string;
+  slug?: string;
+  trackNumber?: number;
+  audioUrl?: string;
+  youtubeId?: string;
+  duration?: number;
+}
+
+export type SubmissionData = ReciterSubmissionData | AlbumSubmissionData | TrackSubmissionData;
+
+export interface SubmissionDTO {
+  id: string;
+  type: SubmissionType;
+  action: SubmissionAction;
+  targetId: string | null;
+  data: SubmissionData;
+  status: SubmissionStatus;
+  submittedByUserId: string;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AuditLogDTO {
+  id: string;
+  actorUserId: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  meta: Record<string, unknown> | null;
+  createdAt: Date;
+}
