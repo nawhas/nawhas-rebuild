@@ -1,12 +1,12 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
-import { reciterDataSchema, albumDataSchema, trackDataSchema } from '@/server/routers/submission';
+import type { reciterDataSchema, albumDataSchema, trackDataSchema } from '@/server/routers/submission';
 import type { SubmissionDTO, PaginatedResult } from '@nawhas/types';
 
 type ReciterData = z.infer<typeof reciterDataSchema>;
