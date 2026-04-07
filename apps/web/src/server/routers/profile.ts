@@ -9,13 +9,12 @@ export const profileRouter = router({
    * Returns the current authenticated user's profile.
    */
   get: protectedProcedure.query(({ ctx }): UserDTO => {
-    const user = ctx.user as typeof ctx.user & { role?: string };
     return {
       id: ctx.user.id,
       name: ctx.user.name,
       email: ctx.user.email,
       image: ctx.user.image ?? null,
-      role: user.role ?? 'user',
+      role: ctx.user.role ?? 'user',
     };
   }),
 

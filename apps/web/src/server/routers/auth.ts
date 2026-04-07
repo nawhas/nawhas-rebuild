@@ -8,14 +8,13 @@ export const authRouter = router({
    */
   session: publicProcedure.query(({ ctx }): SessionDTO | null => {
     if (!ctx.user || !ctx.session) return null;
-    const user = ctx.user as typeof ctx.user & { role?: string };
     return {
       user: {
         id: ctx.user.id,
         name: ctx.user.name,
         email: ctx.user.email,
         image: ctx.user.image ?? null,
-        role: user.role ?? 'user',
+        role: ctx.user.role ?? 'user',
       },
       expiresAt: ctx.session.expiresAt,
     };
@@ -25,13 +24,12 @@ export const authRouter = router({
    * Returns the authenticated user. Throws UNAUTHORIZED if not logged in.
    */
   me: protectedProcedure.query(({ ctx }): UserDTO => {
-    const user = ctx.user as typeof ctx.user & { role?: string };
     return {
       id: ctx.user.id,
       name: ctx.user.name,
       email: ctx.user.email,
       image: ctx.user.image ?? null,
-      role: user.role ?? 'user',
+      role: ctx.user.role ?? 'user',
     };
   }),
 });

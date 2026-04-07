@@ -14,6 +14,15 @@ function createTransport(): nodemailer.Transporter {
 
 const FROM = process.env['SMTP_FROM'] ?? 'noreply@nawhas.com';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function sendPasswordResetEmail(params: {
   to: string;
   name: string;
@@ -203,8 +212,8 @@ export function sendSubmissionFeedback(params: {
       ].join('\n'),
       html: `
         <p>${headline}</p>
-        ${params.comment ? `<blockquote style="border-left:3px solid #e5e7eb;padding-left:12px;color:#374151">${params.comment}</blockquote>` : ''}
-        <p style="color:#6b7280;font-size:14px">Submission ID: ${params.submissionId}</p>
+        ${params.comment ? `<blockquote style="border-left:3px solid #e5e7eb;padding-left:12px;color:#374151">${escapeHtml(params.comment)}</blockquote>` : ''}
+        <p style="color:#6b7280;font-size:14px">Submission ID: ${escapeHtml(params.submissionId)}</p>
         <p style="color:#9ca3af;font-size:12px">— The Nawhas.com team</p>
       `,
     })

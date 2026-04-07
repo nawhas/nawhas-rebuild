@@ -29,7 +29,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
  * 'contributor' or 'moderator'. Rejects all others with FORBIDDEN.
  */
 export const contributorProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const role = (ctx.user as { role?: string }).role;
+  const { role } = ctx.user;
   if (role !== 'contributor' && role !== 'moderator') {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
@@ -41,7 +41,7 @@ export const contributorProcedure = protectedProcedure.use(({ ctx, next }) => {
  * 'moderator'. Rejects all others with FORBIDDEN.
  */
 export const moderatorProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const role = (ctx.user as { role?: string }).role;
+  const { role } = ctx.user;
   if (role !== 'moderator') {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }

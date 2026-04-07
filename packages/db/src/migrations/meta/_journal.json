@@ -57,6 +57,13 @@
       "when": 1744037400000,
       "tag": "0007_audit_log_actor_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1744124400000,
+      "tag": "0008_audit_log_indexes",
+      "breakpoints": true
     }
   ]
 }

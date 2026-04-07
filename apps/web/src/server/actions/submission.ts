@@ -1,11 +1,17 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { z } from 'zod';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
+import { reciterDataSchema, albumDataSchema, trackDataSchema } from '@/server/routers/submission';
 import type { SubmissionDTO, PaginatedResult } from '@nawhas/types';
+
+type ReciterData = z.infer<typeof reciterDataSchema>;
+type AlbumData = z.infer<typeof albumDataSchema>;
+type TrackData = z.infer<typeof trackDataSchema>;
 
 const createCaller = createCallerFactory(appRouter);
 
@@ -70,39 +76,22 @@ export async function createTrackSubmission(
 }
 
 /** Resubmit a changes_requested submission. */
+export async function resubmitSubmission(id: string, type: 'reciter', data: ReciterData): Promise<SubmissionDTO>;
+export async function resubmitSubmission(id: string, type: 'album', data: AlbumData): Promise<SubmissionDTO>;
+export async function resubmitSubmission(id: string, type: 'track', data: TrackData): Promise<SubmissionDTO>;
 export async function resubmitSubmission(
   id: string,
   type: 'reciter' | 'album' | 'track',
-  data: Record<string, unknown>,
+  data: ReciterData | AlbumData | TrackData,
 ): Promise<SubmissionDTO> {
   const caller = await getAuthenticatedCaller();
   if (type === 'reciter') {
-    return caller.submission.update({
-      id,
-      type: 'reciter',
-      data: data as { name: string; slug?: string },
-    });
+    return caller.submission.update({ id, type: 'reciter', data: data as ReciterData });
   }
   if (type === 'album') {
-    return caller.submission.update({
-      id,
-      type: 'album',
-      data: data as { title: string; reciterId: string; slug?: string; year?: number; artworkUrl?: string },
-    });
+    return caller.submission.update({ id, type: 'album', data: data as AlbumData });
   }
-  return caller.submission.update({
-    id,
-    type: 'track',
-    data: data as {
-      title: string;
-      albumId: string;
-      slug?: string;
-      trackNumber?: number;
-      audioUrl?: string;
-      youtubeId?: string;
-      duration?: number;
-    },
-  });
+  return caller.submission.update({ id, type: 'track', data: data as TrackData });
 }
 
 /** Fetch the authenticated user's submission history. */

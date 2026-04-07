@@ -123,37 +123,39 @@ export const moderationRouter = router({
         });
       }
 
-      // Write the review record.
-      await ctx.db.insert(submissionReviews).values({
-        submissionId: input.submissionId,
-        reviewerUserId: ctx.user.id,
-        action: input.action,
-        comment: input.comment ?? null,
+      // Wrap review record, status update, and audit log in a transaction
+      // so no partial writes occur if any step fails.
+      const updated = await ctx.db.transaction(async (tx) => {
+        await tx.insert(submissionReviews).values({
+          submissionId: input.submissionId,
+          reviewerUserId: ctx.user.id,
+          action: input.action,
+          comment: input.comment ?? null,
+        });
+
+        const [upd] = await tx
+          .update(submissions)
+          .set({ status: input.action, updatedAt: new Date() })
+          .where(eq(submissions.id, input.submissionId))
+          .returning();
+
+        if (!upd) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update submission.' });
+        }
+
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: `submission.${input.action}`,
+          targetType: 'submission',
+          targetId: input.submissionId,
+          meta: { comment: input.comment ?? null, submissionType: submission.type },
+        });
+
+        return upd;
       });
 
-      // Update submission status.
-      const [updated] = await ctx.db
-        .update(submissions)
-        .set({ status: input.action, updatedAt: new Date() })
-        .where(eq(submissions.id, input.submissionId))
-        .returning();
-
-      if (!updated) {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update submission.' });
-      }
-
-      // Write audit log.
-      await ctx.db.insert(auditLog).values({
-        actorUserId: ctx.user.id,
-        action: `submission.${input.action}`,
-        targetType: 'submission',
-        targetId: input.submissionId,
-        meta: { comment: input.comment ?? null, submissionType: submission.type },
-      });
-
-      // Send feedback email for non-approved outcomes — fire-and-forget.
+      // Send feedback email for non-approved outcomes — fire-and-forget, outside transaction.
       if (input.action === 'rejected' || input.action === 'changes_requested') {
-        // Look up submitter email.
         const [submitter] = await ctx.db
           .select({ email: users.email })
           .from(users)
@@ -198,118 +200,123 @@ export const moderationRouter = router({
         });
       }
 
-      let entityId: string;
+      // Wrap all entity writes and audit log in a transaction so no partial
+      // state is committed if any step fails.
+      const entityId = await ctx.db.transaction(async (tx) => {
+        let eid: string;
 
-      if (submission.type === 'reciter') {
-        const data = reciterDataSchema.parse(submission.data);
-        const slug = data.slug ?? slugify(data.name);
+        if (submission.type === 'reciter') {
+          const data = reciterDataSchema.parse(submission.data);
+          const slug = data.slug ?? slugify(data.name);
 
-        if (submission.action === 'create') {
-          const [inserted] = await ctx.db
-            .insert(reciters)
-            .values({ name: data.name, slug })
-            .returning({ id: reciters.id });
-          if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-          entityId = inserted.id;
+          if (submission.action === 'create') {
+            const [inserted] = await tx
+              .insert(reciters)
+              .values({ name: data.name, slug })
+              .returning({ id: reciters.id });
+            if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+            eid = inserted.id;
+          } else {
+            // edit
+            if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
+            const [updated] = await tx
+              .update(reciters)
+              .set({ name: data.name, slug, updatedAt: new Date() })
+              .where(eq(reciters.id, submission.targetId))
+              .returning({ id: reciters.id });
+            if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reciter not found — it may have been deleted.' });
+            eid = submission.targetId;
+          }
+        } else if (submission.type === 'album') {
+          const data = albumDataSchema.parse(submission.data);
+          const slug = data.slug ?? slugify(data.title);
+
+          if (submission.action === 'create') {
+            const [inserted] = await tx
+              .insert(albums)
+              .values({
+                title: data.title,
+                slug,
+                reciterId: data.reciterId,
+                year: data.year ?? null,
+                artworkUrl: data.artworkUrl ?? null,
+              })
+              .returning({ id: albums.id });
+            if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+            eid = inserted.id;
+          } else {
+            if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
+            const [updated] = await tx
+              .update(albums)
+              .set({
+                title: data.title,
+                slug,
+                reciterId: data.reciterId,
+                year: data.year ?? null,
+                artworkUrl: data.artworkUrl ?? null,
+                updatedAt: new Date(),
+              })
+              .where(eq(albums.id, submission.targetId))
+              .returning({ id: albums.id });
+            if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Album not found — it may have been deleted.' });
+            eid = submission.targetId;
+          }
         } else {
-          // edit
-          if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-          const [updated] = await ctx.db
-            .update(reciters)
-            .set({ name: data.name, slug, updatedAt: new Date() })
-            .where(eq(reciters.id, submission.targetId))
-            .returning({ id: reciters.id });
-          if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reciter not found — it may have been deleted.' });
-          entityId = submission.targetId;
-        }
-      } else if (submission.type === 'album') {
-        const data = albumDataSchema.parse(submission.data);
-        const slug = data.slug ?? slugify(data.title);
+          // track
+          const data = trackDataSchema.parse(submission.data);
+          const slug = data.slug ?? slugify(data.title);
 
-        if (submission.action === 'create') {
-          const [inserted] = await ctx.db
-            .insert(albums)
-            .values({
-              title: data.title,
-              slug,
-              reciterId: data.reciterId,
-              year: data.year ?? null,
-              artworkUrl: data.artworkUrl ?? null,
-            })
-            .returning({ id: albums.id });
-          if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-          entityId = inserted.id;
-        } else {
-          if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-          const [updated] = await ctx.db
-            .update(albums)
-            .set({
-              title: data.title,
-              slug,
-              reciterId: data.reciterId,
-              year: data.year ?? null,
-              artworkUrl: data.artworkUrl ?? null,
-              updatedAt: new Date(),
-            })
-            .where(eq(albums.id, submission.targetId))
-            .returning({ id: albums.id });
-          if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Album not found — it may have been deleted.' });
-          entityId = submission.targetId;
+          if (submission.action === 'create') {
+            const [inserted] = await tx
+              .insert(tracks)
+              .values({
+                title: data.title,
+                slug,
+                albumId: data.albumId,
+                trackNumber: data.trackNumber ?? null,
+                audioUrl: data.audioUrl ?? null,
+                youtubeId: data.youtubeId ?? null,
+                duration: data.duration ?? null,
+              })
+              .returning({ id: tracks.id });
+            if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+            eid = inserted.id;
+          } else {
+            if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
+            const [updated] = await tx
+              .update(tracks)
+              .set({
+                title: data.title,
+                slug,
+                albumId: data.albumId,
+                trackNumber: data.trackNumber ?? null,
+                audioUrl: data.audioUrl ?? null,
+                youtubeId: data.youtubeId ?? null,
+                duration: data.duration ?? null,
+                updatedAt: new Date(),
+              })
+              .where(eq(tracks.id, submission.targetId))
+              .returning({ id: tracks.id });
+            if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Track not found — it may have been deleted.' });
+            eid = submission.targetId;
+          }
         }
-      } else {
-        // track
-        const data = trackDataSchema.parse(submission.data);
-        const slug = data.slug ?? slugify(data.title);
 
-        if (submission.action === 'create') {
-          const [inserted] = await ctx.db
-            .insert(tracks)
-            .values({
-              title: data.title,
-              slug,
-              albumId: data.albumId,
-              trackNumber: data.trackNumber ?? null,
-              audioUrl: data.audioUrl ?? null,
-              youtubeId: data.youtubeId ?? null,
-              duration: data.duration ?? null,
-            })
-            .returning({ id: tracks.id });
-          if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-          entityId = inserted.id;
-        } else {
-          if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-          const [updated] = await ctx.db
-            .update(tracks)
-            .set({
-              title: data.title,
-              slug,
-              albumId: data.albumId,
-              trackNumber: data.trackNumber ?? null,
-              audioUrl: data.audioUrl ?? null,
-              youtubeId: data.youtubeId ?? null,
-              duration: data.duration ?? null,
-              updatedAt: new Date(),
-            })
-            .where(eq(tracks.id, submission.targetId))
-            .returning({ id: tracks.id });
-          if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Track not found — it may have been deleted.' });
-          entityId = submission.targetId;
-        }
-      }
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: 'submission.applied',
+          targetType: submission.type,
+          targetId: eid,
+          meta: {
+            submissionId: input.submissionId,
+            submissionAction: submission.action,
+          },
+        });
 
-      // Write audit log.
-      await ctx.db.insert(auditLog).values({
-        actorUserId: ctx.user.id,
-        action: 'submission.applied',
-        targetType: submission.type,
-        targetId: entityId,
-        meta: {
-          submissionId: input.submissionId,
-          submissionAction: submission.action,
-        },
+        return eid;
       });
 
-      // Fire approval email — fire-and-forget.
+      // Fire approval email — fire-and-forget, outside transaction.
       const [submitter] = await ctx.db
         .select({ email: users.email })
         .from(users)
@@ -320,7 +327,7 @@ export const moderationRouter = router({
         sendSubmissionApproved({
           to: submitter.email,
           submissionId: input.submissionId,
-          type: submission.type as 'reciter' | 'album' | 'track',
+          type: submission.type,
         });
       }
 

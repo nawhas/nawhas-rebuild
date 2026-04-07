@@ -17,9 +17,11 @@ import postgres from 'postgres';
 
 export const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:3000';
 export const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
-export const DATABASE_URL =
-  process.env['DATABASE_URL'] ??
-  'postgresql://localhost:5432/nawhas'; // gitguardian:ignore — dev-only default
+const _dbUrl = process.env['DATABASE_URL'];
+if (!_dbUrl) {
+  throw new Error('DATABASE_URL must be set in the E2E test environment (e.g. via docker-compose or a .env.e2e file)');
+}
+export const DATABASE_URL: string = _dbUrl;
 
 // ---------------------------------------------------------------------------
 // User registration + email verification

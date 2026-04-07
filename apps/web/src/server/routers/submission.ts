@@ -245,7 +245,7 @@ export const submissionRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Submission not found.' });
       }
 
-      const role = (ctx.user as { role?: string }).role;
+      const { role } = ctx.user;
       const isOwner = row.submittedByUserId === ctx.user.id;
 
       if (role !== 'moderator' && !isOwner) {
