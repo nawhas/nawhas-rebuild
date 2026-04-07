@@ -328,7 +328,7 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
   // ── moderation.setRole ───────────────────────────────────────────────────
 
   describe('moderation.setRole', () => {
-    const targetUserId = `mod-target-${SUFFIX}`;
+    const targetUserId = `00000000-0000-4000-8000-${String(SUFFIX).padStart(12, '0')}`.slice(0, 36);
 
     beforeAll(async () => {
       await db.insert(users).values({
