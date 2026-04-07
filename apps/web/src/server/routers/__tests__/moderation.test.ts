@@ -219,7 +219,7 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       const caller = makeModerationCaller(db, moderatorId);
       await expect(
         caller.review({ submissionId: seeded!.id, action: 'approved' }),
-      ).rejects.toThrow('BAD_REQUEST');
+      ).rejects.toThrow('Only pending or changes_requested');
     });
   });
 
@@ -296,7 +296,7 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       seededSubmissionIds.push(seeded!.id);
 
       const caller = makeModerationCaller(db, moderatorId);
-      await expect(caller.applyApproved({ submissionId: seeded!.id })).rejects.toThrow('BAD_REQUEST');
+      await expect(caller.applyApproved({ submissionId: seeded!.id })).rejects.toThrow('Only approved submissions');
     });
 
     it('generates a slug from name when slug is not provided', async () => {
@@ -372,8 +372,8 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     it('throws NOT_FOUND for unknown userId', async () => {
       const caller = makeModerationCaller(db, moderatorId);
       await expect(
-        caller.setRole({ userId: 'nonexistent-user-id', role: 'contributor' }),
-      ).rejects.toThrow('NOT_FOUND');
+        caller.setRole({ userId: '00000000-0000-0000-0000-000000000000', role: 'contributor' }),
+      ).rejects.toThrow('User not found');
     });
   });
 

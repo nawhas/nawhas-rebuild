@@ -111,7 +111,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
           targetId: '00000000-0000-0000-0000-000000000000',
           data: { name: 'Ghost Reciter' },
         }),
-      ).rejects.toThrow('NOT_FOUND');
+      ).rejects.toThrow('No reciter found');
     });
 
     it('throws BAD_REQUEST for edit submission without targetId', async () => {
@@ -122,7 +122,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
           action: 'edit',
           data: { name: 'Missing Target' },
         }),
-      ).rejects.toThrow('BAD_REQUEST');
+      ).rejects.toThrow('targetId is required');
     });
 
     it('throws FORBIDDEN for a user with role=user', async () => {
@@ -183,7 +183,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       const otherCaller = makeSubmissionCaller(db, otherUserId);
       await expect(
         otherCaller.update({ id: seeded!.id, type: 'reciter', data: { name: 'Hijacked' } }),
-      ).rejects.toThrow('FORBIDDEN');
+      ).rejects.toThrow('You can only edit');
     });
 
     it('throws BAD_REQUEST if submission is in pending status', async () => {
@@ -203,7 +203,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       const caller = makeSubmissionCaller(db, contributorId);
       await expect(
         caller.update({ id: seeded!.id, type: 'reciter', data: { name: 'New' } }),
-      ).rejects.toThrow('BAD_REQUEST');
+      ).rejects.toThrow('Only draft or changes_requested');
     });
   });
 
@@ -283,7 +283,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       seededSubmissionIds.push(created.id);
 
       const otherCaller = makeSubmissionCaller(db, otherUserId);
-      await expect(otherCaller.get({ id: created.id })).rejects.toThrow('FORBIDDEN');
+      await expect(otherCaller.get({ id: created.id })).rejects.toThrow('Access denied');
     });
 
     it('allows moderator to view any submission', async () => {
@@ -308,7 +308,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       const caller = makeSubmissionCaller(db, contributorId);
       await expect(
         caller.get({ id: '00000000-0000-0000-0000-000000000000' }),
-      ).rejects.toThrow('NOT_FOUND');
+      ).rejects.toThrow('Submission not found');
     });
   });
 });
