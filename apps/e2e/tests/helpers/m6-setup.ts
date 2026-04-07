@@ -78,6 +78,44 @@ export async function setRole(
   }
 }
 
+/** Fetches a user's database ID by their email address. */
+export async function getUserIdByEmail(email: string): Promise<string> {
+  const sql = postgres(DATABASE_URL, { max: 1 });
+  try {
+    const rows = await sql<Array<{ id: string }>>`SELECT id FROM "user" WHERE email = ${email} LIMIT 1`;
+    const row = rows[0];
+    if (!row) throw new Error(`No user found with email: ${email}`);
+    return row.id;
+  } finally {
+    await sql.end();
+  }
+}
+
+/** Inserts a raw audit_log entry directly into the database. */
+export async function insertAuditLogEntry(entry: {
+  actorUserId: string;
+  action: string;
+  targetType?: string;
+  targetId?: string;
+  meta?: Record<string, unknown>;
+}): Promise<void> {
+  const sql = postgres(DATABASE_URL, { max: 1 });
+  try {
+    await sql`
+      INSERT INTO audit_log (actor_user_id, action, target_type, target_id, meta)
+      VALUES (
+        ${entry.actorUserId},
+        ${entry.action},
+        ${entry.targetType ?? null},
+        ${entry.targetId ?? null},
+        ${entry.meta ? JSON.stringify(entry.meta) : null}
+      )
+    `;
+  } finally {
+    await sql.end();
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Database cleanup
 // ---------------------------------------------------------------------------
