@@ -170,6 +170,12 @@ async function signIn(
  * the session check is skipped for cached routes, and hanging indefinitely
  * would exhaust the test's 60 s budget and cause subsequent page.goto calls
  * to fail with "Test ended".
+ *
+ * A second networkidle pass is required because SaveButton / LikeButton fire
+ * getIsSaved / getIsLiked server actions only after React processes the session
+ * response.  In slow CI environments this can happen after the first networkidle
+ * window closes, causing recordPlaySettled (set up by callers) to accidentally
+ * catch those POSTs instead of the intended recordPlay response.
  */
 async function gotoWithSession(
   page: import('@playwright/test').Page,
@@ -187,6 +193,9 @@ async function gotoWithSession(
   await page.goto(url);
   await sessionLoaded;
   await page.waitForLoadState('networkidle', { timeout: 30_000 });
+  // Second pass: catch server actions triggered by session load (SaveButton /
+  // LikeButton fire getIsSaved / getIsLiked after React processes the session).
+  await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 }
 
 // ---------------------------------------------------------------------------

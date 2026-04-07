@@ -599,7 +599,8 @@ test.describe('Audit log', () => {
     await expect(roleSelect).toHaveValue(targetRole, { timeout: 10_000 });
     // Wait for the server action to settle — the select is disabled while isPending=true,
     // then becomes enabled again once the mutation has committed to the DB.
-    await expect(roleSelect).toBeEnabled({ timeout: 10_000 });
+    // 15 s covers slow CI environments where router.refresh() RSC re-fetch adds latency.
+    await expect(roleSelect).toBeEnabled({ timeout: 15_000 });
     // Allow any pending network requests to settle before navigating.
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 

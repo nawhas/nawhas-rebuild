@@ -1,7 +1,4 @@
-'use client';
-
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
 import type { SubmissionDTO } from '@nawhas/types';
 
@@ -13,12 +10,7 @@ function getSubmissionLabel(submission: SubmissionDTO): string {
   return submission.id;
 }
 
-/**
- * Client component — uses explicit router.push() so link navigation is not
- * dependent on Link hydration timing in the test / CI environment.
- */
 export function SubmissionRow({ submission }: { submission: SubmissionDTO }): React.JSX.Element {
-  const router = useRouter();
   const label = getSubmissionLabel(submission);
   const href = `/mod/submissions/${submission.id}`;
 
@@ -27,10 +19,6 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
       <Link
         href={href}
         prefetch={false}
-        onClick={(e) => {
-          e.preventDefault();
-          router.push(href);
-        }}
         className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-400 dark:hover:bg-gray-700"
       >
         <div className="flex min-w-0 flex-1 flex-col gap-1">
