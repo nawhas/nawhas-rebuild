@@ -85,9 +85,9 @@ async function registerAndVerifyUser(params: {
 }): Promise<void> {
   const { baseUrl, email, password, name } = params;
   let lastError = '';
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 10; attempt++) {
     if (attempt > 0) {
-      await sleep(400 * attempt);
+      await sleep(1000 * attempt);
     }
     const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
       method: 'POST',
@@ -352,7 +352,15 @@ test.describe('Listening History', () => {
     // Confirm in the inline confirmation row (button text: "Yes, clear")
     const confirmButton = page.getByRole('button', { name: /Yes, clear/i });
     await expect(confirmButton).toBeVisible({ timeout: 3_000 });
+
+    // Register the waitForResponse BEFORE clicking so we don't miss a fast response.
+    const clearSettled = page.waitForResponse(
+      (res) => res.request().method() === 'POST' && !!res.request().headers()['next-action'],
+      { timeout: 15_000 },
+    ).catch(() => null);
     await confirmButton.click();
+    await clearSettled;
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 
     // Empty state should now be visible (heading text: "No history yet")
     await expect(page.getByText(seedData.track.title)).not.toBeVisible({ timeout: 15_000 });

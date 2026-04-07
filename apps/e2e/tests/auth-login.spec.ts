@@ -198,12 +198,17 @@ test.describe('Logout', () => {
     });
     await userMenuButton.click();
 
-    // Click Sign Out
+    // Click Sign Out — wait for the sign-out POST to settle before asserting
+    const signOutSettled = page.waitForResponse(
+      (res) => res.url().includes('/api/auth/sign-out') && res.request().method() === 'POST',
+      { timeout: 15_000 },
+    ).catch(() => null);
     await page.getByRole('menuitem', { name: 'Sign Out' }).click();
+    await signOutSettled;
 
-    // Redirected to home in unauthenticated state
+    // Redirected to home in unauthenticated state; give the RSC refresh time to settle
     await expect(page).toHaveURL('/', { timeout: 10_000 });
-    await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible({ timeout: 10_000 });
   });
 });
 

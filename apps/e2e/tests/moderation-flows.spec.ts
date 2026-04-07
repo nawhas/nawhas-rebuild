@@ -565,6 +565,9 @@ test.describe('Audit log', () => {
     ).toBeVisible({ timeout: 10_000 });
     await page.getByRole('button', { name: /Apply to database/i }).click();
     await expect(page.getByText(/Applied successfully/i)).toBeVisible({ timeout: 15_000 });
+    // Wait for the apply server action and any subsequent router.refresh() RSC fetch to settle
+    // before navigating, so the audit log entry is guaranteed visible on the next page load.
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 
     // Navigate to audit log — should contain a 'submission.applied' or similar entry
     await page.goto('/mod/audit');
@@ -590,6 +593,8 @@ test.describe('Audit log', () => {
     // Wait for the server action to settle — the select is disabled while isPending=true,
     // then becomes enabled again once the mutation has committed to the DB.
     await expect(roleSelect).toBeEnabled({ timeout: 10_000 });
+    // Allow any pending network requests to settle before navigating.
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 
     // Check audit log
     await page.goto('/mod/audit');
