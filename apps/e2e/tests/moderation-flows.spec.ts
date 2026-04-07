@@ -417,9 +417,9 @@ test.describe('Request changes → resubmit', () => {
       await modPage.getByRole('button', { name: /Request Changes/i }).click();
       await modPage.fill('#review-comment', 'Fix the name please.');
       await modPage.getByRole('button', { name: /^Request Changes$/i }).click();
-      await modPage
-        .getByRole('button', { name: /Approve/i })
-        .waitFor({ state: 'hidden', timeout: 10_000 });
+      // Wait for router.refresh() to complete — the status badge switches from
+      // "Pending" to "Changes Requested" only after the server confirms the mutation.
+      await modPage.getByText('Changes Requested').waitFor({ state: 'visible', timeout: 10_000 });
     } finally {
       await modCtx.close();
     }
@@ -461,9 +461,9 @@ test.describe('Request changes → resubmit', () => {
       await modPage.getByRole('button', { name: /Request Changes/i }).click();
       await modPage.fill('#review-comment', 'Please fix.');
       await modPage.getByRole('button', { name: /^Request Changes$/i }).click();
-      await modPage
-        .getByRole('button', { name: /Approve/i })
-        .waitFor({ state: 'hidden', timeout: 10_000 });
+      // Wait for router.refresh() to complete — the status badge switches from
+      // "Pending" to "Changes Requested" only after the server confirms the mutation.
+      await modPage.getByText('Changes Requested').waitFor({ state: 'visible', timeout: 10_000 });
     } finally {
       await modCtx.close();
     }

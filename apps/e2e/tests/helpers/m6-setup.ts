@@ -87,7 +87,33 @@ export async function deleteUsers(emails: string[]): Promise<void> {
   if (emails.length === 0) return;
   const sql = postgres(DATABASE_URL, { max: 1 });
   try {
-    await sql`DELETE FROM "user" WHERE email = ANY(${emails})`;
+    await sql.begin(async (tx) => {
+      // Delete in dependency order to satisfy ON DELETE RESTRICT constraints.
+      // audit_log.actor_user_id and submission_reviews.reviewer_user_id both
+      // reference users with RESTRICT, so they must be removed first.
+      await tx`
+        DELETE FROM audit_log
+        WHERE actor_user_id IN (
+          SELECT id FROM "user" WHERE email = ANY(${emails})
+        )
+      `;
+      await tx`
+        DELETE FROM submission_reviews
+        WHERE reviewer_user_id IN (
+          SELECT id FROM "user" WHERE email = ANY(${emails})
+        )
+      `;
+      // submissions.submitted_by_user_id is also RESTRICT; deleting submissions
+      // cascades to any remaining submission_reviews rows via ON DELETE CASCADE.
+      await tx`
+        DELETE FROM submissions
+        WHERE submitted_by_user_id IN (
+          SELECT id FROM "user" WHERE email = ANY(${emails})
+        )
+      `;
+      // sessions and accounts cascade automatically (ON DELETE CASCADE).
+      await tx`DELETE FROM "user" WHERE email = ANY(${emails})`;
+    });
   } finally {
     await sql.end();
   }
