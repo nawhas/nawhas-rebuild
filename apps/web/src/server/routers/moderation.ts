@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, inArray, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, ilike, inArray, lt, or } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { auditLog, reciters, albums, tracks, submissions, submissionReviews, users } from '@nawhas/db';
 import { router, moderatorProcedure } from '../trpc/trpc';
@@ -29,6 +29,25 @@ function slugify(text: string): string {
 // ---------------------------------------------------------------------------
 
 export const moderationRouter = router({
+  /**
+   * Fetch a single submission by ID.
+   */
+  get: moderatorProcedure
+    .input(z.object({ submissionId: z.string().uuid() }))
+    .query(async ({ ctx, input }): Promise<SubmissionDTO> => {
+      const [submission] = await ctx.db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, input.submissionId))
+        .limit(1);
+
+      if (!submission) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Submission not found.' });
+      }
+
+      return submission as SubmissionDTO;
+    }),
+
   /**
    * Paginated queue of submissions pending moderation review.
    * Returns pending + changes_requested, newest first.
@@ -344,6 +363,62 @@ export const moderationRouter = router({
       });
 
       return { success: true };
+    }),
+
+  /**
+   * Paginated list of users with their roles.
+   * Supports optional search by name or email.
+   */
+  users: moderatorProcedure
+    .input(
+      z.object({
+        limit: z.number().int().min(1).max(MAX_LIMIT).optional().default(DEFAULT_LIMIT),
+        cursor: z.string().optional(),
+        search: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<PaginatedResult<{ id: string; name: string; email: string; role: string; createdAt: Date }>> => {
+      const limit = input.limit;
+
+      const searchFilter = input.search
+        ? or(
+            ilike(users.name, `%${input.search}%`),
+            ilike(users.email, `%${input.search}%`),
+          )
+        : undefined;
+
+      const cursorFilter = input.cursor
+        ? (() => {
+            const { createdAt, id } = decodeCursor(input.cursor);
+            return and(
+              searchFilter,
+              or(
+                lt(users.createdAt, createdAt),
+                and(eq(users.createdAt, createdAt), gt(users.id, id)),
+              ),
+            );
+          })()
+        : searchFilter;
+
+      const rows = await ctx.db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          role: users.role,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(cursorFilter)
+        .orderBy(desc(users.createdAt), asc(users.id))
+        .limit(limit + 1);
+
+      const hasMore = rows.length > limit;
+      const items = hasMore ? rows.slice(0, limit) : rows;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
+
+      return { items, nextCursor };
     }),
 
   /**
