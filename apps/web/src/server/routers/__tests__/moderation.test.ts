@@ -6,7 +6,6 @@ import {
   createTestDb,
   isDbAvailable,
   makeModerationCaller,
-  makeSubmissionCaller,
   type TestDb,
 } from './helpers';
 
