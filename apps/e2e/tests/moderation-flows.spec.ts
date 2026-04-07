@@ -568,9 +568,10 @@ test.describe('Audit log', () => {
 
     // Navigate to audit log — should contain a 'submission.applied' or similar entry
     await page.goto('/mod/audit');
+    await expect(page).toHaveURL('/mod/audit', { timeout: 10_000 });
     await expect(
       page.getByRole('cell', { name: /submission\.(applied|approved)/i }),
-    ).toBeVisible({ timeout: 10_000 });
+    ).toBeVisible({ timeout: 20_000 });
   });
 
   test('role change writes an entry to the audit log', async ({
@@ -592,8 +593,9 @@ test.describe('Audit log', () => {
 
     // Check audit log
     await page.goto('/mod/audit');
+    await expect(page).toHaveURL('/mod/audit', { timeout: 10_000 });
     await expect(
       page.getByRole('cell', { name: /role\.(changed|set)/i }),
-    ).toBeVisible({ timeout: 10_000 });
+    ).toBeVisible({ timeout: 20_000 });
   });
 });

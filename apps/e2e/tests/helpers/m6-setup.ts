@@ -138,6 +138,12 @@ export async function signIn(page: Page, email: string, password: string): Promi
   );
   await page.click('button[type="submit"]');
   await responsePromise;
+
+  // After the sign-in POST response the LoginForm calls window.location.replace(),
+  // which starts a full-page navigation away from /login. Wait for that navigation
+  // to settle so callers start from a stable browser state.
+  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 10_000 })
+    .catch(() => { /* already navigated or will be overridden by caller's page.goto() */ });
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { signIn } from '@/lib/auth-client';
@@ -15,7 +14,6 @@ interface LoginFormProps {
 
 export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps): React.JSX.Element {
   const t = useTranslations('auth.login');
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +32,10 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
       return;
     }
 
-    router.push(callbackUrl ?? '/');
+    // Hard-navigate so the server-rendered SiteHeader re-runs with the new
+    // session and protected-route middleware sees the fresh cookie.
+    // router.push() + router.refresh() race; window.location avoids both issues.
+    window.location.replace(callbackUrl ?? '/');
   }
 
   return (
