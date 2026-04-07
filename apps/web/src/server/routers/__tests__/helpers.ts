@@ -91,6 +91,10 @@ export function makeAuthCtx(db: TestDb, userId: string) {
     email: `test-${userId}@example.com`,
     emailVerified: true,
     image: null,
+    role: 'user' as const,
+    banned: null,
+    banReason: null,
+    banExpires: null,
     createdAt: now,
     updatedAt: now,
   };

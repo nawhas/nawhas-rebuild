@@ -18,4 +18,7 @@ export * from './verificationTokens.js';
 export * from './userSavedTracks.js';
 export * from './userLikedTracks.js';
 export * from './listeningHistory.js';
+export * from './submissions.js';
+export * from './submissionReviews.js';
+export * from './auditLog.js';
 export * from './relations.js';

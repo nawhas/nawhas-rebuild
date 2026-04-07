@@ -43,6 +43,13 @@
       "when": 1775490727932,
       "tag": "0005_sharp_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775570919781,
+      "tag": "0006_secret_the_anarchist",
+      "breakpoints": true
     }
   ]
 }

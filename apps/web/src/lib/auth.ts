@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth';
+import { admin } from 'better-auth/plugins/admin';
 import type { SocialProviders } from 'better-auth/social-providers';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db, users, sessions, accounts, verificationTokens } from '@nawhas/db';
@@ -59,6 +60,13 @@ export const auth = betterAuth({
       verification: verificationTokens,
     },
   }),
+  plugins: [
+    admin({
+      defaultRole: 'user',
+      // Treat 'moderator' as the admin-privileged role.
+      adminRoles: ['moderator'],
+    }),
+  ],
   socialProviders: buildSocialProviders(),
   emailAndPassword: {
     enabled: true,

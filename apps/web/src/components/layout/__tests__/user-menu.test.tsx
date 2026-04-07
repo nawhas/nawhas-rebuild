@@ -40,6 +40,10 @@ const mockUser = {
   createdAt: new Date(),
   updatedAt: new Date(),
   image: null,
+  role: 'user' as const,
+  banned: null,
+  banReason: null,
+  banExpires: null,
 };
 
 afterEach(() => {
