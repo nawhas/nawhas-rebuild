@@ -325,6 +325,58 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     });
   });
 
+  // ── moderation.setRole ───────────────────────────────────────────────────
+
+  describe('moderation.setRole', () => {
+    const targetUserId = `mod-target-${SUFFIX}`;
+
+    beforeAll(async () => {
+      await db.insert(users).values({
+        id: targetUserId,
+        name: 'Role Target User',
+        email: `role-target-${SUFFIX}@example.com`,
+        emailVerified: true,
+        role: 'user',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      seededUserIds.push(targetUserId);
+    });
+
+    it('allows moderator to set role to contributor', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.setRole({ userId: targetUserId, role: 'contributor' });
+      expect(result.success).toBe(true);
+
+      const rows = await db.select({ role: users.role }).from(users).where(inArray(users.id, [targetUserId]));
+      expect(rows[0]!.role).toBe('contributor');
+    });
+
+    it('allows moderator to set role back to user', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.setRole({ userId: targetUserId, role: 'user' });
+      expect(result.success).toBe(true);
+
+      const rows = await db.select({ role: users.role }).from(users).where(inArray(users.id, [targetUserId]));
+      expect(rows[0]!.role).toBe('user');
+    });
+
+    it('rejects moderator attempting to promote to moderator', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      // TypeScript prevents this at compile time; we cast to test runtime validation.
+      await expect(
+        caller.setRole({ userId: targetUserId, role: 'moderator' as 'user' | 'contributor' }),
+      ).rejects.toThrow();
+    });
+
+    it('throws NOT_FOUND for unknown userId', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      await expect(
+        caller.setRole({ userId: 'nonexistent-user-id', role: 'contributor' }),
+      ).rejects.toThrow('NOT_FOUND');
+    });
+  });
+
   // ── moderation.auditLog ───────────────────────────────────────────────────
 
   describe('moderation.auditLog', () => {

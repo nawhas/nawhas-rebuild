@@ -46,7 +46,7 @@ export async function applySubmission(
  */
 export async function setUserRole(
   userId: string,
-  role: 'user' | 'contributor' | 'moderator',
+  role: 'user' | 'contributor',
 ): Promise<{ success: true }> {
   const caller = await getModeratorCaller();
   return caller.moderation.setRole({ userId, role });

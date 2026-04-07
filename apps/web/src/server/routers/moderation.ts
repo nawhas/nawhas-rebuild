@@ -332,7 +332,9 @@ export const moderationRouter = router({
     .input(
       z.object({
         userId: z.string().min(1),
-        role: z.enum(['user', 'contributor', 'moderator']),
+        // Moderators can only grant 'user' or 'contributor' roles.
+        // Promoting to 'moderator' requires out-of-band admin action (DB seed or admin-only endpoint).
+        role: z.enum(['user', 'contributor']),
       }),
     )
     .mutation(async ({ ctx, input }): Promise<{ success: true }> => {

@@ -29,6 +29,8 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>): void {
     const newRole = e.target.value as Role;
     if (newRole === role) return;
+    // Guard: moderator promotion is not allowed via this UI.
+    if (newRole === 'moderator') return;
     setError(null);
     const previous = role;
     setRole(newRole);
