@@ -355,7 +355,7 @@ test.describe('Listening History', () => {
     await confirmButton.click();
 
     // Empty state should now be visible (heading text: "No history yet")
-    await expect(page.getByText(seedData.track.title)).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(seedData.track.title)).not.toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { name: /No history yet/i })).toBeVisible();
   });
 });

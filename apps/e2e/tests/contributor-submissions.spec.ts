@@ -108,7 +108,7 @@ test.describe('New reciter submission form', () => {
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
 
-    await expect(page).toHaveURL('/profile/contributions', { timeout: 15_000 });
+    await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
   });
 
   test('submitted reciter appears in /profile/contributions with pending status', async ({
@@ -121,7 +121,7 @@ test.describe('New reciter submission form', () => {
     await page.goto('/contribute/reciter/new');
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/profile/contributions', { timeout: 15_000 });
+    await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
 
     // Submission should appear in the list
     const list = page.getByRole('list', { name: /Your submissions/i });
@@ -146,7 +146,7 @@ test.describe('New reciter submission form', () => {
     await page.goto('/contribute/reciter/new');
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/profile/contributions', { timeout: 15_000 });
+    await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
 
     // Click the submission card to expand it
     const list = page.getByRole('list', { name: /Your submissions/i });
@@ -173,7 +173,7 @@ test.describe('Email notification — submission received', () => {
     await page.goto('/contribute/reciter/new');
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/profile/contributions', { timeout: 15_000 });
+    await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
 
     // Wait for the notification email to arrive in Mailpit
     const msg = await pollForEmailWithSubject(

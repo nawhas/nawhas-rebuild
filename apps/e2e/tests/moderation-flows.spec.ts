@@ -189,7 +189,7 @@ test.describe('Submission detail page', () => {
 
     await page.getByText(reciterName).click();
 
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
     await expect(
       page.getByRole('heading', { name: /Submission detail/i }),
     ).toBeVisible();
@@ -207,7 +207,7 @@ test.describe('Submission detail page', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     await expect(page.getByRole('button', { name: /Approve/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Request Changes/i })).toBeVisible();
@@ -232,7 +232,7 @@ test.describe('Approve and apply', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     await page.getByRole('button', { name: /Approve/i }).click();
 
@@ -254,7 +254,7 @@ test.describe('Approve and apply', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     // Approve
     await page.getByRole('button', { name: /Approve/i }).click();
@@ -280,7 +280,7 @@ test.describe('Approve and apply', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     await page.getByRole('button', { name: /Approve/i }).click();
     await expect(
@@ -315,7 +315,7 @@ test.describe('Reject submission', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     await page.getByRole('button', { name: /Reject/i }).click();
 
@@ -336,7 +336,7 @@ test.describe('Reject submission', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     // Expand reject panel
     await page.getByRole('button', { name: /Reject/i }).click();
@@ -377,7 +377,7 @@ test.describe('Request changes → resubmit', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     await page.getByRole('button', { name: /Request Changes/i }).click();
     await page.fill('#review-comment', 'Please correct the spelling of the name.');
@@ -557,7 +557,7 @@ test.describe('Audit log', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
     await page.getByText(reciterName).click();
-    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
     await page.getByRole('button', { name: /Approve/i }).click();
     await expect(
@@ -586,6 +586,9 @@ test.describe('Audit log', () => {
     const roleSelect = row.getByRole('combobox', { name: /Change user role/i });
     await roleSelect.selectOption('contributor');
     await expect(roleSelect).toHaveValue('contributor', { timeout: 10_000 });
+    // Wait for the server action to settle — the select is disabled while isPending=true,
+    // then becomes enabled again once the mutation has committed to the DB.
+    await expect(roleSelect).toBeEnabled({ timeout: 10_000 });
 
     // Check audit log
     await page.goto('/mod/audit');

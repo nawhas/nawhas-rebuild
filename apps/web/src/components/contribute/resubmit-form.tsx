@@ -94,8 +94,8 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
   return (
     <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
       <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Edit and resubmit</p>
-      <FormField id={`rs-name-${submission.id}`} label="Name" required error={errors.name}>
-        <Input id={`rs-name-${submission.id}`} type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} error={errors.name} />
+      <FormField id="name" label="Name" required error={errors.name}>
+        <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} error={errors.name} />
       </FormField>
       <FormField id={`rs-slug-${submission.id}`} label="Slug" error={errors.slug}>
         <Input id={`rs-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
@@ -103,7 +103,7 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
       {serverError && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{serverError}</p>}
       <div className="flex gap-3">
         <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
-          {isPending ? 'Submitting…' : 'Resubmit'}
+          {isPending ? 'Submitting…' : 'Submit for review'}
         </button>
         <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:underline disabled:opacity-50">
           Cancel

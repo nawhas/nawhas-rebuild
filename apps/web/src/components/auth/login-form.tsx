@@ -35,7 +35,6 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
     }
 
     router.push(callbackUrl ?? '/');
-    router.refresh();
   }
 
   return (
