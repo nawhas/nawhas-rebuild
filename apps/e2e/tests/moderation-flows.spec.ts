@@ -189,7 +189,10 @@ test.describe('Submission detail page', () => {
     await signIn(page, moderator.email, moderator.password);
     await page.goto('/mod/queue');
 
-    await page.getByText(reciterName).click();
+    // Use getByRole('link') rather than getByText so we click the <a> element
+    // directly — avoids flakiness where the text node receives the click before
+    // the React onClick handler is hydrated.
+    await page.getByRole('link', { name: reciterName }).click();
 
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
     await expect(
