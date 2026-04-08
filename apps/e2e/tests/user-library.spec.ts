@@ -344,9 +344,7 @@ test.describe('Listening History', () => {
     }
 
     await page.goto('/history');
-    // Give extra time for the recordPlay server action to commit before the
-    // history page fetches — CI parallelism can delay the DB write.
-    await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 10_000 });
 
     // Click "Clear history" button / action
     const clearButton = page.getByRole('button', { name: /Clear history|Clear all/i });
