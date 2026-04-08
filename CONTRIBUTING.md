@@ -44,6 +44,26 @@ Run all checks before pushing to avoid CI surprises:
 
 All four CI checks (`quality`, `build`, `docker-build`, `e2e`) must pass for a PR to merge.
 
+### ESLint Rules
+
+#### require-dynamic-for-headers-cookies
+
+Pages and layouts using `headers()`, `cookies()` from `next/headers` or accessing `searchParams` from props must export `const dynamic = 'force-dynamic'`. This is required by Next.js 15+ to avoid `DYNAMIC_SERVER_USAGE` errors.
+
+**Example:**
+```typescript
+import { headers } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
+
+export default async function MyLayout() {
+  const headersList = await headers();
+  // ...
+}
+```
+
+This is a warning, not an error, to allow for review since some usages may be intentional with other rendering strategies.
+
 ## Commit Messages
 
 Use the [Conventional Commits](https://www.conventionalcommits.org/) format:

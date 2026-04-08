@@ -7,6 +7,9 @@ import { Container } from '@/components/layout/container';
 import { SearchResultsContent } from '@/components/search/search-results-content';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 
+// Dynamic rendering required for searchParams access
+export const dynamic = 'force-dynamic';
+
 const createCaller = createCallerFactory(appRouter);
 
 // Search pages must not be indexed — results are dynamic and query-specific.

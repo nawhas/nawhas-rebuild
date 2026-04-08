@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
+// Dynamic rendering required for searchParams access
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Email verified',
 };
