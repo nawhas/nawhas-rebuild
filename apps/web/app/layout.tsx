@@ -4,7 +4,10 @@ import './globals.css';
 import { SiteHeader } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
 import { AudioProvider } from '@/components/providers/audio-provider';
-import { PlayerBar } from '@/components/player/PlayerBar';
+// PlayerBarLazy is a Client Component wrapper that uses next/dynamic({ ssr: false }).
+// Using the wrapper here (a Server Component) avoids the "ssr:false in Server Component"
+// build error while still deferring PlayerBar from the initial bundle.
+import { PlayerBarLazy } from '@/components/player/PlayerBarLazy';
 import { PlayerPanels } from '@/components/player/PlayerPanels';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { NextIntlClientProvider } from 'next-intl';
@@ -78,7 +81,7 @@ export default async function RootLayout({
                 {children}
               </PageLayout>
               <PlayerPanels />
-              <PlayerBar />
+              <PlayerBarLazy />
             </AudioProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
