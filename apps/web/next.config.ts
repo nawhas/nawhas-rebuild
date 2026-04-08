@@ -7,6 +7,9 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const cdnHostname = process.env.NEXT_PUBLIC_CDN_HOSTNAME;
 const isProd = process.env.NODE_ENV === 'production';
+const hasSentryDsn = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN?.trim());
+const hasSentryAuthToken = Boolean(process.env.SENTRY_AUTH_TOKEN?.trim());
+const isSentryEnabled = hasSentryDsn && hasSentryAuthToken;
 
 // S3/MinIO sources used in CSP (dev: localhost + minio container, prod: CDN hostname)
 const s3Sources = [
@@ -96,8 +99,9 @@ const nextConfig: NextConfig = {
 };
 
 const withAnalyzer = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true' });
+const baseConfig = withAnalyzer(withNextIntl(nextConfig));
 
-export default withAnalyzer(withNextIntl(withSentryConfig(nextConfig, {
+const sentryOptions = {
   // Sentry organisation/project slugs — set these in CI via SENTRY_ORG / SENTRY_PROJECT
   ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
   ...(process.env.SENTRY_PROJECT ? { project: process.env.SENTRY_PROJECT } : {}),
@@ -123,4 +127,18 @@ export default withAnalyzer(withNextIntl(withSentryConfig(nextConfig, {
   bundleSizeOptimizations: {
     excludeReplayWorker: true,
   },
-})));
+};
+
+if (!isSentryEnabled) {
+  const missing = [
+    ...(!hasSentryDsn ? ['NEXT_PUBLIC_SENTRY_DSN'] : []),
+    ...(!hasSentryAuthToken ? ['SENTRY_AUTH_TOKEN'] : []),
+  ];
+  console.warn(
+    `[sentry] Disabled because required env vars are missing: ${missing.join(', ')}`,
+  );
+}
+
+export default isSentryEnabled
+  ? withSentryConfig(baseConfig, sentryOptions)
+  : baseConfig;

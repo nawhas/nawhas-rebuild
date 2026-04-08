@@ -27,6 +27,7 @@ function buildGetSessionUrl(request: NextRequest): URL {
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
+  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
 
   if (isProtected) {
     // Better Auth stores the session token in a cookie named 'better-auth.session_token'
@@ -67,7 +68,16 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   // Pass through — no locale rewriting needed (app has no [locale] segment).
   // getRequestConfig in src/i18n/request.ts falls back to defaultLocale: 'en'.
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-request-id', requestId);
+  requestHeaders.set('x-middleware-request-x-pathname', pathname);
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+  response.headers.set('x-request-id', requestId);
   response.headers.set('x-middleware-request-x-pathname', pathname);
   return response;
 }
