@@ -115,18 +115,10 @@ jobs:
           docker save mcr.microsoft.com/playwright:v1.59.1-noble \
             -o /tmp/playwright-cache/playwright.tar
 
-      # Start with -T (test overlay) so postgres runs init-test-db.sh on first boot
-      # and creates nawhas_test. Starting without the overlay first would cause Docker
-      # to recreate postgres mid-job, skipping the init script on a non-empty data dir.
+      # Start with both test and CI overlays so E2E runs against a production-like
+      # web process from the beginning while still using the test database wiring.
       - name: Start stack
-        run: ./dev -T up -d
-
-      # Web container runs: pnpm install (cold anonymous volume) + db build + db:migrate + next dev.
-      # On a cold CI runner this can take several minutes. 180s is the maximum acceptable wait;
-      # if the app is not ready by then, something is broken in the stack.
-      - name: Wait for web
-        run: |
-          timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.ci.yml up -d --wait web
 
       # Seed the test database (nawhas_test). -T targets the test stack.
       - name: Seed fixtures
@@ -148,87 +140,10 @@ jobs:
           path: apps/e2e/playwright-report/
           retention-days: 7
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # Build + push the production Docker image to ghcr.io on every main merge.
-  # The image tag is the git SHA so deploys are always traceable to a commit.
-  # ──────────────────────────────────────────────────────────────────────────
-  e2e-prod:
-    name: E2E Tests (Production Build)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Add nawhas.test to hosts
-        run: echo "127.0.0.1 nawhas.test" | sudo tee -a /etc/hosts
-
-      - name: Cache Playwright Docker image
-        id: cache-playwright
-        uses: actions/cache@v5
-        with:
-          path: /tmp/playwright-cache
-          key: playwright-docker-${{ runner.os }}-v1.59.1-noble
-
-      - name: Load Playwright image from cache
-        if: steps.cache-playwright.outputs.cache-hit == 'true'
-        run: docker load -i /tmp/playwright-cache/playwright.tar
-
-      - name: Pull and cache Playwright image
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: |
-          docker pull mcr.microsoft.com/playwright:v1.59.1-noble
-          mkdir -p /tmp/playwright-cache
-          docker save mcr.microsoft.com/playwright:v1.59.1-noble \
-            -o /tmp/playwright-cache/playwright.tar
-
-      - name: Start stack
-        run: ./dev -T up -d
-
-      - name: Build app for production
-        run: |
-          docker compose exec -T web sh -c "
-            corepack enable &&
-            pnpm install --frozen-lockfile &&
-            pnpm --filter @nawhas/types build &&
-            pnpm --filter @nawhas/db build &&
-            pnpm --filter @nawhas/db db:migrate &&
-            pnpm --filter @nawhas/web build
-          "
-
-      - name: Stop dev server and start production server
-        run: |
-          docker compose exec -T web sh -c "
-            pkill -f 'next dev' || true &&
-            sleep 2 &&
-            pnpm --filter @nawhas/web start &
-          "
-
-      - name: Wait for production server
-        run: |
-          timeout 180 bash -c "until curl -sf http://nawhas.test:3000; do sleep 2; done"
-
-      - name: Seed fixtures
-        env:
-          SEED_MODERATOR_PASSWORD: ci-test-moderator-password
-        run: ./dev -T db:seed
-
-      - name: Run E2E tests against production build
-        run: ./dev test:e2e --ci
-
-      - name: Docker Compose logs (web)
-        if: failure()
-        run: ./dev -T logs --no-color --tail=200 web || true
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report-prod
-          path: apps/e2e/playwright-report/
-          retention-days: 7
-
   docker-push:
     name: Docker Push (ghcr.io)
     runs-on: ubuntu-latest
-    needs: [quality, build, docker-build, e2e, e2e-prod]
+    needs: [quality, build, docker-build, e2e]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
