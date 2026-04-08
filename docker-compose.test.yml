@@ -24,6 +24,14 @@ services:
       - BETTER_AUTH_TRUSTED_ORIGINS=http://nawhas.test:3000,http://localhost:3000
       # Align client auth baseURL with browser origin in E2E (matches BETTER_AUTH_URL).
       - NEXT_PUBLIC_APP_URL=http://nawhas.test:3000
+      # Limit the DB pool per getDb() instance to 3. Next.js dev HMR can re-evaluate
+      # the module and create a fresh pool on each reload. 10 connections × many reloads
+      # over an 18-minute CI run exhausts max_connections=200, causing "too many clients"
+      # errors that cascade to test failures. 3 × ~60 HMR reloads ≈ 180 < 200.
+      - DATABASE_POOL_MAX=3
+      # Release idle connections after 30s so connections from stale HMR pools
+      # are eventually freed even if the pool is never explicitly ended.
+      - DATABASE_IDLE_TIMEOUT=30
     networks:
       default:
         aliases:
