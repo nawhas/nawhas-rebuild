@@ -349,6 +349,18 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
 
       const rows = await db.select({ role: users.role }).from(users).where(inArray(users.id, [targetUserId]));
       expect(rows[0]!.role).toBe('contributor');
+
+      // Verify audit log entry.
+      const logs = await db
+        .select()
+        .from(auditLog)
+        .where(inArray(auditLog.targetId, [targetUserId]));
+      const log = logs.find((l) => l.action === 'role.changed' && (l.meta as Record<string, string>).newRole === 'contributor');
+      expect(log).toBeDefined();
+      expect(log!.actorUserId).toBe(moderatorId);
+      expect(log!.targetId).toBe(targetUserId);
+      expect((log!.meta as Record<string, string>).oldRole).toBe('user');
+      expect((log!.meta as Record<string, string>).newRole).toBe('contributor');
     });
 
     it('allows moderator to set role back to user', async () => {

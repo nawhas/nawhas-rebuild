@@ -363,20 +363,23 @@ export const moderationRouter = router({
 
       const oldRole = targetUser.role;
 
-      // Update role directly — our app uses 'user' | 'contributor' | 'moderator'
-      // which extends the Better Auth admin plugin's role model.
-      await ctx.db
-        .update(users)
-        .set({ role: input.role, updatedAt: new Date() })
-        .where(eq(users.id, input.userId));
+      // Wrap role update and audit log in a transaction so partial writes cannot occur.
+      await ctx.db.transaction(async (tx) => {
+        // Update role directly — our app uses 'user' | 'contributor' | 'moderator'
+        // which extends the Better Auth admin plugin's role model.
+        await tx
+          .update(users)
+          .set({ role: input.role, updatedAt: new Date() })
+          .where(eq(users.id, input.userId));
 
-      // Write audit log with both old and new role for full history.
-      await ctx.db.insert(auditLog).values({
-        actorUserId: ctx.user.id,
-        action: 'role.changed',
-        targetType: 'user',
-        targetId: input.userId,
-        meta: { oldRole, newRole: input.role },
+        // Write audit log with both old and new role for full history.
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: 'role.changed',
+          targetType: 'user',
+          targetId: input.userId,
+          meta: { oldRole, newRole: input.role },
+        });
       });
 
       return { success: true };
