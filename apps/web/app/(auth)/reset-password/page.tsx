@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 
+// Dynamic rendering required for searchParams access
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Reset password',
 };
