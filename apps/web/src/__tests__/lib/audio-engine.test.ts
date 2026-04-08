@@ -140,9 +140,9 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — init()', () => {
-  it('sets global Howler volume from store on init', () => {
+  it('sets global Howler volume from store on init', async () => {
     usePlayerStore.setState({ volume: 0.6 });
-    audioEngine.init();
+    await audioEngine.init();
     expect(mockHowlerVolume).toHaveBeenCalledWith(0.6);
   });
 });
@@ -152,8 +152,8 @@ describe('AudioEngine — init()', () => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — track loading', () => {
-  it('creates a Howl instance when currentTrack with audioUrl is set', () => {
-    audioEngine.init();
+  it('creates a Howl instance when currentTrack with audioUrl is set', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack({ audioUrl: 'https://example.com/audio.mp3' }));
 
     expect(MockHowl).toHaveBeenCalledOnce();
@@ -162,8 +162,8 @@ describe('AudioEngine — track loading', () => {
     );
   });
 
-  it('calls next() when currentTrack has no audioUrl', () => {
-    audioEngine.init();
+  it('calls next() when currentTrack has no audioUrl', async () => {
+    await audioEngine.init();
     const nextSpy = vi.spyOn(usePlayerStore.getState(), 'next');
     usePlayerStore.getState().play(makeTrack({ audioUrl: null }));
 
@@ -171,8 +171,8 @@ describe('AudioEngine — track loading', () => {
     expect(nextSpy).toHaveBeenCalled();
   });
 
-  it('unloads the previous Howl when a new track is loaded', () => {
-    audioEngine.init();
+  it('unloads the previous Howl when a new track is loaded', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack({ id: 'track-a', audioUrl: 'https://example.com/a.mp3' }));
 
     const firstInstance = getLastHowlInstance();
@@ -183,8 +183,8 @@ describe('AudioEngine — track loading', () => {
     expect(firstInstance?.unload).toHaveBeenCalled();
   });
 
-  it('updates store duration from actual audio metadata on load', () => {
-    audioEngine.init();
+  it('updates store duration from actual audio metadata on load', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack({ audioUrl: 'https://example.com/audio.mp3' }));
 
     const instance = getLastHowlInstance();
@@ -194,8 +194,8 @@ describe('AudioEngine — track loading', () => {
     expect(usePlayerStore.getState().duration).toBe(234);
   });
 
-  it('sets crossOrigin on the underlying audio element after load', () => {
-    audioEngine.init();
+  it('sets crossOrigin on the underlying audio element after load', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
 
     const instance = getLastHowlInstance()!;
@@ -212,21 +212,21 @@ describe('AudioEngine — track loading', () => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — play / pause', () => {
-  it('calls howl.play() on autoPlay when track is set with isPlaying=true', () => {
-    audioEngine.init();
+  it('calls howl.play() on autoPlay when track is set with isPlaying=true', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
     expect(getLastHowlInstance()?.play).toHaveBeenCalled();
   });
 
-  it('calls howl.pause() when store pauses', () => {
-    audioEngine.init();
+  it('calls howl.pause() when store pauses', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
     usePlayerStore.getState().pause();
     expect(getLastHowlInstance()?.pause).toHaveBeenCalled();
   });
 
-  it('calls howl.play() when store resumes', () => {
-    audioEngine.init();
+  it('calls howl.play() when store resumes', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
     usePlayerStore.getState().pause();
     const instance = getLastHowlInstance()!;
@@ -241,8 +241,8 @@ describe('AudioEngine — play / pause', () => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — volume', () => {
-  it('updates global Howler volume when store volume changes', () => {
-    audioEngine.init();
+  it('updates global Howler volume when store volume changes', async () => {
+    await audioEngine.init();
     mockHowlerVolume.mockClear();
     usePlayerStore.getState().setVolume(0.4);
     expect(mockHowlerVolume).toHaveBeenCalledWith(0.4);
@@ -254,8 +254,8 @@ describe('AudioEngine — volume', () => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — position sync', () => {
-  it('syncs position to store every 250 ms while playing', () => {
-    audioEngine.init();
+  it('syncs position to store every 250 ms while playing', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
 
     const instance = getLastHowlInstance()!;
@@ -270,8 +270,8 @@ describe('AudioEngine — position sync', () => {
     expect(usePlayerStore.getState().position).toBeCloseTo(10);
   });
 
-  it('does not update position when howl.playing() returns false', () => {
-    audioEngine.init();
+  it('does not update position when howl.playing() returns false', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
 
     const instance = getLastHowlInstance()!;
@@ -283,8 +283,8 @@ describe('AudioEngine — position sync', () => {
     expect(usePlayerStore.getState().position).toBe(0);
   });
 
-  it('stops position sync when onpause fires', () => {
-    audioEngine.init();
+  it('stops position sync when onpause fires', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
 
     const instance = getLastHowlInstance()!;
@@ -308,8 +308,8 @@ describe('AudioEngine — position sync', () => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — external seek', () => {
-  it('seeks howl when store position jumps by more than 0.5 s', () => {
-    audioEngine.init();
+  it('seeks howl when store position jumps by more than 0.5 s', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
 
     const instance = getLastHowlInstance()!;
@@ -325,8 +325,8 @@ describe('AudioEngine — external seek', () => {
     expect(instance.seek).toHaveBeenCalledWith(60);
   });
 
-  it('does not seek howl for small position delta (timer update noise)', () => {
-    audioEngine.init();
+  it('does not seek howl for small position delta (timer update noise)', async () => {
+    await audioEngine.init();
     usePlayerStore.getState().play(makeTrack());
 
     const instance = getLastHowlInstance()!;
@@ -348,16 +348,16 @@ describe('AudioEngine — external seek', () => {
 // ---------------------------------------------------------------------------
 
 describe('AudioEngine — auto-advance and error handling', () => {
-  it('calls store.next() when track ends naturally', () => {
-    audioEngine.init();
+  it('calls store.next() when track ends naturally', async () => {
+    await audioEngine.init();
     const nextSpy = vi.spyOn(usePlayerStore.getState(), 'next');
     usePlayerStore.getState().play(makeTrack());
     getLastHowlInstance()?._onend?.();
     expect(nextSpy).toHaveBeenCalled();
   });
 
-  it('calls store.next() on load error', () => {
-    audioEngine.init();
+  it('calls store.next() on load error', async () => {
+    await audioEngine.init();
     const nextSpy = vi.spyOn(usePlayerStore.getState(), 'next');
     usePlayerStore.getState().play(makeTrack());
     getLastHowlInstance()?._onloaderror?.(0, 'network error');

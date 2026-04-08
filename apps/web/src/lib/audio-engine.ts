@@ -1,6 +1,6 @@
 'use client';
 
-import { Howl, Howler } from 'howler';
+import type { Howl as HowlInstance } from 'howler';
 import { usePlayerStore } from '@/store/player';
 import type { PlayerStore } from '@/store/player';
 
@@ -19,7 +19,9 @@ import type { PlayerStore } from '@/store/player';
  *  - On track load error or natural end, store.next() advances the queue
  */
 class AudioEngine {
-  private howl: Howl | null = null;
+  private howl: HowlInstance | null = null;
+  /** Cached Howler module — null until init() has completed the dynamic import. */
+  private howlModule: typeof import('howler') | null = null;
   private positionInterval: ReturnType<typeof setInterval> | null = null;
   /** ID of the track currently loaded — null means no track is loaded. */
   private loadedTrackId: string | null = null;
@@ -30,11 +32,17 @@ class AudioEngine {
   private internalPosition: number = 0;
   private unsubscribe: (() => void) | null = null;
 
-  /** Initialise the engine and subscribe to the Zustand player store. */
-  init(): void {
+  /**
+   * Initialise the engine and subscribe to the Zustand player store.
+   *
+   * Howler.js is loaded dynamically here so it is excluded from the initial
+   * page bundle — it only downloads and evaluates when audio is first needed.
+   */
+  async init(): Promise<void> {
     const initialState = usePlayerStore.getState();
-    // Apply initial volume before any audio loads.
-    Howler.volume(initialState.volume);
+    // Lazy-load Howler.js — only downloads/evaluates on first audio engine init.
+    this.howlModule = await import('howler');
+    this.howlModule.Howler.volume(initialState.volume);
     this.unsubscribe = usePlayerStore.subscribe(this.handleStateChange);
   }
 
@@ -43,6 +51,7 @@ class AudioEngine {
     this.stopPositionSync();
     this.howl?.unload();
     this.howl = null;
+    this.howlModule = null;
     this.loadedTrackId = null;
     this.internalPosition = 0;
     this.unsubscribe?.();
@@ -75,7 +84,7 @@ class AudioEngine {
 
     // Global volume changes.
     if (volume !== prevState.volume) {
-      Howler.volume(volume);
+      this.howlModule?.Howler.volume(volume);
     }
 
     // External seek: user dragged the scrubber, causing a large position jump.
@@ -102,6 +111,7 @@ class AudioEngine {
       return;
     }
 
+    const { Howl } = this.howlModule!;
     const howl = new Howl({
       src: [url],
       // html5: true enables streaming (avoids full download before play) and
