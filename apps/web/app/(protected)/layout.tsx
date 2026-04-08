@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 
+// Mark as dynamic since we use headers() for auth checks on every request
+export const dynamic = 'force-dynamic';
+
 /**
  * Protected route group layout.
  *

@@ -3,6 +3,9 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
 
+// Mark as dynamic since we use headers() for auth checks on every request
+export const dynamic = 'force-dynamic';
+
 /**
  * Contribute layout — /contribute/*
  *
