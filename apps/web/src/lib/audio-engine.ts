@@ -1,6 +1,7 @@
 'use client';
 
 import type { Howl as HowlInstance } from 'howler';
+import type * as HowlerModule from 'howler';
 import { usePlayerStore } from '@/store/player';
 import type { PlayerStore } from '@/store/player';
 
@@ -21,7 +22,7 @@ import type { PlayerStore } from '@/store/player';
 class AudioEngine {
   private howl: HowlInstance | null = null;
   /** Cached Howler module — null until init() has completed the dynamic import. */
-  private howlModule: typeof import('howler') | null = null;
+  private howlModule: typeof HowlerModule | null = null;
   private positionInterval: ReturnType<typeof setInterval> | null = null;
   /** ID of the track currently loaded — null means no track is loaded. */
   private loadedTrackId: string | null = null;
