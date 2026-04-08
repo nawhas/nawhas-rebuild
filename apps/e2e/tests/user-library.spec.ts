@@ -85,9 +85,9 @@ async function registerAndVerifyUser(params: {
 }): Promise<void> {
   const { baseUrl, email, password, name } = params;
   let lastError = '';
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 10; attempt++) {
     if (attempt > 0) {
-      await sleep(400 * attempt);
+      await sleep(1000 * attempt);
     }
     const registerRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
       method: 'POST',
@@ -329,17 +329,19 @@ test.describe('Listening History', () => {
   test('clear history → empty state shown', async ({ page, seedData, verifiedUser }) => {
     await signIn(page, verifiedUser);
 
-    // Play a track so there is something in history
-    const trackUrl = `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/${seedData.track.slug}`;
-    await gotoWithSession(page, trackUrl);
-    const playButton = page.getByRole('button', { name: new RegExp(`Play ${seedData.track.title}`, 'i') });
-    const recordPlaySettled = page.waitForResponse(
-      (res) => res.request().method() === 'POST' && !!res.request().headers()['next-action'],
-      { timeout: 15_000 },
-    ).catch(() => null);
-    await playButton.click();
-    await recordPlaySettled;
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    // Seed a history entry directly via the DB so this test is independent of
+    // the recordPlay server-action timing (which is covered by the prior test).
+    // This also avoids the race where SaveButton/LikeButton server actions fire
+    // between gotoWithSession and the recordPlaySettled listener, causing the
+    // listener to resolve on the wrong response.
+    const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
+    try {
+      const [dbUser] = await sql<{ id: string }[]>`SELECT id FROM "user" WHERE email = ${verifiedUser.email}`;
+      if (!dbUser) throw new Error(`User not found in DB: ${verifiedUser.email}`);
+      await sql`INSERT INTO listening_history (user_id, track_id) VALUES (${dbUser.id}, ${seedData.track.id})`;
+    } finally {
+      await sql.end();
+    }
 
     await page.goto('/history');
     await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 10_000 });
@@ -352,10 +354,18 @@ test.describe('Listening History', () => {
     // Confirm in the inline confirmation row (button text: "Yes, clear")
     const confirmButton = page.getByRole('button', { name: /Yes, clear/i });
     await expect(confirmButton).toBeVisible({ timeout: 3_000 });
+
+    // Register the waitForResponse BEFORE clicking so we don't miss a fast response.
+    const clearSettled = page.waitForResponse(
+      (res) => res.request().method() === 'POST' && !!res.request().headers()['next-action'],
+      { timeout: 15_000 },
+    ).catch(() => null);
     await confirmButton.click();
+    await clearSettled;
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 
     // Empty state should now be visible (heading text: "No history yet")
-    await expect(page.getByText(seedData.track.title)).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(seedData.track.title)).not.toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { name: /No history yet/i })).toBeVisible();
   });
 });

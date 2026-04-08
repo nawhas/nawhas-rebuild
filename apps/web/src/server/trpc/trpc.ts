@@ -23,3 +23,27 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+/**
+ * Contributor procedure — requires an authenticated session with role
+ * 'contributor' or 'moderator'. Rejects all others with FORBIDDEN.
+ */
+export const contributorProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const { role } = ctx.user;
+  if (role !== 'contributor' && role !== 'moderator') {
+    throw new TRPCError({ code: 'FORBIDDEN' });
+  }
+  return next({ ctx });
+});
+
+/**
+ * Moderator procedure — requires an authenticated session with role
+ * 'moderator'. Rejects all others with FORBIDDEN.
+ */
+export const moderatorProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const { role } = ctx.user;
+  if (role !== 'moderator') {
+    throw new TRPCError({ code: 'FORBIDDEN' });
+  }
+  return next({ ctx });
+});

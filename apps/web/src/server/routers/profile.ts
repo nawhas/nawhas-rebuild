@@ -8,12 +8,15 @@ export const profileRouter = router({
   /**
    * Returns the current authenticated user's profile.
    */
-  get: protectedProcedure.query(({ ctx }): UserDTO => ({
-    id: ctx.user.id,
-    name: ctx.user.name,
-    email: ctx.user.email,
-    image: ctx.user.image ?? null,
-  })),
+  get: protectedProcedure.query(({ ctx }): UserDTO => {
+    return {
+      id: ctx.user.id,
+      name: ctx.user.name,
+      email: ctx.user.email,
+      image: ctx.user.image ?? null,
+      role: ctx.user.role ?? 'user',
+    };
+  }),
 
   /**
    * Updates the authenticated user's display name.
@@ -36,6 +39,7 @@ export const profileRouter = router({
         name: updated.name,
         email: updated.email,
         image: updated.image ?? null,
+        role: updated.role,
       };
     }),
 });

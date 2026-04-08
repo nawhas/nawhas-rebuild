@@ -14,6 +14,7 @@ export const authRouter = router({
         name: ctx.user.name,
         email: ctx.user.email,
         image: ctx.user.image ?? null,
+        role: ctx.user.role ?? 'user',
       },
       expiresAt: ctx.session.expiresAt,
     };
@@ -22,10 +23,13 @@ export const authRouter = router({
   /**
    * Returns the authenticated user. Throws UNAUTHORIZED if not logged in.
    */
-  me: protectedProcedure.query(({ ctx }): UserDTO => ({
-    id: ctx.user.id,
-    name: ctx.user.name,
-    email: ctx.user.email,
-    image: ctx.user.image ?? null,
-  })),
+  me: protectedProcedure.query(({ ctx }): UserDTO => {
+    return {
+      id: ctx.user.id,
+      name: ctx.user.name,
+      email: ctx.user.email,
+      image: ctx.user.image ?? null,
+      role: ctx.user.role ?? 'user',
+    };
+  }),
 });

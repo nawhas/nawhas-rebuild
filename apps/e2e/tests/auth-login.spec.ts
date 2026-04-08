@@ -191,19 +191,30 @@ test.describe('Logout', () => {
     await page.fill('#password', verifiedUser.password);
     await clickLoginSubmitAndWaitForAuth(page);
     await expect(page).toHaveURL('/', { timeout: 10_000 });
+    // Let RSC hydration and any pending network requests settle after the full-page
+    // navigation triggered by window.location.replace('/') in the login form.
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 
     // Open user menu
     const userMenuButton = page.getByRole('button', {
       name: new RegExp(`Account menu for ${verifiedUser.name}`, 'i'),
     });
+    await expect(userMenuButton).toBeVisible({ timeout: 10_000 });
     await userMenuButton.click();
+    // Wait for the dropdown to be visible before clicking an item inside it
+    await expect(page.getByRole('menu', { name: 'Account menu' })).toBeVisible({ timeout: 5_000 });
 
-    // Click Sign Out
+    // Click Sign Out — wait for the sign-out POST to settle before asserting
+    const signOutSettled = page.waitForResponse(
+      (res) => res.url().includes('/api/auth/sign-out') && res.request().method() === 'POST',
+      { timeout: 15_000 },
+    ).catch(() => null);
     await page.getByRole('menuitem', { name: 'Sign Out' }).click();
+    await signOutSettled;
 
-    // Redirected to home in unauthenticated state
+    // Redirected to home in unauthenticated state; give the RSC refresh time to settle
     await expect(page).toHaveURL('/', { timeout: 10_000 });
-    await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible({ timeout: 10_000 });
   });
 });
 

@@ -14,6 +14,15 @@ function createTransport(): nodemailer.Transporter {
 
 const FROM = process.env['SMTP_FROM'] ?? 'noreply@nawhas.com';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function sendPasswordResetEmail(params: {
   to: string;
   name: string;
@@ -92,4 +101,123 @@ export async function sendVerificationEmail(params: {
       <p style="color:#9ca3af;font-size:12px">If you did not create an account, you can ignore this email.</p>
     `,
   });
+}
+
+/**
+ * Notifies the submitter that their contribution was received and is pending review.
+ * Fire-and-forget: logs errors, never throws.
+ */
+export function sendSubmissionReceived(params: {
+  to: string;
+  submissionId: string;
+  type: 'reciter' | 'album' | 'track';
+}): void {
+  const transport = createTransport();
+  const typeLabel = params.type.charAt(0).toUpperCase() + params.type.slice(1);
+  transport
+    .sendMail({
+      from: FROM,
+      to: params.to,
+      subject: `Your ${typeLabel} submission was received — Nawhas.com`,
+      text: [
+        `Thank you for your contribution!`,
+        '',
+        `We received your ${params.type} submission (ID: ${params.submissionId}) and it is now pending review by our moderation team.`,
+        '',
+        'We will notify you once a decision has been made.',
+        '',
+        '— The Nawhas.com team',
+      ].join('\n'),
+      html: `
+        <p>Thank you for your contribution!</p>
+        <p>We received your <strong>${params.type}</strong> submission and it is now pending review by our moderation team.</p>
+        <p style="color:#6b7280;font-size:14px">Submission ID: ${params.submissionId}</p>
+        <p>We will notify you once a decision has been made.</p>
+        <p style="color:#9ca3af;font-size:12px">— The Nawhas.com team</p>
+      `,
+    })
+    .catch((err: unknown) => {
+      console.error('[email] sendSubmissionReceived failed', err);
+    });
+}
+
+/**
+ * Notifies the submitter that their contribution was approved and applied.
+ * Fire-and-forget: logs errors, never throws.
+ */
+export function sendSubmissionApproved(params: {
+  to: string;
+  submissionId: string;
+  type: 'reciter' | 'album' | 'track';
+}): void {
+  const transport = createTransport();
+  const typeLabel = params.type.charAt(0).toUpperCase() + params.type.slice(1);
+  transport
+    .sendMail({
+      from: FROM,
+      to: params.to,
+      subject: `Your ${typeLabel} submission was approved — Nawhas.com`,
+      text: [
+        `Great news! Your ${params.type} submission has been approved and is now live on Nawhas.com.`,
+        '',
+        `Submission ID: ${params.submissionId}`,
+        '',
+        'Thank you for helping us grow the library!',
+        '',
+        '— The Nawhas.com team',
+      ].join('\n'),
+      html: `
+        <p>Great news! Your <strong>${params.type}</strong> submission has been approved and is now live on Nawhas.com.</p>
+        <p style="color:#6b7280;font-size:14px">Submission ID: ${params.submissionId}</p>
+        <p>Thank you for helping us grow the library!</p>
+        <p style="color:#9ca3af;font-size:12px">— The Nawhas.com team</p>
+      `,
+    })
+    .catch((err: unknown) => {
+      console.error('[email] sendSubmissionApproved failed', err);
+    });
+}
+
+/**
+ * Notifies the submitter of feedback (rejection or changes requested).
+ * Fire-and-forget: logs errors, never throws.
+ */
+export function sendSubmissionFeedback(params: {
+  to: string;
+  submissionId: string;
+  action: 'rejected' | 'changes_requested';
+  comment: string | null;
+}): void {
+  const transport = createTransport();
+  const isChangesRequested = params.action === 'changes_requested';
+  const subject = isChangesRequested
+    ? 'Changes requested on your submission — Nawhas.com'
+    : 'Your submission was not approved — Nawhas.com';
+  const headline = isChangesRequested
+    ? 'Our moderation team has reviewed your submission and requested some changes.'
+    : 'Our moderation team has reviewed your submission and it was not approved at this time.';
+
+  transport
+    .sendMail({
+      from: FROM,
+      to: params.to,
+      subject,
+      text: [
+        headline,
+        '',
+        ...(params.comment ? [`Reviewer comment: ${params.comment}`, ''] : []),
+        `Submission ID: ${params.submissionId}`,
+        '',
+        '— The Nawhas.com team',
+      ].join('\n'),
+      html: `
+        <p>${headline}</p>
+        ${params.comment ? `<blockquote style="border-left:3px solid #e5e7eb;padding-left:12px;color:#374151">${escapeHtml(params.comment)}</blockquote>` : ''}
+        <p style="color:#6b7280;font-size:14px">Submission ID: ${escapeHtml(params.submissionId)}</p>
+        <p style="color:#9ca3af;font-size:12px">— The Nawhas.com team</p>
+      `,
+    })
+    .catch((err: unknown) => {
+      console.error('[email] sendSubmissionFeedback failed', err);
+    });
 }

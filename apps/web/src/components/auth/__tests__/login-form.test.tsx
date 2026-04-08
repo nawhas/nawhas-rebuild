@@ -4,6 +4,7 @@ import { LoginForm } from '../login-form';
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
+const mockReplace = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
@@ -23,11 +24,13 @@ vi.mock('@/lib/auth-client', () => ({
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('LoginForm', () => {
   beforeEach(() => {
     mockSignIn.mockResolvedValue({ data: { user: { id: '1' } }, error: null });
+    vi.stubGlobal('location', { replace: mockReplace });
   });
 
   it('renders all form fields with accessible labels', () => {
@@ -70,7 +73,7 @@ describe('LoginForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'Sign in' }).closest('form')!);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(mockReplace).toHaveBeenCalledWith('/');
     });
   });
 
@@ -82,7 +85,7 @@ describe('LoginForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'Sign in' }).closest('form')!);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/admin');
+      expect(mockReplace).toHaveBeenCalledWith('/admin');
     });
   });
 
@@ -145,7 +148,7 @@ describe('LoginForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'Sign in' }).closest('form')!);
 
     await waitFor(() => {
-      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
     });
   });
 });

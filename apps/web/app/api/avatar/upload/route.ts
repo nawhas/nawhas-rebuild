@@ -87,6 +87,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     name: updated.name,
     email: updated.email,
     image: updated.image ?? null,
+    role: updated.role,
   };
 
   return NextResponse.json(userDto, { status: 200 });
