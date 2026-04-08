@@ -344,7 +344,10 @@ export const moderationRouter = router({
   setRole: moderatorProcedure
     .input(
       z.object({
-        userId: z.string().uuid(),
+        // Better Auth generates 32-char alphanumeric IDs (not UUIDs), so we
+        // accept any non-empty string up to 128 chars. Existence is validated
+        // below with a NOT_FOUND guard after the DB lookup.
+        userId: z.string().min(1).max(128),
         // Moderators can only grant 'user' or 'contributor' roles.
         // Promoting to 'moderator' requires out-of-band admin action (DB seed or admin-only endpoint).
         role: z.enum(['user', 'contributor']),
@@ -363,20 +366,23 @@ export const moderationRouter = router({
 
       const oldRole = targetUser.role;
 
-      // Update role directly — our app uses 'user' | 'contributor' | 'moderator'
-      // which extends the Better Auth admin plugin's role model.
-      await ctx.db
-        .update(users)
-        .set({ role: input.role, updatedAt: new Date() })
-        .where(eq(users.id, input.userId));
+      // Wrap role update and audit log in a transaction so partial writes cannot occur.
+      await ctx.db.transaction(async (tx) => {
+        // Update role directly — our app uses 'user' | 'contributor' | 'moderator'
+        // which extends the Better Auth admin plugin's role model.
+        await tx
+          .update(users)
+          .set({ role: input.role, updatedAt: new Date() })
+          .where(eq(users.id, input.userId));
 
-      // Write audit log with both old and new role for full history.
-      await ctx.db.insert(auditLog).values({
-        actorUserId: ctx.user.id,
-        action: 'role.changed',
-        targetType: 'user',
-        targetId: input.userId,
-        meta: { oldRole, newRole: input.role },
+        // Write audit log with both old and new role for full history.
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: 'role.changed',
+          targetType: 'user',
+          targetId: input.userId,
+          meta: { oldRole, newRole: input.role },
+        });
       });
 
       return { success: true };

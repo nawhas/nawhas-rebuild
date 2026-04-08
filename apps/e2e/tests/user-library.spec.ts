@@ -134,7 +134,7 @@ const test = base.extend<object, WorkerFixtures>({
       await use({ email, password, name });
 
       // Cleanup
-      const sql = postgres(DATABASE_URL, { max: 1 });
+      const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
       try {
         await sql`DELETE FROM "user" WHERE email = ${email}`;
       } finally {
@@ -427,7 +427,7 @@ test.describe('Account — Delete Account', () => {
     } finally {
       await browser.close();
       // Cleanup (in case the delete didn't work or the test failed)
-      const sql = postgres(DATABASE_URL, { max: 1 });
+      const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
       try {
         await sql`DELETE FROM "user" WHERE email = ${email}`;
       } finally {
