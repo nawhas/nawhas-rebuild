@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LoginForm } from '@/components/auth/login-form';
+import { AuthPageShell } from '@/components/auth/auth-page-shell';
 import { getEnabledSocialProviders } from '@/lib/social-providers';
 
 // Dynamic rendering required for searchParams access
@@ -16,10 +17,13 @@ export default async function LoginPage({
 }): Promise<React.JSX.Element> {
   const { callbackUrl } = await searchParams;
   const enabledProviders = getEnabledSocialProviders();
+
   return (
-    <LoginForm
-      {...(callbackUrl ? { callbackUrl } : {})}
-      enabledProviders={enabledProviders}
-    />
+    <AuthPageShell>
+      <LoginForm
+        {...(callbackUrl ? { callbackUrl } : {})}
+        enabledProviders={enabledProviders}
+      />
+    </AuthPageShell>
   );
 }

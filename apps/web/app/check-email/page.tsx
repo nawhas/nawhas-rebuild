@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { CheckEmailCard } from '@/components/auth/check-email-card';
+import { AuthPageShell } from '@/components/auth/auth-page-shell';
 
 // Dynamic rendering required for searchParams access
 export const dynamic = 'force-dynamic';
@@ -14,5 +15,10 @@ export default async function CheckEmailPage({
   searchParams: Promise<{ email?: string }>;
 }): Promise<React.JSX.Element> {
   const { email } = await searchParams;
-  return <CheckEmailCard {...(email ? { email } : {})} />;
+
+  return (
+    <AuthPageShell>
+      <CheckEmailCard {...(email ? { email } : {})} />
+    </AuthPageShell>
+  );
 }
