@@ -3,6 +3,10 @@
 import { headers } from 'next/headers';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
+import {
+  logHandledServerActionError,
+  logUnauthenticatedServerAction,
+} from '@/lib/logger/log-server-action';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 
@@ -25,11 +29,16 @@ async function getAuthenticatedCaller() {
 export async function changeEmail(newEmail: string): Promise<string | null> {
   try {
     const caller = await getAuthenticatedCaller();
-    if (!caller) return 'You must be signed in to change your email.';
+    if (!caller) {
+      await logUnauthenticatedServerAction('account.changeEmail');
+      return 'You must be signed in to change your email.';
+    }
     await caller.account.changeEmail({ newEmail });
     return null;
   } catch (err: unknown) {
-    return extractMessage(err);
+    const message = extractMessage(err);
+    await logHandledServerActionError('account.changeEmail', message);
+    return message;
   }
 }
 
@@ -44,11 +53,16 @@ export async function changePassword(
 ): Promise<string | null> {
   try {
     const caller = await getAuthenticatedCaller();
-    if (!caller) return 'You must be signed in to change your password.';
+    if (!caller) {
+      await logUnauthenticatedServerAction('account.changePassword');
+      return 'You must be signed in to change your password.';
+    }
     await caller.account.changePassword({ currentPassword, newPassword });
     return null;
   } catch (err: unknown) {
-    return extractMessage(err);
+    const message = extractMessage(err);
+    await logHandledServerActionError('account.changePassword', message);
+    return message;
   }
 }
 
@@ -61,11 +75,16 @@ export async function changePassword(
 export async function deleteAccount(password: string): Promise<string | null> {
   try {
     const caller = await getAuthenticatedCaller();
-    if (!caller) return 'You must be signed in to delete your account.';
+    if (!caller) {
+      await logUnauthenticatedServerAction('account.deleteAccount');
+      return 'You must be signed in to delete your account.';
+    }
     await caller.account.deleteAccount({ password });
     return null;
   } catch (err: unknown) {
-    return extractMessage(err);
+    const message = extractMessage(err);
+    await logHandledServerActionError('account.deleteAccount', message);
+    return message;
   }
 }
 

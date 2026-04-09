@@ -52,9 +52,10 @@ Special commands
   db:seed           Seed fixture data
   db:reset          Drop, migrate, and seed
   build             Production build
-  lint              Run ESLint
-  typecheck         TypeScript type check
-  test              Run unit tests (vitest)
+  lint              Run ESLint (Docker: web service, --no-deps)
+  typecheck         TypeScript type check (Docker: web service, --no-deps)
+  test              Run unit + integration tests (Docker + test DB overlay)
+  qa                Typecheck, lint, and test in one Docker run (CI-friendly)
   test:e2e          Run E2E tests (always uses test overlay)
   test:e2e:ui       Run E2E tests in interactive Playwright UI
   test:e2e --ci     Run E2E tests with CI overrides
@@ -132,16 +133,54 @@ cmd_build() {
   "
 }
 
+# Lint / typecheck: no DB — avoid starting postgres/typesense via --no-deps.
+# Install runs inside the container so a cold machine works without a prior `dev up`.
 cmd_lint() {
-  pnpm run lint
+  require_docker
+  # shellcheck disable=SC2086
+  docker compose $COMPOSE_FILES run --rm --no-deps web sh -c "
+    corepack enable &&
+    pnpm install --frozen-lockfile &&
+    pnpm run lint
+  "
 }
 
 cmd_typecheck() {
-  pnpm run typecheck
+  require_docker
+  # shellcheck disable=SC2086
+  docker compose $COMPOSE_FILES run --rm --no-deps web sh -c "
+    corepack enable &&
+    pnpm install --frozen-lockfile &&
+    pnpm run typecheck
+  "
 }
 
+# Tests: use test overlay (nawhas_test) and start stack deps so Postgres/Typesense match vitest env.
 cmd_test() {
-  pnpm run test
+  require_docker
+  docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm web sh -c "
+    corepack enable &&
+    pnpm install --frozen-lockfile &&
+    pnpm --filter @nawhas/types build &&
+    pnpm --filter @nawhas/db build &&
+    pnpm --filter @nawhas/db db:migrate &&
+    pnpm run test
+  "
+}
+
+# One container, one install — use in CI instead of three separate Docker runs.
+cmd_qa() {
+  require_docker
+  docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm web sh -c "
+    corepack enable &&
+    pnpm install --frozen-lockfile &&
+    pnpm --filter @nawhas/types build &&
+    pnpm --filter @nawhas/db build &&
+    pnpm --filter @nawhas/db db:migrate &&
+    pnpm run typecheck &&
+    pnpm run lint &&
+    pnpm run test
+  "
 }
 
 cmd_test_e2e() {
@@ -179,6 +218,7 @@ case "$COMMAND" in
   lint)         cmd_lint ;;
   typecheck)    cmd_typecheck ;;
   test)         cmd_test ;;
+  qa)           cmd_qa ;;
   test:e2e:ui)  cmd_test_e2e_ui ;;
   test:e2e)     cmd_test_e2e "$@" ;;
   down)         cmd_down "$@" ;;

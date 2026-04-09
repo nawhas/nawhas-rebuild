@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Container } from '@/components/layout/container';
+import { clientLogger } from '@/lib/logger/client';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -20,9 +21,11 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
   const t = useTranslations('errors');
 
   useEffect(() => {
-    // Log the error to the console for debugging; replace with a monitoring
-    // service call (e.g. Sentry) once observability is wired up.
-    console.error(error);
+    clientLogger.error('app.error_boundary', {
+      message: error.message,
+      digest: error.digest,
+      stack: error.stack,
+    });
   }, [error]);
 
   return (

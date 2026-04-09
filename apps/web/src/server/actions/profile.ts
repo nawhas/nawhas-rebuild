@@ -3,6 +3,7 @@
 import { headers } from 'next/headers';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
+import { logUnauthenticatedServerAction } from '@/lib/logger/log-server-action';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import type { UserDTO } from '@nawhas/types';
@@ -22,6 +23,9 @@ async function getAuthenticatedCaller() {
  */
 export async function updateDisplayName(name: string): Promise<UserDTO> {
   const caller = await getAuthenticatedCaller();
-  if (!caller) throw new Error('You must be signed in to update your profile.');
+  if (!caller) {
+    await logUnauthenticatedServerAction('profile.updateDisplayName');
+    throw new Error('You must be signed in to update your profile.');
+  }
   return caller.profile.updateDisplayName({ name });
 }

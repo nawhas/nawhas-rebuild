@@ -5,6 +5,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { eq } from 'drizzle-orm';
 import { db, users } from '@nawhas/db';
 import { auth } from '@/lib/auth';
+import { serverLogger } from '@/lib/logger/server';
 import { s3, BUCKET_IMAGES, S3_IMAGES_PUBLIC_BASE_URL } from '@/lib/storage';
 import type { UserDTO } from '@nawhas/types';
 
@@ -51,44 +52,50 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Resize to 256x256 webp
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const resized = await sharp(buffer)
-    .resize(AVATAR_SIZE, AVATAR_SIZE, { fit: 'cover', position: 'center' })
-    .webp({ quality: 85 })
-    .toBuffer();
+  try {
+    // Resize to 256x256 webp
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const resized = await sharp(buffer)
+      .resize(AVATAR_SIZE, AVATAR_SIZE, { fit: 'cover', position: 'center' })
+      .webp({ quality: 85 })
+      .toBuffer();
 
-  // Upload to MinIO
-  const key = `avatars/${userId}.webp`;
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: BUCKET_IMAGES,
-      Key: key,
-      Body: resized,
-      ContentType: 'image/webp',
-      CacheControl: 'public, max-age=31536000, immutable',
-    }),
-  );
+    // Upload to MinIO
+    const key = `avatars/${userId}.webp`;
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_IMAGES,
+        Key: key,
+        Body: resized,
+        ContentType: 'image/webp',
+        CacheControl: 'public, max-age=31536000, immutable',
+      }),
+    );
 
-  // Build public URL and update user record
-  const imageUrl = `${S3_IMAGES_PUBLIC_BASE_URL}/${key}`;
-  const rows = await db
-    .update(users)
-    .set({ image: imageUrl, updatedAt: new Date() })
-    .where(eq(users.id, userId))
-    .returning();
-  const updated = rows[0];
-  if (!updated) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Build public URL and update user record
+    const imageUrl = `${S3_IMAGES_PUBLIC_BASE_URL}/${key}`;
+    const rows = await db
+      .update(users)
+      .set({ image: imageUrl, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    const updated = rows[0];
+    if (!updated) {
+      await serverLogger.warn('avatar.upload_user_not_found', { userId });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userDto: UserDTO = {
+      id: updated.id,
+      name: updated.name,
+      email: updated.email,
+      image: updated.image ?? null,
+      role: updated.role,
+    };
+
+    return NextResponse.json(userDto, { status: 200 });
+  } catch (err: unknown) {
+    await serverLogger.error('avatar.upload_failed', err, { userId });
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
-
-  const userDto: UserDTO = {
-    id: updated.id,
-    name: updated.name,
-    email: updated.email,
-    image: updated.image ?? null,
-    role: updated.role,
-  };
-
-  return NextResponse.json(userDto, { status: 200 });
 }

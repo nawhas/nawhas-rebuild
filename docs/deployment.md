@@ -48,6 +48,18 @@ All variables must be set in the production environment. Never commit real secre
 |----------|-------------|---------|
 | `NODE_ENV` | Must be `production` | `production` |
 
+### Server logging (structured JSON to stdout)
+
+The web app emits JSON lines from [`server.ts`](../apps/web/src/lib/logger/server.ts) in the web package. **tRPC** procedures are logged via middleware (`trpc.procedure_ok` at debug, `trpc.procedure_failed` on errors). **Server actions** log unauthenticated and handled-error paths where applicable; some actions log `serverAction.ok` at debug. **Vitest** sets `LOGGING_ENABLED=false` so tests stay quiet.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `LOGGING_ENABLED` | Master switch for server logger | `true` |
+| `LOG_LEVEL` | Minimum level: `debug`, `info`, `warn`, `error` | `info` |
+| `LOG_SINK` | `console` (stdout/stderr) or `file` | `console` |
+| `LOG_FILE_PATH` | Used when `LOG_SINK=file` | `/tmp/nawhas-web.log` |
+| `NEXT_PUBLIC_LOGGING_ENABLED` | Client-side logger in the browser | `true` |
+
 ### Database
 
 | Variable | Description | Example |

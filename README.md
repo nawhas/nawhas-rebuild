@@ -75,12 +75,13 @@ All common tasks go through `./dev`. Run from the repo root:
 |---------|-------------|
 | `./dev up` | Start all Docker services (web, postgres, typesense, minio, mailpit) |
 | `./dev down` | Stop all services |
-| `./dev build` | Production build |
-| `./dev test` | Run unit and integration tests (Vitest) |
+| `./dev build` | Production build (Docker) |
+| `./dev lint` | ESLint (Docker) |
+| `./dev typecheck` | TypeScript check (Docker) |
+| `./dev test` | Run unit and integration tests (Vitest) in Docker |
+| `./dev qa` | Run typecheck, lint, and test in one Docker run (same as CI quality job) |
 | `./dev test:e2e` | Run Playwright E2E tests in Docker |
 | `./dev test:e2e:ui` | Run Playwright in interactive UI mode |
-| `./dev lint` | ESLint across all packages |
-| `./dev typecheck` | TypeScript type checking |
 | `./dev db:seed` | Seed the database with fixture data |
 | `./dev db:migrate` | Apply pending database migrations |
 | `./dev db:reset` | Drop, migrate, and reseed the database |
@@ -96,7 +97,7 @@ Four status checks are required to merge to `main`:
 
 | Check | What it does |
 |-------|--------------|
-| `quality` | Typecheck, lint, and unit tests |
+| `quality` | Typecheck, lint, and unit tests (`./dev qa` in Docker) |
 | `build` | Production Next.js build against live Docker services |
 | `docker-build` | Validates the Dockerfile builds cleanly |
 | `e2e` | Full Playwright suite against a running stack |

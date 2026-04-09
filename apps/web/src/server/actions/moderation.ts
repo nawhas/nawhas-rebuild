@@ -3,16 +3,20 @@
 import { headers } from 'next/headers';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
+import { logUnauthenticatedServerAction } from '@/lib/logger/log-server-action';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import type { SubmissionDTO } from '@nawhas/types';
 
 const createCaller = createCallerFactory(appRouter);
 
-async function getModeratorCaller() {
+async function getModeratorCaller(actionName: string) {
   const reqHeaders = await headers();
   const sessionData = await auth.api.getSession({ headers: reqHeaders });
-  if (!sessionData) throw new Error('Not authenticated.');
+  if (!sessionData) {
+    await logUnauthenticatedServerAction(actionName);
+    throw new Error('Not authenticated.');
+  }
   return createCaller({ db, session: sessionData.session, user: sessionData.user });
 }
 
@@ -25,7 +29,7 @@ export async function reviewSubmission(
   action: 'approved' | 'rejected' | 'changes_requested',
   comment?: string,
 ): Promise<SubmissionDTO> {
-  const caller = await getModeratorCaller();
+  const caller = await getModeratorCaller('moderation.reviewSubmission');
   return caller.moderation.review({ submissionId, action, comment });
 }
 
@@ -36,7 +40,7 @@ export async function reviewSubmission(
 export async function applySubmission(
   submissionId: string,
 ): Promise<{ success: true; entityId: string }> {
-  const caller = await getModeratorCaller();
+  const caller = await getModeratorCaller('moderation.applySubmission');
   return caller.moderation.applyApproved({ submissionId });
 }
 
@@ -48,6 +52,6 @@ export async function setUserRole(
   userId: string,
   role: 'user' | 'contributor',
 ): Promise<{ success: true }> {
-  const caller = await getModeratorCaller();
+  const caller = await getModeratorCaller('moderation.setUserRole');
   return caller.moderation.setRole({ userId, role });
 }

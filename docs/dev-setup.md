@@ -106,6 +106,20 @@ The example file contains dev-safe defaults for all services. Production values 
 
 ---
 
+## Lint, typecheck, and tests (Docker)
+
+`./dev lint`, `./dev typecheck`, and `./dev test` run **inside the `web` container** (not on the host). Lint and typecheck use `docker compose run --no-deps` so Postgres/Typesense are not started. Tests use `docker-compose.test.yml` so `DATABASE_URL` points at `nawhas_test` and dependencies start automatically.
+
+For one shot matching CI:
+
+```bash
+./dev qa
+```
+
+Vitest inherits `DATABASE_URL` and Typesense env from the container when present; see `apps/web/vitest.config.ts`.
+
+---
+
 ## Health checks
 
 Use these commands to verify all services are running after `./dev up`:

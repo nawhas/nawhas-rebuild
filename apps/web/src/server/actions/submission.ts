@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import type { z } from 'zod';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
+import { logUnauthenticatedServerAction } from '@/lib/logger/log-server-action';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import type { reciterDataSchema, albumDataSchema, trackDataSchema } from '@/server/routers/submission';
@@ -15,10 +16,13 @@ type TrackData = z.infer<typeof trackDataSchema>;
 
 const createCaller = createCallerFactory(appRouter);
 
-async function getAuthenticatedCaller() {
+async function getAuthenticatedCaller(actionName: string) {
   const reqHeaders = await headers();
   const sessionData = await auth.api.getSession({ headers: reqHeaders });
-  if (!sessionData) throw new Error('You must be signed in.');
+  if (!sessionData) {
+    await logUnauthenticatedServerAction(actionName);
+    throw new Error('You must be signed in.');
+  }
   return createCaller({ db, session: sessionData.session, user: sessionData.user });
 }
 
@@ -28,7 +32,7 @@ export async function createReciterSubmission(
   data: { name: string; slug?: string },
   targetId?: string,
 ): Promise<SubmissionDTO> {
-  const caller = await getAuthenticatedCaller();
+  const caller = await getAuthenticatedCaller('submission.createReciterSubmission');
   return caller.submission.create({
     type: 'reciter',
     action,
@@ -43,7 +47,7 @@ export async function createAlbumSubmission(
   data: { title: string; reciterId: string; slug?: string; year?: number; artworkUrl?: string },
   targetId?: string,
 ): Promise<SubmissionDTO> {
-  const caller = await getAuthenticatedCaller();
+  const caller = await getAuthenticatedCaller('submission.createAlbumSubmission');
   return caller.submission.create({
     type: 'album',
     action,
@@ -66,7 +70,7 @@ export async function createTrackSubmission(
   },
   targetId?: string,
 ): Promise<SubmissionDTO> {
-  const caller = await getAuthenticatedCaller();
+  const caller = await getAuthenticatedCaller('submission.createTrackSubmission');
   return caller.submission.create({
     type: 'track',
     action,
@@ -84,7 +88,7 @@ export async function resubmitSubmission(
   type: 'reciter' | 'album' | 'track',
   data: ReciterData | AlbumData | TrackData,
 ): Promise<SubmissionDTO> {
-  const caller = await getAuthenticatedCaller();
+  const caller = await getAuthenticatedCaller('submission.resubmitSubmission');
   if (type === 'reciter') {
     return caller.submission.update({ id, type: 'reciter', data: data as ReciterData });
   }
@@ -96,12 +100,12 @@ export async function resubmitSubmission(
 
 /** Fetch the authenticated user's submission history. */
 export async function fetchMySubmissions(cursor?: string): Promise<PaginatedResult<SubmissionDTO>> {
-  const caller = await getAuthenticatedCaller();
+  const caller = await getAuthenticatedCaller('submission.fetchMySubmissions');
   return caller.submission.myHistory({ limit: 20, cursor });
 }
 
 /** Fetch a single submission (own or moderator). */
 export async function fetchSubmission(id: string): Promise<SubmissionDTO> {
-  const caller = await getAuthenticatedCaller();
+  const caller = await getAuthenticatedCaller('submission.fetchSubmission');
   return caller.submission.get({ id });
 }

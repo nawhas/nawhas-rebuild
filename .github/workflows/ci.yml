@@ -28,21 +28,8 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build
-
-      - name: Typecheck
-        run: ./dev typecheck
-
-      - name: Lint
-        run: ./dev lint
-
-      - name: Test
-        run: ./dev test
+      - name: Typecheck, lint, test (Docker)
+        run: ./dev qa
 
   build:
     name: Build

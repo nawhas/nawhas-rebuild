@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -72,9 +71,6 @@ function parsePage(raw: string | undefined): number {
  * a new server render with updated searchParams.
  */
 export default async function SearchPage({ searchParams }: SearchPageProps): Promise<React.JSX.Element> {
-  const reqHeaders = await headers();
-  const requestId = reqHeaders.get('x-request-id');
-  const host = reqHeaders.get('host');
   const t = await getTranslations('search');
   const { q, type, page } = await searchParams;
 
@@ -100,31 +96,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps): Pro
 
   // Fetch the main results page and per-type found counts in parallel.
   // Count queries use perPage=1 — we only need the `found` field.
-  const [results, recitersResult, albumsResult, tracksResult] = await (async () => {
-    try {
-      return await Promise.all([
-        caller.search.query({ q: query, type: currentType, page: currentPage, perPage: 20 }),
-        caller.search.query({ q: query, type: 'reciters', page: 1, perPage: 1 }),
-        caller.search.query({ q: query, type: 'albums', page: 1, perPage: 1 }),
-        caller.search.query({ q: query, type: 'tracks', page: 1, perPage: 1 }),
-      ]);
-    } catch (error) {
-      await serverLogger.error('search.page_query_failed', error, {
-        route: '/search',
-        requestId,
-        host,
-        query,
-        type: currentType,
-        page: currentPage,
-        rawSearchParams: { q, type, page },
-        dynamicConfig: dynamic,
-        usesSearchParams: true,
-        usesHeaders: true,
-        usesCookies: false,
-      });
-      throw error;
-    }
-  })();
+  // Failures are logged by tRPC middleware (`trpc.procedure_failed`).
+  const [results, recitersResult, albumsResult, tracksResult] = await Promise.all([
+    caller.search.query({ q: query, type: currentType, page: currentPage, perPage: 20 }),
+    caller.search.query({ q: query, type: 'reciters', page: 1, perPage: 1 }),
+    caller.search.query({ q: query, type: 'albums', page: 1, perPage: 1 }),
+    caller.search.query({ q: query, type: 'tracks', page: 1, perPage: 1 }),
+  ]);
 
   const typeCounts = {
     reciters: recitersResult.found,
