@@ -8,8 +8,8 @@ import { ReciterGrid } from '@/components/reciters/reciter-grid';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
-// ISR: revalidate every hour.
-export const revalidate = 3600;
+// Dynamic rendering avoids build-time DB access in CI/container builds.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Reciters',
