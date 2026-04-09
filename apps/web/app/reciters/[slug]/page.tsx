@@ -9,6 +9,7 @@ import { ReciterDiscography } from '@/components/reciters/reciter-discography';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildReciterJsonLd } from '@/lib/jsonld';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -32,6 +33,7 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
 }
 
 export async function generateMetadata({ params }: ReciterPageProps): Promise<Metadata> {
+  setDefaultRequestLocale();
   const { slug } = await params;
   const caller = createCaller({ db, session: null, user: null });
   const reciter = await caller.reciter.getBySlug({ slug });
@@ -54,6 +56,7 @@ export async function generateMetadata({ params }: ReciterPageProps): Promise<Me
  * caller and renders the header and discography sections.
  */
 export default async function ReciterPage({ params }: ReciterPageProps): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const { slug } = await params;
   const caller = createCaller({ db, session: null, user: null });
   const reciter = await caller.reciter.getBySlug({ slug });

@@ -12,6 +12,7 @@ import { LyricsDisplay } from '@/components/tracks/lyrics-display';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildTrackJsonLd } from '@/lib/jsonld';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -51,6 +52,7 @@ export async function generateStaticParams(): Promise<
 }
 
 export async function generateMetadata({ params }: TrackPageProps): Promise<Metadata> {
+  setDefaultRequestLocale();
   const { slug: reciterSlug, albumSlug, trackSlug } = await params;
   const caller = createCaller({ db, session: null, user: null });
   const track = await caller.track.getBySlug({ reciterSlug, albumSlug, trackSlug });
@@ -77,6 +79,7 @@ export async function generateMetadata({ params }: TrackPageProps): Promise<Meta
  * URL: /reciters/[slug]/albums/[albumSlug]/tracks/[trackSlug]
  */
 export default async function TrackPage({ params }: TrackPageProps): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const { slug: reciterSlug, albumSlug, trackSlug } = await params;
   const caller = createCaller({ db, session: null, user: null });
   const track = await caller.track.getBySlug({ reciterSlug, albumSlug, trackSlug });

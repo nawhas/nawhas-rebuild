@@ -6,6 +6,7 @@ import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { ReciterGrid } from '@/components/reciters/reciter-grid';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -25,6 +26,7 @@ const createCaller = createCallerFactory(appRouter);
  * data + cursor to the ReciterGrid client component for "Load More" pagination.
  */
 export default async function RecitersPage(): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const t = await getTranslations('common');
   const caller = createCaller({ db, session: null, user: null });
   const { items, nextCursor } = await caller.reciter.list({ limit: 24 });

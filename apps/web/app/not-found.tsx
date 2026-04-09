@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Container } from '@/components/layout/container';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 export const metadata: Metadata = {
   title: 'Page Not Found',
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
  * Server Component.
  */
 export default async function NotFound(): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const t = await getTranslations('errors');
 
   return (

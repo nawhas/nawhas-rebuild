@@ -12,6 +12,7 @@ import { PlayerPanels } from '@/components/player/PlayerPanels';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 // Load Inter for primary UI text.
 // display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
@@ -68,6 +69,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const locale = await getLocale();
   const messages = await getMessages();
 

@@ -7,6 +7,7 @@ import { FeaturedReciters } from '@/components/home/featured-reciters';
 import { RecentAlbums } from '@/components/home/recent-albums';
 import { PopularTracks } from '@/components/home/popular-tracks';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 // ISR: revalidate every hour so featured content stays fresh.
 export const revalidate = 3600;
@@ -26,6 +27,7 @@ const createCaller = createCallerFactory(appRouter);
  * and passes it to pure-presentation section components.
  */
 export default async function HomePage(): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const caller = createCaller({ db, session: null, user: null });
   const featured = await caller.home.getFeatured();
 

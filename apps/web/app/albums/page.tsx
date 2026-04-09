@@ -6,6 +6,7 @@ import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { AlbumGrid } from '@/components/albums/album-grid';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
+import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
 // ISR: revalidate every hour.
 export const revalidate = 3600;
@@ -26,6 +27,7 @@ const createCaller = createCallerFactory(appRouter);
  * client component for "Load More" pagination.
  */
 export default async function AlbumsPage(): Promise<React.JSX.Element> {
+  setDefaultRequestLocale();
   const t = await getTranslations('common');
   const caller = createCaller({ db, session: null, user: null });
   const { items, nextCursor } = await caller.album.list({ limit: 24 });

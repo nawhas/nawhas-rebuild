@@ -1,7 +1,10 @@
 # GitHub Actions CI Pipeline
 #
-# Branch protection settings (configure in GitHub repo settings):
-#   - Required status checks: quality, build, docker-build, e2e
+# Branch protection (configure in GitHub repo settings):
+#   - Recommended required checks: Quality, Build, Docker Build (job names below).
+#   - E2E Tests: keep running on every PR/push for HTTP-level regressions, but it does
+#     NOT gate docker-push or deploy-staging (see job `needs:`). Omit E2E from required
+#     checks if merges/deploys from main should not wait on Playwright.
 #   - Require branches to be up to date before merging
 #   - No force-pushes to main
 #   - No direct commits to main
@@ -49,6 +52,10 @@ jobs:
       # service's depends_on conditions ensure postgres + typesense are healthy before
       # the build command starts. @nawhas/types must be built first so its dist/
       # declarations exist when next build type-checks.
+      #
+      # Note: this job compiles and prerenders against an empty/migrated DB (no seed).
+      # ISR `generateStaticParams` often returns [] here; runtime-only RSC issues are
+      # more likely to surface in the E2E job (prod-like stack + seed + HTTP).
       - name: Build
         run: |
           docker compose run --rm web sh -c "
