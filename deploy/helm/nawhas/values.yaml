@@ -37,6 +37,11 @@ minio:
 seed:
   enabled: false   # set true on environments that need sample data
 
+# One-shot Helm hook Job: reconcile Typesense collection schemas (create missing, recreate if outdated).
+# Runs before the seed hook (weight 5 vs 10). Disable only if you manage Typesense schemas entirely out-of-band.
+typesenseSchemaJob:
+  enabled: true
+
 mailhog:
   enabled: false   # MailHog SMTP trap for staging
 

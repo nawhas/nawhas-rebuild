@@ -8,6 +8,14 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./typesense/admin-client": {
+      "import": "./dist/typesense/admin-client.js",
+      "types": "./dist/typesense/admin-client.d.ts"
+    },
+    "./typesense/collections": {
+      "import": "./dist/typesense/collections.js",
+      "types": "./dist/typesense/collections.d.ts"
     }
   },
   "scripts": {
@@ -20,7 +28,8 @@
     "db:studio": "drizzle-kit studio",
     "seed": "tsx src/seed.ts",
     "db:seed": "tsx src/seed.ts",
-    "db:search-index": "tsx src/search-index-cli.ts"
+    "db:search-index": "tsx src/search-index-cli.ts",
+    "db:typesense-ensure": "tsx src/typesense-ensure-cli.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.39.3",

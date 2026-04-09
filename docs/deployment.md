@@ -124,9 +124,22 @@ pnpm --filter @nawhas/db db:generate
 
 Commit the generated migration file in `packages/db/src/migrations/`. Migrations are irreversible by default — write a rollback migration manually if needed.
 
-## Typesense Index Bootstrap
+## Typesense
 
-When deploying to a fresh environment, the Typesense index will be empty. Bootstrap it after seeding the database:
+### Collections vs PostgreSQL migrations
+
+Drizzle migrations only change PostgreSQL. **Typesense collection schemas** are defined in code ([`packages/db/src/typesense/collections.ts`](../packages/db/src/typesense/collections.ts)) and consumed by the web app via `@nawhas/db`.
+
+### Kubernetes (Helm)
+
+- **DB migrations:** the `migrate` **initContainer** on [`nawhas-web`](../deploy/helm/nawhas/templates/deployment.yaml) runs `packages/db/dist/migrate.js` before each pod starts.
+- **Typesense schema reconcile:** a **Helm hook Job** ([`typesense-schema-job.yaml`](../deploy/helm/nawhas/templates/typesense-schema-job.yaml)) runs on `post-install` / `post-upgrade` with **hook-weight 5** (before the [seed hook](../deploy/helm/nawhas/templates/seed-job.yaml) at weight 10). It runs `node packages/db/dist/typesense-ensure-cli.js` with the same image and `TYPESENSE_*` env as the app. The job **creates** missing collections and **deletes + recreates** any collection whose fields are outdated relative to code — safe because the Job runs **once per release**, not per replica. Disable via `typesenseSchemaJob.enabled` in Helm values.
+
+On app startup, [`instrumentation.ts`](../apps/web/instrumentation.ts) still calls `ensureCollections`, which only **creates** collections that do not exist (no deletes), so multiple replicas do not race on schema changes.
+
+### Index bootstrap
+
+When deploying to a **fresh** environment, the Typesense index will be empty. Bootstrap it after seeding the database:
 
 ```bash
 ./dev db:seed
@@ -138,7 +151,7 @@ This runs the full re-index as its final step. In production (where `db:seed` sh
 docker compose exec web pnpm --filter @nawhas/db db:search-index
 ```
 
-The `db:search-index` script is idempotent — it clears and rebuilds each collection from the current PostgreSQL data.
+The `db:search-index` script is idempotent — it upserts documents from the current PostgreSQL data. If the schema hook **recreated** a collection, run `db:search-index` (or your usual sync path) so search is repopulated.
 
 ## Switching from MinIO to Real S3
 

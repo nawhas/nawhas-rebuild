@@ -8,37 +8,15 @@
  * Run with: pnpm db:search-index
  * Also imported and called at the end of pnpm db:seed.
  */
-import { Client } from 'typesense';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema/index.js';
+import { createTypesenseAdminClient, type TypesenseAdminClient } from './typesense/admin-client.js';
 
 type DB = PostgresJsDatabase<typeof schema>;
-type TSClient = InstanceType<typeof Client>;
-
-// ---------------------------------------------------------------------------
-// Typesense client factory
-// ---------------------------------------------------------------------------
-
-function createTypesenseClient(): TSClient {
-  const host = process.env['TYPESENSE_HOST'];
-  const apiKey = process.env['TYPESENSE_API_KEY'];
-  if (!host) throw new Error('TYPESENSE_HOST is required');
-  if (!apiKey) throw new Error('TYPESENSE_API_KEY is required');
-  return new Client({
-    nodes: [
-      {
-        host,
-        port: parseInt(process.env['TYPESENSE_PORT'] ?? '8108', 10),
-        protocol: (process.env['TYPESENSE_PROTOCOL'] ?? 'http') as 'http' | 'https',
-      },
-    ],
-    apiKey,
-    connectionTimeoutSeconds: 5,
-  });
-}
+type TSClient = TypesenseAdminClient;
 
 // ---------------------------------------------------------------------------
 // Per-collection indexers
@@ -177,7 +155,7 @@ export async function runSearchIndex(existingDb?: DB): Promise<void> {
     db = drizzle(pgClient, { schema });
   }
 
-  const typesenseClient = createTypesenseClient();
+  const typesenseClient = createTypesenseAdminClient();
 
   try {
     console.log('Indexing reciters…');
