@@ -187,17 +187,40 @@ cmd_test_e2e() {
   require_docker
   check_hosts
   local ci_env=""
+  local use_ci_overlay=false
   for arg in "$@"; do
     if [[ "$arg" == "--ci" ]]; then
       ci_env="-e CI=true"
+      use_ci_overlay=true
     fi
   done
   if [[ "${CI:-}" == "true" ]]; then
     ci_env="-e CI=true"
+    use_ci_overlay=true
   fi
-  # test:e2e always uses the test overlay — it is the only valid context for E2E.
+  # test:e2e: local uses base + docker-compose.test.yml (Playwright lives in the test overlay).
+  # CI / --ci adds docker-compose.ci.yml (includes docker-compose.web-prod.yml) — same three -f chain as GHA E2E.
+  #
+  # Why port 3000 matters: docker-compose.yml publishes web as "3000:3000" so you can
+  # open http://localhost:3000 on the host. Starting `web` requires binding host :3000.
+  # If something else already listens there (pnpm/next dev on the host, another stack),
+  # Docker errors with "address already in use". Free it: ./dev down, or stop the other
+  # process (see docs/dev-setup.md — E2E and port 3000).
+  #
+  # Bring web up first (same as CI "Start stack"), then run Playwright with --no-deps so
+  # we do not ask compose to reconcile `web` again in the same `run` invocation.
+  local compose_e2e=(docker compose -f docker-compose.yml -f docker-compose.test.yml)
+  if [[ "$use_ci_overlay" == "true" ]]; then
+    compose_e2e=(
+      docker compose
+      -f docker-compose.yml
+      -f docker-compose.test.yml
+      -f docker-compose.ci.yml
+    )
+  fi
+  "${compose_e2e[@]}" up -d --wait web
   # shellcheck disable=SC2086
-  docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm $ci_env playwright
+  "${compose_e2e[@]}" --profile testing run --rm --no-deps $ci_env playwright
 }
 
 cmd_test_e2e_ui() {

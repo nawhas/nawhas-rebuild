@@ -102,8 +102,7 @@ jobs:
           docker save mcr.microsoft.com/playwright:v1.59.1-noble \
             -o /tmp/playwright-cache/playwright.tar
 
-      # Start with both test and CI overlays so E2E runs against a production-like
-      # web process from the beginning while still using the test database wiring.
+      # Base + test overlay + CI overlay (ci.yml includes docker-compose.web-prod.yml for prod-like web).
       - name: Start stack
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.ci.yml up -d --wait web
 

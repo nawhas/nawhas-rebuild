@@ -1,17 +1,20 @@
-# TEST OVERLAY — layers on top of docker-compose.yml when running E2E tests.
+# TEST OVERLAY — layers on top of docker-compose.yml for the test database and E2E.
 #
-# Usage (local):
+# Local dev with test DB:
 #   docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
-#   docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm playwright
 #
-# Usage (CI): see .github/workflows/ci.yml e2e job.
+# Local E2E (Next dev in Docker + Playwright):
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --wait web
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml --profile testing run --rm --no-deps playwright
+#   Or: ./dev test:e2e
 #
-# What this changes vs the base file:
-#   - postgres: mounts an init script that creates the nawhas_test database
-#   - web: points DATABASE_URL at nawhas_test, sets BETTER_AUTH_URL/TRUSTED_ORIGINS
-#     to http://nawhas.test:3000, and adds nawhas.test as a Docker network alias
-#   - playwright: overrides BASE_URL + DATABASE_URL for test DB; Typesense vars live
-#     here (not in the base file) so dev docker compose up stays clean
+# Production-like E2E (CI / ./dev test:e2e --ci) — add docker-compose.ci.yml (includes web-prod):
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.ci.yml …
+#
+# What this file defines:
+#   - postgres: init script for nawhas_test
+#   - web: DATABASE_URL → nawhas_test, BETTER_AUTH / NEXT_PUBLIC URLs, pool limits, nawhas.test alias
+#   - playwright: full E2E runner (profile `testing`); only exists when this overlay is used
 services:
   postgres:
     volumes:
@@ -38,9 +41,26 @@ services:
           - nawhas.test
 
   playwright:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    profiles:
+      - testing
+    working_dir: /app
+    # Install deps fresh inside the container so pnpm symlinks resolve correctly.
+    # The host's node_modules use symlinks into .pnpm virtual store which breaks
+    # when /app/node_modules is masked by the anonymous volume below.
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/e2e test:e2e"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/e2e/node_modules
     environment:
       - BASE_URL=http://nawhas.test:3000
+      - DOCKER=true
+      - CI=${CI:-}
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas_test
       - TYPESENSE_HOST=typesense
       - TYPESENSE_PORT=8108
       - TYPESENSE_API_KEY=nawhas-typesense-key
+    depends_on:
+      web:
+        condition: service_healthy

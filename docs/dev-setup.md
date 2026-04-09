@@ -162,6 +162,20 @@ If any service fails to start because a port is already in use:
 
 To find what is using a port: `lsof -i :<port>` (macOS/Linux) or `netstat -ano | findstr :<port>` (Windows).
 
+### E2E (`./dev test:e2e`) and port 3000
+
+End-to-end tests use [`docker-compose.test.yml`](../docker-compose.test.yml) on top of [`docker-compose.yml`](../docker-compose.yml): test DB (`nawhas_test`), `nawhas.test` aliases, and the **Playwright** service (profile `testing`) all live in the test overlay. **`./dev test:e2e --ci`** and CI add [`docker-compose.ci.yml`](../docker-compose.ci.yml), which includes [`docker-compose.web-prod.yml`](../docker-compose.web-prod.yml) so `web` runs **`next build` + `next start`** instead of `next dev`.
+
+The base `web` service maps **host port 3000** (`ports: "3000:3000"`). Playwright (in Docker) uses `http://nawhas.test:3000` on the **container** network; the host publish is for `http://localhost:3000` from your machine.
+
+If you see **`failed to bind host port 0.0.0.0:3000: address already in use`**, something on the host is already listening on 3000. Typical cases:
+
+- A **local** `pnpm dev` / `next dev` (not in Docker) for this or another project
+- A **leftover** stack — run `./dev down` and retry
+- Another tool using 3000 — check with `ss -tlnp | grep 3000` or `sudo lsof -i :3000`
+
+Inside the repo, prefer **either** `./dev up` **or** E2E in Docker, not both a host Next server and a fresh `web` container fighting for the same port.
+
 ### Resetting all local data
 
 To wipe all Docker volumes and start fresh (⚠️ destroys the local database and all seeded data):

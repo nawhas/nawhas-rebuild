@@ -1,0 +1,10 @@
+# Next.js production-like `web` (build + start). Included by docker-compose.ci.yml and E2E CI stack.
+services:
+  web:
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build && pnpm --filter @nawhas/db db:migrate && pnpm run build && pnpm --filter @nawhas/web start"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 120s

@@ -130,29 +130,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # E2E test runner — only starts with: docker compose --profile testing run --rm playwright
-  playwright:
-    image: mcr.microsoft.com/playwright:v1.59.1-noble
-    profiles:
-      - testing
-    working_dir: /app
-    # Install deps fresh inside the container so pnpm symlinks resolve correctly.
-    # The host's node_modules use symlinks into .pnpm virtual store which breaks
-    # when /app/node_modules is masked by the anonymous volume below.
-    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/e2e test:e2e"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/apps/e2e/node_modules
-    environment:
-      - BASE_URL=http://web:3000
-      - DOCKER=true
-      - CI=${CI:-}
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas
-    depends_on:
-      web:
-        condition: service_healthy
-
 volumes:
   postgres_data:
   typesense_data:
