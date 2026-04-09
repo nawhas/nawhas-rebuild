@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { appendFile } from 'node:fs/promises';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 type LogSink = 'console' | 'file';
 
 interface LogContext {
@@ -16,6 +16,7 @@ interface LogRecord {
 }
 
 const LOG_LEVEL_ORDER: Record<LogLevel, number> = {
+  trace: 5,
   debug: 10,
   info: 20,
   warn: 30,
@@ -91,7 +92,7 @@ async function writeRecord(record: LogRecord): Promise<void> {
     }
   }
 
-  if (record.level === 'debug' || record.level === 'info') {
+  if (record.level === 'trace' || record.level === 'debug' || record.level === 'info') {
     console.log(line);
   } else if (record.level === 'warn') {
     console.warn(line);
@@ -111,6 +112,9 @@ async function log(level: LogLevel, message: string, context?: LogContext): Prom
 }
 
 export const serverLogger = {
+  trace(message: string, context?: LogContext): Promise<void> {
+    return log('trace', message, context);
+  },
   debug(message: string, context?: LogContext): Promise<void> {
     return log('debug', message, context);
   },

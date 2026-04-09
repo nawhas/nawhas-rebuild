@@ -32,7 +32,7 @@ env:
   PORT: "3000"
   LOGGING_ENABLED: "true"
   NEXT_PUBLIC_LOGGING_ENABLED: "true"
-  LOG_LEVEL: "debug"
+  LOG_LEVEL: "trace"
   LOG_SINK: "console"
   LOG_FILE_PATH: "/tmp/nawhas-web.log"
   SMTP_HOST: "mailhog.nawhas-staging.svc.cluster.local"

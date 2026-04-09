@@ -55,10 +55,14 @@ The web app emits JSON lines from [`server.ts`](../apps/web/src/lib/logger/serve
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `LOGGING_ENABLED` | Master switch for server logger | `true` |
-| `LOG_LEVEL` | Minimum level: `debug`, `info`, `warn`, `error` | `info` |
+| `LOG_LEVEL` | Minimum level: `trace`, `debug`, `info`, `warn`, `error` | `info` |
 | `LOG_SINK` | `console` (stdout/stderr) or `file` | `console` |
 | `LOG_FILE_PATH` | Used when `LOG_SINK=file` | `/tmp/nawhas-web.log` |
 | `NEXT_PUBLIC_LOGGING_ENABLED` | Client-side logger in the browser | `true` |
+
+**Staging:** [`values-staging.yaml`](../deploy/helm/nawhas/values-staging.yaml) sets `LOG_LEVEL=trace` so every level above is emitted. After changing it, redeploy the web chart so pods pick up the new env.
+
+**Next.js Server Components:** Production builds often log generic “Server Components render” failures without a full stack. That output comes from Next.js, not the structured `serverLogger` above, so raising `LOG_LEVEL` alone does not reveal those messages. Use a local non-production build, add targeted `serverLogger` calls around the suspect route, or rely on digests plus source maps as appropriate.
 
 ### Database
 
