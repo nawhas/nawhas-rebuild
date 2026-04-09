@@ -52,6 +52,8 @@ export const auth = betterAuth({
   trustedOrigins: process.env['BETTER_AUTH_TRUSTED_ORIGINS']
     ? process.env['BETTER_AUTH_TRUSTED_ORIGINS'].split(',')
     : [],
+  // Playwright E2E registers hundreds of users; production rate limits cause 429 cascades.
+  ...(process.env['E2E_DISABLE_AUTH_RATE_LIMIT'] === 'true' ? { rateLimit: { enabled: false } } : {}),
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: {

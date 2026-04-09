@@ -30,11 +30,15 @@ export async function gotoExpectOk(
   }
 }
 
-/** Navigate to a route that should render Next.js not-found (HTTP 404). */
+/**
+ * Navigate to a route that should render Next.js `notFound()` UI.
+ * Document status may be 404 or 200 (soft not-found) depending on Next.js version / mode.
+ */
 export async function gotoExpectNotFound(
   page: Page,
   path: string,
   options?: Omit<GotoExpectOkOptions, 'allowedStatuses'>,
 ): Promise<void> {
-  await gotoExpectOk(page, path, { ...options, allowedStatuses: [404] });
+  await gotoExpectOk(page, path, { ...options, allowedStatuses: [200, 404] });
+  await expect(page.getByRole('heading', { name: /Page not found/i })).toBeVisible();
 }

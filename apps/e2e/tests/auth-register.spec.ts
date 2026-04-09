@@ -103,7 +103,7 @@ test.describe('Registration form', () => {
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
 
-    const error = page.locator('[role="alert"]');
+    const error = page.locator('#register-error');
     await expect(error).toBeVisible();
   });
 
@@ -114,7 +114,7 @@ test.describe('Registration form', () => {
     await page.fill('#password', 'abc');
     await page.click('button[type="submit"]');
 
-    const error = page.locator('[role="alert"]');
+    const error = page.locator('#register-error');
     await expect(error).toBeVisible();
   });
 
@@ -125,7 +125,7 @@ test.describe('Registration form', () => {
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
 
-    const error = page.locator('[role="alert"]');
+    const error = page.locator('#register-error');
     await expect(error).toBeVisible();
   });
 
@@ -136,7 +136,7 @@ test.describe('Registration form', () => {
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
 
-    const error = page.locator('[role="alert"]');
+    const error = page.locator('#register-error');
     await expect(error).toBeVisible();
   });
 
@@ -147,7 +147,7 @@ test.describe('Registration form', () => {
     // Leave password empty
     await page.click('button[type="submit"]');
 
-    const error = page.locator('[role="alert"]');
+    const error = page.locator('#register-error');
     await expect(error).toBeVisible();
   });
 });
