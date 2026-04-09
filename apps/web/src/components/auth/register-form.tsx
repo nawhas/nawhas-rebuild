@@ -24,9 +24,25 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    if (!trimmedName) {
+      setError(t('nameRequired'));
+      return;
+    }
+    if (!trimmedEmail) {
+      setError(t('emailRequired'));
+      return;
+    }
+    if (!password) {
+      setError(t('passwordRequired'));
+      return;
+    }
+
     setLoading(true);
 
-    const result = await signUp.email({ name, email, password });
+    const result = await signUp.email({ name: trimmedName, email: trimmedEmail, password });
 
     if (result.error) {
       setError(result.error.message ?? t('fallbackError'));
@@ -34,7 +50,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
       return;
     }
 
-    router.push(`/check-email?email=${encodeURIComponent(email)}`);
+    router.push(`/check-email?email=${encodeURIComponent(trimmedEmail)}`);
   }
 
   return (

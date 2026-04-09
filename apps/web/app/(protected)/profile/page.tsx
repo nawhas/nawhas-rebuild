@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
@@ -34,11 +35,14 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
   const reqHeaders = await headers();
   const sessionData = await auth.api.getSession({ headers: reqHeaders });
 
-  // Session guaranteed by (protected) layout, but handle gracefully.
+  if (!sessionData?.session || !sessionData.user) {
+    redirect(`/login?callbackUrl=${encodeURIComponent('/profile')}`);
+  }
+
   const caller = createCaller({
     db,
-    session: sessionData?.session ?? null,
-    user: sessionData?.user ?? null,
+    session: sessionData.session,
+    user: sessionData.user,
   });
 
   // Fetch saved-track count and recent history in parallel.
@@ -47,7 +51,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
     caller.history.list({ limit: 10 }),
   ]);
 
-  const user = sessionData!.user;
+  const user = sessionData.user;
   const joinedDate = new Date(user.createdAt).toLocaleDateString(undefined, {
     month: 'long',
     day: 'numeric',

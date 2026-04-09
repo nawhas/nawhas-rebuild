@@ -14,13 +14,42 @@ function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
 }
 
 /**
+ * Port the Node server listens on for loopback fetches from Edge middleware.
+ * nextUrl.port is empty when the browser uses the scheme default (e.g. :80 / :443 omitted).
+ */
+function resolveLoopbackPort(request: NextRequest): string {
+  const u = request.nextUrl;
+  if (u.port) return u.port;
+
+  const xfPort = request.headers.get('x-forwarded-port');
+  if (xfPort && /^\d+$/.test(xfPort.trim())) return xfPort.trim();
+
+  const host = request.headers.get('host') ?? '';
+  const bracketedIpv6Port = host.match(/^\[[^\]]+]:(\d+)$/);
+  if (bracketedIpv6Port?.[1]) return bracketedIpv6Port[1];
+
+  const lastColon = host.lastIndexOf(':');
+  if (lastColon > 0 && host.indexOf(':') === lastColon) {
+    const maybePort = host.slice(lastColon + 1);
+    if (/^\d+$/.test(maybePort)) return maybePort;
+  }
+
+  const envPort =
+    typeof process !== 'undefined'
+      ? (process.env['INTERNAL_LISTEN_PORT'] ?? process.env['PORT'])
+      : undefined;
+  if (envPort && /^\d+$/.test(envPort)) return envPort;
+
+  return u.protocol === 'https:' ? '443' : '80';
+}
+
+/**
  * Resolve get-session via loopback so Edge middleware does not depend on Docker DNS
  * for the public hostname (e.g. nawhas.test). Preserve Host / Origin so Better Auth
  * sees the same virtual host as the browser.
  */
 function buildGetSessionUrl(request: NextRequest): URL {
-  const u = request.nextUrl;
-  const loopbackPort = u.port || (u.protocol === 'https:' ? '443' : '80');
+  const loopbackPort = resolveLoopbackPort(request);
   return new URL('/api/auth/get-session', `http://127.0.0.1:${loopbackPort}`);
 }
 
@@ -39,8 +68,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
     // Cookie present — validate the actual session by calling the auth endpoint.
     // This catches stale or revoked tokens that would otherwise bypass the cookie-
-    // existence check above and reach ProtectedLayout, where x-pathname header
-    // forwarding is unreliable in the Next.js 15 dev server / Docker environment.
+    // existence check above and reach ProtectedLayout.
     //
     // /api/auth is excluded from the middleware matcher so this fetch does not
     // recurse through middleware. Stays in Edge runtime — no Node.js imports needed.
@@ -53,33 +81,28 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         },
       });
       const sessionData = sessionRes.ok
-        ? (await sessionRes.json() as { user?: unknown } | null)
+        ? ((await sessionRes.json()) as { user?: unknown } | null)
         : null;
       if (!sessionData?.user) {
         return redirectToLogin(request, pathname);
       }
     } catch {
-      // Session probe failed (network, cold start). Do not next() into protected
-      // RSC — ProtectedLayout would redirect with callbackUrl=/ when x-pathname
-      // is missing. Send user to login with the correct callback instead.
+      // Session probe failed (network, cold start). Do not next() into protected RSC.
       return redirectToLogin(request, pathname);
     }
   }
 
-  // Pass through — no locale rewriting needed (app has no [locale] segment).
-  // getRequestConfig in src/i18n/request.ts falls back to defaultLocale: 'en'.
+  // Next.js prefixes keys here with x-middleware-request- internally; use x-pathname
+  // so headers().get('x-pathname') works in RSC layouts.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-request-id', requestId);
-  requestHeaders.set('x-middleware-request-x-pathname', pathname);
+  requestHeaders.set('x-pathname', pathname);
 
-  const response = NextResponse.next({
+  return NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
-  response.headers.set('x-request-id', requestId);
-  response.headers.set('x-middleware-request-x-pathname', pathname);
-  return response;
 }
 
 export const config = {

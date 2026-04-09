@@ -41,7 +41,10 @@
       "submitting": "Creating account\u2026",
       "haveAccount": "Already have an account?",
       "signIn": "Sign in",
-      "fallbackError": "Registration failed. Please try again."
+      "fallbackError": "Registration failed. Please try again.",
+      "nameRequired": "Please enter your name.",
+      "emailRequired": "Please enter your email.",
+      "passwordRequired": "Please enter a password."
     },
     "forgotPassword": {
       "heading": "Forgot your password?",

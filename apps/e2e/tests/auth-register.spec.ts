@@ -85,7 +85,7 @@ test.describe('Registration form', () => {
     await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
   });
 
-  test('duplicate email shows error', async ({ page }) => {
+  test('duplicate email: same check-email UX (enumeration protection)', async ({ page }) => {
     const email = `reg-dup-${Date.now()}@example.com`;
 
     // First registration succeeds
@@ -96,15 +96,14 @@ test.describe('Registration form', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
 
-    // Second registration with the same email should fail
+    // With requireEmailVerification, Better Auth returns a synthetic success for an
+    // existing email so the response is indistinguishable from a new sign-up.
     await gotoExpectOk(page,'/register');
     await page.fill('#name', 'Second User');
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
     await page.click('button[type="submit"]');
-
-    const error = page.locator('#register-error');
-    await expect(error).toBeVisible();
+    await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
   });
 
   test('weak password (fewer than 8 characters) shows error', async ({ page }) => {
