@@ -32,9 +32,9 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
       return;
     }
 
-    // Hard-navigate so the server-rendered SiteHeader re-runs with the new
-    // session and protected-route middleware sees the fresh cookie.
-    // router.push() + router.refresh() race; window.location avoids both issues.
+    // Full navigation so middleware and the root layout (SiteHeaderDynamic)
+    // see the new session cookie. router.push() + router.refresh() can race;
+    // window.location avoids that.
     window.location.replace(callbackUrl ?? '/');
   }
 

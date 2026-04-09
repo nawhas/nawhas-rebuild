@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Noto_Naskh_Arabic, Noto_Nastaliq_Urdu } from 'next/font/google';
 import './globals.css';
-import { SiteHeaderStatic } from '@/components/layout/header';
+import { SiteHeaderDynamic } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
 import { AudioProvider } from '@/components/providers/audio-provider';
 // PlayerBarLazy is a Client Component wrapper that uses next/dynamic({ ssr: false }).
@@ -79,7 +79,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
             <AudioProvider>
-              <PageLayout header={<SiteHeaderStatic />} footer={<></>}>
+              <PageLayout header={<SiteHeaderDynamic />} footer={<></>}>
                 {children}
               </PageLayout>
               <PlayerPanels />

@@ -28,6 +28,7 @@ minio:
 
 env:
   NEXT_PUBLIC_BASE_URL: "https://staging.nawhas.cititech.tech"
+  NEXT_PUBLIC_APP_URL: "https://staging.nawhas.cititech.tech"
   NODE_ENV: "production"
   PORT: "3000"
   LOGGING_ENABLED: "true"

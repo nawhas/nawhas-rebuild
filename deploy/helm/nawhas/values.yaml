@@ -91,6 +91,8 @@ autoscaling:
 # Secrets are injected from the SOPS-encrypted secrets file via a K8s Secret.
 env:
   NEXT_PUBLIC_BASE_URL: "https://nawhas.cititech.tech"
+  # Same origin as BASE_URL — Better Auth client uses NEXT_PUBLIC_APP_URL when set.
+  NEXT_PUBLIC_APP_URL: "https://nawhas.cititech.tech"
   NODE_ENV: "production"
   PORT: "3000"
   LOGGING_ENABLED: "true"
