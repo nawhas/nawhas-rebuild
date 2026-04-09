@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
-import type { CollectionSchema } from 'typesense/lib/Typesense/Collection';
+import type { CollectionFieldSchema, CollectionSchema } from 'typesense/lib/Typesense/Collection';
 import { collectionSchemaOutdated } from './collections.js';
 
-function mockLive(fields: { name: string }[]): CollectionSchema {
+function mockLive(fieldNames: string[]): CollectionSchema {
+  const fields: CollectionFieldSchema[] = fieldNames.map((name) => ({
+    name,
+    type: 'string',
+  }));
   return {
     name: 'tracks',
     fields,
@@ -25,21 +29,17 @@ const minimalTracksDesired: CollectionCreateSchema = {
 
 describe('collectionSchemaOutdated', () => {
   it('returns false when all desired field names exist', () => {
-    const live = mockLive([{ name: 'title' }, { name: 'lyrics_.*' }]);
+    const live = mockLive(['title', 'lyrics_.*']);
     expect(collectionSchemaOutdated(live, minimalTracksDesired)).toBe(false);
   });
 
   it('returns true when a desired field is missing', () => {
-    const live = mockLive([{ name: 'title' }]);
+    const live = mockLive(['title']);
     expect(collectionSchemaOutdated(live, minimalTracksDesired)).toBe(true);
   });
 
   it('ignores extra legacy fields on the server', () => {
-    const live = mockLive([
-      { name: 'title' },
-      { name: 'lyrics_.*' },
-      { name: 'legacy_field' },
-    ]);
+    const live = mockLive(['title', 'lyrics_.*', 'legacy_field']);
     expect(collectionSchemaOutdated(live, minimalTracksDesired)).toBe(false);
   });
 });
