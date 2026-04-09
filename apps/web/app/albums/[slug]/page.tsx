@@ -12,24 +12,13 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { buildAlbumJsonLd } from '@/lib/jsonld';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
-// ISR: revalidate every hour.
-export const revalidate = 3600;
+// Dynamic rendering avoids production static-generation conflicts with request-bound APIs.
+export const dynamic = 'force-dynamic';
 
 const createCaller = createCallerFactory(appRouter);
 
 interface AlbumPageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  try {
-    const caller = createCaller({ db, session: null, user: null });
-    const { items } = await caller.album.list({ limit: 100 });
-    return items.map((album) => ({ slug: album.slug }));
-  } catch {
-    // No DB at build time (e.g. Docker build) — pages will be generated on demand.
-    return [];
-  }
 }
 
 export async function generateMetadata({ params }: AlbumPageProps): Promise<Metadata> {

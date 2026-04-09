@@ -11,25 +11,13 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { buildReciterJsonLd } from '@/lib/jsonld';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
-// ISR: revalidate every hour.
-export const revalidate = 3600;
+// Dynamic rendering avoids production static-generation conflicts with request-bound APIs.
+export const dynamic = 'force-dynamic';
 
 const createCaller = createCallerFactory(appRouter);
 
 interface ReciterPageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  try {
-    const caller = createCaller({ db, session: null, user: null });
-    // Fetch up to the maximum allowed limit for static generation.
-    const { items } = await caller.reciter.list({ limit: 100 });
-    return items.map((reciter) => ({ slug: reciter.slug }));
-  } catch {
-    // No DB at build time (e.g. Docker build) — pages will be generated on demand.
-    return [];
-  }
 }
 
 export async function generateMetadata({ params }: ReciterPageProps): Promise<Metadata> {

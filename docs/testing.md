@@ -160,6 +160,27 @@ echo '127.0.0.1 nawhas.test' | sudo tee -a /etc/hosts
 ./dev test:e2e
 ```
 
+### Production-like detail-page smoke check
+
+Use this before deploys to catch production-only rendering regressions (like
+`DYNAMIC_SERVER_USAGE`) on detail pages:
+
+```bash
+./dev smoke:prodlike
+```
+
+What it does:
+- Starts the production-like web stack (`docker-compose.yml` + `docker-compose.ci.yml`)
+- Seeds fixture data
+- Verifies key detail pages return HTTP 200
+- Fails if `DYNAMIC_SERVER_USAGE` appears in recent web logs
+
+Optional overrides:
+
+```bash
+RECITER_SLUG=ali-safdar ALBUM_SLUG=panjtan-pak ./dev smoke:prodlike
+```
+
 ### Location
 
 ```

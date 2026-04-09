@@ -82,6 +82,7 @@ All common tasks go through `./dev`. Run from the repo root:
 | `./dev qa` | Run typecheck, lint, and test in one Docker run (same as CI quality job) |
 | `./dev test:e2e` | Run Playwright E2E tests in Docker |
 | `./dev test:e2e:ui` | Run Playwright in interactive UI mode |
+| `./dev smoke:prodlike` | Run production-like Docker smoke checks for detail pages |
 | `./dev db:seed` | Seed the database with fixture data |
 | `./dev db:migrate` | Apply pending database migrations |
 | `./dev db:reset` | Drop, migrate, and reseed the database |

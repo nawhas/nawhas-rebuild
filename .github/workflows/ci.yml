@@ -67,6 +67,17 @@ jobs:
             pnpm --filter @nawhas/web build
           "
 
+  prodlike-smoke:
+    name: Production-like Smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run production-like smoke checks
+        env:
+          SEED_MODERATOR_PASSWORD: ci-test-moderator-password
+        run: ./dev smoke:prodlike
+
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest

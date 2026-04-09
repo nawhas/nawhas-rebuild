@@ -59,6 +59,7 @@ Special commands
   test:e2e          Run E2E tests (always uses test overlay)
   test:e2e:ui       Run E2E tests in interactive Playwright UI
   test:e2e --ci     Run E2E tests with CI overrides
+  smoke:prodlike    Run production-like Docker smoke checks for detail pages
 
 Docker Compose pass-through
   Any other command is forwarded to docker compose (using active compose files).
@@ -228,6 +229,47 @@ cmd_test_e2e_ui() {
   pnpm --filter @nawhas/e2e test:e2e:ui
 }
 
+cmd_smoke_prodlike() {
+  require_docker
+
+  local reciter_slug="${RECITER_SLUG:-ali-safdar}"
+  local album_slug="${ALBUM_SLUG:-panjtan-pak}"
+  local seed_password="${SEED_MODERATOR_PASSWORD:-ci-test-moderator-password}"
+  local compose_prod=(docker compose -f docker-compose.yml -f docker-compose.ci.yml)
+
+  echo "Starting production-like stack (docker-compose + ci overlay)..."
+  "${compose_prod[@]}" up -d --wait web
+
+  echo "Seeding database fixtures..."
+  SEED_MODERATOR_PASSWORD="$seed_password" cmd_db_seed
+
+  echo "Running HTTP smoke checks..."
+  local reciter_url="http://localhost:3000/reciters/${reciter_slug}"
+  local album_url="http://localhost:3000/albums/${album_slug}"
+  local reciter_code
+  local album_code
+  reciter_code="$(curl -s -o /dev/null -w "%{http_code}" "$reciter_url")"
+  album_code="$(curl -s -o /dev/null -w "%{http_code}" "$album_url")"
+
+  echo "  ${reciter_code} ${reciter_url}"
+  echo "  ${album_code} ${album_url}"
+
+  if [[ "$reciter_code" != "200" || "$album_code" != "200" ]]; then
+    echo "Smoke check failed: expected HTTP 200 for both detail routes."
+    return 1
+  fi
+
+  echo "Checking web logs for DYNAMIC_SERVER_USAGE..."
+  local web_logs
+  web_logs="$("${compose_prod[@]}" logs --no-color --tail=300 web || true)"
+  if [[ "$web_logs" == *"DYNAMIC_SERVER_USAGE"* ]]; then
+    echo "Smoke check failed: found DYNAMIC_SERVER_USAGE in web logs."
+    return 1
+  fi
+
+  echo "Production-like smoke checks passed."
+}
+
 # ── Dispatch ─────────────────────────────────────────────────────────────────
 
 COMMAND="${1:-}"
@@ -244,6 +286,7 @@ case "$COMMAND" in
   qa)           cmd_qa ;;
   test:e2e:ui)  cmd_test_e2e_ui ;;
   test:e2e)     cmd_test_e2e "$@" ;;
+  smoke:prodlike) cmd_smoke_prodlike ;;
   down)         cmd_down "$@" ;;
   --help|-h|"") usage ;;
   *)

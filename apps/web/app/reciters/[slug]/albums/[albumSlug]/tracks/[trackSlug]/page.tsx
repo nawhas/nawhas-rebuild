@@ -14,41 +14,13 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { buildTrackJsonLd } from '@/lib/jsonld';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
-// ISR: revalidate every hour.
-export const revalidate = 3600;
+// Dynamic rendering avoids production static-generation conflicts with request-bound APIs.
+export const dynamic = 'force-dynamic';
 
 const createCaller = createCallerFactory(appRouter);
 
 interface TrackPageProps {
   params: Promise<{ slug: string; albumSlug: string; trackSlug: string }>;
-}
-
-export async function generateStaticParams(): Promise<
-  { slug: string; albumSlug: string; trackSlug: string }[]
-> {
-  try {
-    const caller = createCaller({ db, session: null, user: null });
-    const { items: albums } = await caller.album.list({ limit: 100 });
-
-    const paramSets = await Promise.all(
-      albums.map(async (album) => {
-        const tracks = await caller.track.listByAlbum({
-          reciterSlug: album.reciterSlug,
-          albumSlug: album.slug,
-        });
-        return tracks.map((track) => ({
-          slug: album.reciterSlug,
-          albumSlug: album.slug,
-          trackSlug: track.slug,
-        }));
-      }),
-    );
-
-    return paramSets.flat();
-  } catch {
-    // No DB at build time (e.g. Docker build) — pages will be generated on demand.
-    return [];
-  }
 }
 
 export async function generateMetadata({ params }: TrackPageProps): Promise<Metadata> {
