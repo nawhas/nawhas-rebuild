@@ -14,6 +14,7 @@
 
 import postgres from 'postgres';
 import { test as seedTest, expect } from '../fixtures/seed';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 import { AxeBuilder } from '@axe-core/playwright';
 import type { Page, Locator } from '@playwright/test';
 import type { SeedData } from '../fixtures/seed';
@@ -28,7 +29,8 @@ const DATABASE_URL =
 const TYPESENSE_HOST = process.env['TYPESENSE_HOST'] ?? 'localhost';
 const TYPESENSE_PORT = process.env['TYPESENSE_PORT'] ?? '8108';
 const TYPESENSE_PROTOCOL = process.env['TYPESENSE_PROTOCOL'] ?? 'http';
-const TYPESENSE_API_KEY = process.env['TYPESENSE_API_KEY'] ?? 'xyz';
+// Align default with docker-compose.yml / deploy env (local E2E without env still works).
+const TYPESENSE_API_KEY = process.env['TYPESENSE_API_KEY'] ?? 'nawhas-typesense-key';
 const TYPESENSE_BASE = `${TYPESENSE_PROTOCOL}://${TYPESENSE_HOST}:${TYPESENSE_PORT}`;
 
 // Arabic diacritics-stripped search term (matches `يا حسين يا حسين`)
@@ -145,6 +147,12 @@ function searchUrl(q: string, type?: string): string {
   return `/search?${params.toString()}`;
 }
 
+/** Mirrors staging URLs such as `/search?q=test&type=all&page=1`. */
+function searchUrlAllPage1(q: string): string {
+  const params = new URLSearchParams({ q, type: 'all', page: '1' });
+  return `/search?${params.toString()}`;
+}
+
 /**
  * Scoped track result link locator.
  *
@@ -169,12 +177,12 @@ test.describe('Language quality — multi-language lyrics search', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(ARABIC_QUERY, 'tracks'));
     await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
   test('Urdu text search returns seeded track', async ({ page, searchData }) => {
-    await page.goto(searchUrl(URDU_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(URDU_QUERY, 'tracks'));
     await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
@@ -182,7 +190,7 @@ test.describe('Language quality — multi-language lyrics search', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl('Ya Hussain Ya Hussain', 'tracks'));
+    await gotoExpectOk(page, searchUrl('Ya Hussain Ya Hussain', 'tracks'));
     await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
@@ -190,7 +198,7 @@ test.describe('Language quality — multi-language lyrics search', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(FRENCH_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(FRENCH_QUERY, 'tracks'));
     await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 
@@ -198,7 +206,7 @@ test.describe('Language quality — multi-language lyrics search', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(TRANSLITERATION_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(TRANSLITERATION_QUERY, 'tracks'));
     await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
   });
 });
@@ -212,7 +220,7 @@ test.describe('RTL rendering', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(ARABIC_QUERY, 'tracks'));
 
     // Confirm the seeded track appears
     await expect(
@@ -228,7 +236,7 @@ test.describe('RTL rendering', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(URDU_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(URDU_QUERY, 'tracks'));
 
     await expect(
       trackResultLink(page, searchData),
@@ -242,7 +250,7 @@ test.describe('RTL rendering', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl('Ya Hussain Ya Hussain', 'tracks'));
+    await gotoExpectOk(page, searchUrl('Ya Hussain Ya Hussain', 'tracks'));
 
     await expect(
       trackResultLink(page, searchData),
@@ -265,7 +273,7 @@ test.describe('Autocomplete', () => {
     page,
     searchData,
   }) => {
-    await page.goto('/');
+    await gotoExpectOk(page, '/');
 
     // Desktop search bar is visible on md+ viewports
     const input = page.locator('[role="combobox"]').first();
@@ -291,7 +299,7 @@ test.describe('Autocomplete', () => {
     page,
     searchData,
   }) => {
-    await page.goto('/');
+    await gotoExpectOk(page, '/');
 
     const input = page.locator('[role="combobox"]').first();
     await input.click();
@@ -312,7 +320,7 @@ test.describe('Keyboard navigation — desktop search bar', () => {
     page,
     searchData,
   }) => {
-    await page.goto('/');
+    await gotoExpectOk(page, '/');
 
     const input = page.locator('[role="combobox"]').first();
     await input.click();
@@ -333,7 +341,7 @@ test.describe('Keyboard navigation — desktop search bar', () => {
   });
 
   test('Escape key closes the autocomplete dropdown', async ({ page, searchData }) => {
-    await page.goto('/');
+    await gotoExpectOk(page, '/');
 
     const input = page.locator('[role="combobox"]').first();
     await input.click();
@@ -349,7 +357,7 @@ test.describe('Keyboard navigation — desktop search bar', () => {
 
 test.describe('Keyboard navigation — search results page', () => {
   test('can Tab through tab bar and result links', async ({ page, searchData }) => {
-    await page.goto(searchUrl(searchData.track.title));
+    await gotoExpectOk(page, searchUrl(searchData.track.title));
 
     // Wait for results to load
     await expect(page.locator('[role="tablist"]')).toBeVisible();
@@ -374,7 +382,7 @@ test.describe('Accessibility — WCAG 2.1 AA compliance', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(ARABIC_QUERY, 'tracks'));
 
     // Wait for results to load
     await expect(
@@ -403,7 +411,7 @@ test.describe('Accessibility — WCAG 2.1 AA compliance', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(URDU_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(URDU_QUERY, 'tracks'));
 
     // Wait for results to load
     await expect(
@@ -434,7 +442,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(ARABIC_QUERY, 'tracks'));
 
     await expect(
       trackResultLink(page, searchData),
@@ -453,7 +461,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(URDU_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(URDU_QUERY, 'tracks'));
 
     await expect(
       trackResultLink(page, searchData),
@@ -471,7 +479,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
     page,
     searchData,
   }) => {
-    await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(ARABIC_QUERY, 'tracks'));
 
     await expect(
       trackResultLink(page, searchData),
@@ -508,7 +516,7 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
   });
 
   test('RTL tab bar and pagination are keyboard accessible', async ({ page, searchData }) => {
-    await page.goto(searchUrl(ARABIC_QUERY, 'tracks'));
+    await gotoExpectOk(page, searchUrl(ARABIC_QUERY, 'tracks'));
 
     // Wait for page to load
     await expect(
@@ -539,25 +547,49 @@ test.describe('Accessibility — RTL text and screen reader support', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Staging parity — explicit type=all&page=1 (multi-query server path)
+// ---------------------------------------------------------------------------
+
+test.describe('Staging parity — type=all and page=1', () => {
+  test('nonsense query returns 200 and shows empty state (not Next error shell)', async ({
+    page,
+  }) => {
+    await gotoExpectOk(page, searchUrlAllPage1('e2e_staging_parity_nohit_xyz'));
+    await expect(page.locator('#__next_error__')).toHaveCount(0);
+    await expect(page.locator('[role="status"]')).toBeVisible();
+    await expect(page.locator('[role="status"]')).toContainText(/no results/i);
+  });
+
+  test('Arabic query returns 200 and shows seeded track on All tab', async ({
+    page,
+    searchData,
+  }) => {
+    await gotoExpectOk(page, searchUrlAllPage1(ARABIC_QUERY));
+    await expect(page.locator('#__next_error__')).toHaveCount(0);
+    await expect(trackResultLink(page, searchData)).toBeVisible({ timeout: 10_000 });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Empty state
 // ---------------------------------------------------------------------------
 
 test.describe('Empty state', () => {
   test('shows no-results message for a nonsense query', async ({ page }) => {
-    await page.goto(searchUrl('xyzzy_e2e_no_match_42'));
+    await gotoExpectOk(page, searchUrl('xyzzy_e2e_no_match_42'));
     const emptyState = page.locator('[role="status"]');
     await expect(emptyState).toBeVisible();
     await expect(emptyState).toContainText(/no results/i);
   });
 
   test('empty state suggests searching in English, Arabic, or Urdu', async ({ page }) => {
-    await page.goto(searchUrl('xyzzy_e2e_no_match_42'));
+    await gotoExpectOk(page, searchUrl('xyzzy_e2e_no_match_42'));
     await expect(page.getByText(/English, Arabic, or Urdu/i)).toBeVisible();
   });
 
   // searchData fixture not needed for empty state — use plain test
   test('empty state is accessible (WCAG 2.1 AA)', async ({ page }) => {
-    await page.goto(searchUrl('xyzzy_e2e_no_match_42'));
+    await gotoExpectOk(page, searchUrl('xyzzy_e2e_no_match_42'));
     await expect(page.locator('[role="status"]')).toBeVisible();
     // Basic landmark check — main should exist
     await expect(page.locator('main')).toBeVisible();

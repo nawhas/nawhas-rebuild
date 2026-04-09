@@ -9,6 +9,7 @@
 
 import { expect } from '@playwright/test';
 import { test, buildSilentMp3 } from '../fixtures/seed';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 /** 30-second silent MP3 for the persistence test — ensures audio outlasts slow navigation. */
 const LONG_MP3 = buildSilentMp3(30);
@@ -32,7 +33,7 @@ test.describe('Audio playback — player bar', () => {
     page,
     seedData,
   }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
@@ -48,7 +49,7 @@ test.describe('Audio playback — player bar', () => {
       route.fulfill({ status: 200, contentType: 'audio/mpeg', body: LONG_MP3 }),
     );
 
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
     const playerBar = page.getByRole('region', { name: 'Audio player' });
@@ -72,7 +73,7 @@ test.describe('Audio playback — player bar', () => {
 
 test.describe('Audio playback — transport controls', () => {
   test('Play/Pause button toggles playback state', async ({ page, seedData }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
     const playerBar = page.getByRole('region', { name: 'Audio player' });
@@ -91,7 +92,7 @@ test.describe('Audio playback — transport controls', () => {
 
   test('Next button advances to the next track in the queue', async ({ page, seedData }) => {
     // Use Play All to load both seed tracks into the queue
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
     await page.getByRole('button', { name: 'Play All' }).click();
 
     const playerBar = page.getByRole('region', { name: 'Audio player' });
@@ -106,7 +107,7 @@ test.describe('Audio playback — transport controls', () => {
     page,
     seedData,
   }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
     await page.getByRole('button', { name: 'Play All' }).click();
 
     const playerBar = page.getByRole('region', { name: 'Audio player' });
@@ -121,7 +122,7 @@ test.describe('Audio playback — transport controls', () => {
   });
 
   test('seek bar reflects updated position after interaction', async ({ page, seedData }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
     const seekSlider = page.getByRole('slider', { name: 'Seek' });
@@ -143,7 +144,7 @@ test.describe('Audio playback — queue', () => {
     page,
     seedData,
   }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     await page.getByRole('button', { name: 'Play All' }).click();
 
@@ -156,7 +157,7 @@ test.describe('Audio playback — queue', () => {
     page,
     seedData,
   }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     // Start playing track 1 so the player bar is visible
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
@@ -176,7 +177,7 @@ test.describe('Audio playback — queue', () => {
   });
 
   test('dragging a queue item changes its position in the queue', async ({ page, seedData }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     // Load both seed tracks via Play All
     await page.getByRole('button', { name: 'Play All' }).click();
@@ -208,7 +209,7 @@ test.describe('Audio playback — queue', () => {
     page,
     seedData,
   }) => {
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     // Load both tracks via Play All — first track plays immediately
     await page.getByRole('button', { name: 'Play All' }).click();
@@ -233,7 +234,7 @@ test.describe('Audio playback — YouTube embed', () => {
     // Block the iframe network request — we only need to check the src attribute
     await page.route('**/*youtube*', (route) => route.abort());
 
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // Media toggle must show both Listen and Watch tabs
     const tabList = page.getByRole('tablist', { name: 'Media player options' });
@@ -262,7 +263,7 @@ test.describe('Audio playback — YouTube embed', () => {
   test('switching to the YouTube tab pauses audio playback', async ({ page, seedData }) => {
     await page.route('**/*youtube*', (route) => route.abort());
 
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // Start audio from the track detail play button
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();

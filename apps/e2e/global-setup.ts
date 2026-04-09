@@ -22,7 +22,7 @@ export default async function globalSetup(): Promise<void> {
   while (Date.now() < deadline) {
     try {
       const response = await page.goto(BASE_URL, { timeout: 5_000 });
-      if (response && response.status() < 500) {
+      if (response && response.status() < 400) {
         await browser.close();
         return;
       }

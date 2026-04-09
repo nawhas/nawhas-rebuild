@@ -13,6 +13,7 @@
 import { test as base, expect } from '@playwright/test';
 import postgres from 'postgres';
 import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
@@ -87,7 +88,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
       const page = await browser.newPage();
       try {
         // Register
-        await page.goto('/register');
+        await gotoExpectOk(page,'/register');
         await page.fill('#name', name);
         await page.fill('#email', email);
         await page.fill('#password', password);
@@ -99,7 +100,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
         const verificationUrl = await extractVerificationUrl(page.request, message.ID);
 
         // Verify the email (navigate to the verification link)
-        await page.goto(toRelativePath(verificationUrl));
+        await gotoExpectOk(page,toRelativePath(verificationUrl));
         await page.waitForURL(/\/verify-email/, { timeout: 10_000 });
         await page.waitForSelector('h1:has-text("Email verified!")', { timeout: 5_000 });
       } finally {
@@ -124,7 +125,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
 
 test.describe('Login form — error states', () => {
   test('wrong password shows error', async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await page.fill('#email', 'someone@example.com');
     await page.fill('#password', 'WrongPassword999!');
     await page.click('button[type="submit"]');
@@ -134,7 +135,7 @@ test.describe('Login form — error states', () => {
   });
 
   test('non-existent email shows error', async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await page.fill('#email', `nobody-${Date.now()}@example.com`);
     await page.fill('#password', 'SomePassword123!');
     await page.click('button[type="submit"]');
@@ -148,7 +149,7 @@ test.describe('Login form — error states', () => {
 
 test.describe('Login — happy path', () => {
   test('valid credentials redirect to home page', async ({ page, verifiedUser }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
     await clickLoginSubmitAndWaitForAuth(page);
@@ -160,7 +161,7 @@ test.describe('Login — happy path', () => {
     page,
     verifiedUser,
   }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
     await clickLoginSubmitAndWaitForAuth(page);
@@ -186,7 +187,7 @@ test.describe('Logout', () => {
     verifiedUser,
   }) => {
     // Start authenticated
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
     await clickLoginSubmitAndWaitForAuth(page);
@@ -222,12 +223,12 @@ test.describe('Logout', () => {
 
 test.describe('Login page structure', () => {
   test('page title contains "Sign in"', async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await expect(page).toHaveTitle(/Sign in/i);
   });
 
   test('has a link to the register page', async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     const link = page.getByRole('link', { name: /register/i });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', '/register');

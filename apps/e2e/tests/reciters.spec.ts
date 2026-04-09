@@ -4,10 +4,11 @@
 
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/seed';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 test.describe('Reciters listing page', () => {
   test('page renders with reciter cards when reciters exist', async ({ page, seedData }) => {
-    await page.goto('/reciters');
+    await gotoExpectOk(page,'/reciters');
 
     await expect(page).toHaveTitle(/Reciters/i);
     await expect(page.getByRole('heading', { name: 'Reciters', level: 1 })).toBeVisible();
@@ -19,14 +20,14 @@ test.describe('Reciters listing page', () => {
   });
 
   test('each reciter card shows the reciter name', async ({ page, seedData }) => {
-    await page.goto('/reciters');
+    await gotoExpectOk(page,'/reciters');
 
     const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await expect(reciterCard).toContainText(seedData.reciter.name);
   });
 
   test('each reciter card links to the reciter profile page', async ({ page, seedData }) => {
-    await page.goto('/reciters');
+    await gotoExpectOk(page,'/reciters');
 
     const reciterCard = page.locator(`a[href="/reciters/${seedData.reciter.slug}"]`);
     await reciterCard.click();
@@ -35,7 +36,7 @@ test.describe('Reciters listing page', () => {
   });
 
   test('reciters list renders inside a labelled list', async ({ page, seedData }) => {
-    await page.goto('/reciters');
+    await gotoExpectOk(page,'/reciters');
 
     // ReciterGrid renders <ul role="list" aria-label="Reciters">
     const list = page.getByRole('list', { name: 'Reciters' });

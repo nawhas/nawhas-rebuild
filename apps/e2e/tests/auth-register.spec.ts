@@ -10,6 +10,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 
@@ -75,7 +76,7 @@ test.describe('Registration form', () => {
   test('happy path: valid data → redirected to /check-email', async ({ page }) => {
     const email = `reg-happy-${Date.now()}@example.com`;
 
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'Happy User');
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
@@ -88,7 +89,7 @@ test.describe('Registration form', () => {
     const email = `reg-dup-${Date.now()}@example.com`;
 
     // First registration succeeds
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'First User');
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
@@ -96,7 +97,7 @@ test.describe('Registration form', () => {
     await expect(page).toHaveURL(/\/check-email/, { timeout: 15_000 });
 
     // Second registration with the same email should fail
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'Second User');
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
@@ -107,7 +108,7 @@ test.describe('Registration form', () => {
   });
 
   test('weak password (fewer than 8 characters) shows error', async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'Weak Password User');
     await page.fill('#email', `reg-weak-${Date.now()}@example.com`);
     await page.fill('#password', 'abc');
@@ -118,7 +119,7 @@ test.describe('Registration form', () => {
   });
 
   test('empty name shows error', async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     // Leave name empty
     await page.fill('#email', `reg-noname-${Date.now()}@example.com`);
     await page.fill('#password', 'StrongPass123!');
@@ -129,7 +130,7 @@ test.describe('Registration form', () => {
   });
 
   test('empty email shows error', async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'No Email User');
     // Leave email empty
     await page.fill('#password', 'StrongPass123!');
@@ -140,7 +141,7 @@ test.describe('Registration form', () => {
   });
 
   test('empty password shows error', async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'No Password User');
     await page.fill('#email', `reg-nopass-${Date.now()}@example.com`);
     // Leave password empty
@@ -161,7 +162,7 @@ test.describe('Email verification', () => {
     const email = `reg-verify-${Date.now()}@example.com`;
 
     // Register
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await page.fill('#name', 'Verify User');
     await page.fill('#email', email);
     await page.fill('#password', 'StrongPass123!');
@@ -173,7 +174,7 @@ test.describe('Email verification', () => {
     const verificationUrl = await extractVerificationUrl(request, message.ID);
 
     // Navigate to the verification link (use relative path for correct host resolution)
-    await page.goto(toRelativePath(verificationUrl));
+    await gotoExpectOk(page,toRelativePath(verificationUrl));
 
     // Should land on /verify-email and show success
     await expect(page).toHaveURL(/\/verify-email/);
@@ -185,12 +186,12 @@ test.describe('Email verification', () => {
 
 test.describe('Registration page structure', () => {
   test('page title contains "Create account"', async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     await expect(page).toHaveTitle(/Create account/i);
   });
 
   test('has a link to the login page', async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page,'/register');
     const link = page.getByRole('link', { name: 'Sign in', exact: true });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', '/login');

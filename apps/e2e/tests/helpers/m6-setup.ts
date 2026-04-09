@@ -13,6 +13,7 @@
  */
 
 import type { Page } from '@playwright/test';
+import { gotoExpectOk } from './goto-expect-ok';
 import postgres from 'postgres';
 
 export const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:3000';
@@ -166,7 +167,7 @@ export async function deleteUsers(emails: string[]): Promise<void> {
  * auth POST response to complete before returning.
  */
 export async function signIn(page: Page, email: string, password: string): Promise<void> {
-  await page.goto('/login');
+  await gotoExpectOk(page, '/login');
   await page.fill('#email', email);
   await page.fill('#password', password);
 
@@ -181,7 +182,7 @@ export async function signIn(page: Page, email: string, password: string): Promi
   // which starts a full-page navigation away from /login. Wait for that navigation
   // to settle so callers start from a stable browser state.
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 10_000 })
-    .catch(() => { /* already navigated or will be overridden by caller's page.goto() */ });
+    .catch(() => { /* already navigated or will be overridden by caller's navigation */ });
 }
 
 // ---------------------------------------------------------------------------

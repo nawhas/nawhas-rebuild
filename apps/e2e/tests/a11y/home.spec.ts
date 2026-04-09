@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { assertPageAccessible, testKeyboardNavigation } from './setup';
+import { gotoExpectOk } from '../helpers/goto-expect-ok';
 
 /**
  * Accessibility Tests — Home Page
@@ -10,7 +11,7 @@ import { assertPageAccessible, testKeyboardNavigation } from './setup';
 
 test.describe('Home Page Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await gotoExpectOk(page, '/');
   });
 
   test('page title is set', async ({ page }) => {

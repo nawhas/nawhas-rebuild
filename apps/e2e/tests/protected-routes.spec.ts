@@ -19,6 +19,7 @@
 import { test as base, expect } from '@playwright/test';
 import postgres from 'postgres';
 import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
@@ -132,7 +133,7 @@ test.describe('Protected routes — unauthenticated redirect', () => {
 
   for (const route of PROTECTED_ROUTES) {
     test(`${route} redirects unauthenticated user to /login with callbackUrl`, async ({ page }) => {
-      await page.goto(route);
+      await gotoExpectOk(page,route);
 
       // Must land on /login
       await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
@@ -155,7 +156,7 @@ test.describe('Protected routes — post-login redirect', () => {
     page,
     verifiedUser,
   }) => {
-    await page.goto('/login?callbackUrl=/library/tracks');
+    await gotoExpectOk(page,'/login?callbackUrl=/library/tracks');
 
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
@@ -169,7 +170,7 @@ test.describe('Protected routes — post-login redirect', () => {
     page,
     verifiedUser,
   }) => {
-    await page.goto('/login?callbackUrl=/history');
+    await gotoExpectOk(page,'/login?callbackUrl=/history');
 
     await page.fill('#email', verifiedUser.email);
     await page.fill('#password', verifiedUser.password);
@@ -188,7 +189,7 @@ test.describe('Protected routes — authenticated access', () => {
     page: import('@playwright/test').Page,
     user: VerifiedUser,
   ): Promise<void> {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     await page.fill('#email', user.email);
     await page.fill('#password', user.password);
     await clickLoginSubmitAndWaitForAuth(page);
@@ -201,7 +202,7 @@ test.describe('Protected routes — authenticated access', () => {
       verifiedUser,
     }) => {
       await signIn(page, verifiedUser);
-      await page.goto(route);
+      await gotoExpectOk(page,route);
 
       // Must NOT be redirected to login
       await expect(page).not.toHaveURL(/\/login/, { timeout: 10_000 });
@@ -220,13 +221,13 @@ test.describe('Social OAuth — Google', () => {
   test.skip(!googleOAuthEnabled, 'GOOGLE_OAUTH_ENABLED is not set — Google OAuth tests skipped');
 
   test('Google OAuth sign-in button is present on the login page', async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     const googleButton = page.getByRole('button', { name: /Continue with Google|Sign in with Google/i });
     await expect(googleButton).toBeVisible();
   });
 
   test('clicking Google OAuth button redirects to Google authorization page', async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page,'/login');
     const googleButton = page.getByRole('button', { name: /Continue with Google|Sign in with Google/i });
     await googleButton.click();
 

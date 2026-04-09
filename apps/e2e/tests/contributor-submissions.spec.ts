@@ -24,6 +24,7 @@ import {
   pollForEmailWithSubject,
   type TestUser,
 } from './helpers/m6-setup';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const suffix = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
@@ -57,7 +58,7 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
 test.describe('Contributor landing page', () => {
   test('shows all three submission type links', async ({ page, contributor }) => {
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute');
+    await gotoExpectOk(page,'/contribute');
 
     await expect(page.getByRole('link', { name: /New Reciter/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /New Album/i })).toBeVisible();
@@ -75,7 +76,7 @@ test.describe('Contributor landing page', () => {
 test.describe('New reciter submission form', () => {
   test('form renders with Name and Slug fields', async ({ page, contributor }) => {
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
 
     await expect(page.locator('#name')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('#slug')).toBeVisible();
@@ -84,7 +85,7 @@ test.describe('New reciter submission form', () => {
 
   test('shows validation error when name is empty', async ({ page, contributor }) => {
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
 
     // Submit with empty name
     await page.click('button[type="submit"]');
@@ -103,7 +104,7 @@ test.describe('New reciter submission form', () => {
     const reciterName = `QA Reciter ${suffix()}`;
 
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
 
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
@@ -118,7 +119,7 @@ test.describe('New reciter submission form', () => {
     const reciterName = `QA Reciter ${suffix()}`;
 
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
@@ -143,7 +144,7 @@ test.describe('New reciter submission form', () => {
     const reciterName = `QA Expand ${suffix()}`;
 
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
@@ -170,7 +171,7 @@ test.describe('Email notification — submission received', () => {
     const reciterName = `QA Email ${suffix()}`;
 
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
     await page.fill('#name', reciterName);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/profile/contributions', { timeout: 20_000 });
@@ -197,7 +198,7 @@ test.describe('/profile/contributions — empty state', () => {
     contributor,
   }) => {
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/profile/contributions');
+    await gotoExpectOk(page,'/profile/contributions');
 
     // If no submissions exist, the empty state text is shown
     // (This may not hold if prior tests in the same worker already created submissions,

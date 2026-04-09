@@ -15,6 +15,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures/seed';
 import { assertPageAccessible, testKeyboardNavigation } from './setup';
+import { gotoExpectOk } from '../helpers/goto-expect-ok';
 
 type SeedParam = Parameters<Parameters<typeof test>[2]>[0]['seedData'];
 
@@ -33,7 +34,7 @@ function trackUrl(seedData: Pick<SeedParam, 'reciter' | 'album' | 'track'>): str
 test.describe('PlayerBar — Desktop Accessibility', () => {
   test('PlayerBar region is present and labeled', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -45,7 +46,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('All player controls have accessible labels', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -61,7 +62,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Seek bar is keyboard-operable', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -85,7 +86,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Play/Pause button state is communicated via aria-label', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -103,7 +104,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Volume control has accessible labels (desktop only)', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -118,7 +119,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Shuffle button uses aria-pressed to communicate state', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -132,7 +133,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Queue button uses aria-pressed to communicate state', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -147,7 +148,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Focus indicators are visible on all controls', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -170,7 +171,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Player bar WCAG 2.1 AA compliance (axe-core scan)', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -181,7 +182,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 
   test('Keyboard navigation through player controls', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -204,7 +205,7 @@ test.describe('PlayerBar — Desktop Accessibility', () => {
 test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
   test('Mobile overlay has correct dialog semantics', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -225,7 +226,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
   test('Mobile overlay has descriptive aria-label', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -242,7 +243,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
   test('Mobile overlay close button is accessible', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -266,7 +267,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
   test('Mobile overlay seek bar has proper ARIA attributes', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -290,7 +291,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
   test('Mobile overlay controls are keyboard accessible', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -309,7 +310,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 
   test('Mobile overlay WCAG 2.1 AA compliance (axe-core scan)', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -329,7 +330,7 @@ test.describe('MobilePlayerOverlay — Mobile Accessibility', () => {
 test.describe('QueuePanel — Accessibility', () => {
   test('Queue panel has dialog semantics', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -349,7 +350,7 @@ test.describe('QueuePanel — Accessibility', () => {
 
   test('Queue list uses semantic list structure', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -366,7 +367,7 @@ test.describe('QueuePanel — Accessibility', () => {
 
   test('Queue items have descriptive labels', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -387,7 +388,7 @@ test.describe('QueuePanel — Accessibility', () => {
 
   test('Remove button in queue is accessible', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -407,7 +408,7 @@ test.describe('QueuePanel — Accessibility', () => {
 
   test('Queue panel WCAG 2.1 AA compliance (axe-core scan)', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     await playButton.click();
@@ -429,7 +430,7 @@ test.describe('QueuePanel — Accessibility', () => {
 test.describe('Play Buttons — Accessibility', () => {
   test('Play buttons have accessible labels', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButtons = page.getByRole('button', { name: /play/i });
     const count = await playButtons.count();
@@ -447,7 +448,7 @@ test.describe('Play Buttons — Accessibility', () => {
 
   test('Play button updates label based on playback state', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(albumUrl(seedData));
+    await gotoExpectOk(page,albumUrl(seedData));
 
     const playButton = page.getByRole('button', { name: /play/i }).first();
     // Accessible name may come from aria-label or text content ("Play All").
@@ -473,7 +474,7 @@ test.describe('YouTube Embed — Accessibility', () => {
   test('YouTube iframe has descriptive title', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.route('**/*youtube*', (route) => route.abort());
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // Switch to Watch tab to show the iframe
     await page.getByRole('tab', { name: 'Watch' }).click();
@@ -488,7 +489,7 @@ test.describe('YouTube Embed — Accessibility', () => {
   test('YouTube embed is keyboard accessible', async ({ page, seedData }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.route('**/*youtube*', (route) => route.abort());
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // Switch to Watch tab
     await page.getByRole('tab', { name: 'Watch' }).click();

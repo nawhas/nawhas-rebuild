@@ -11,6 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 // ---------------------------------------------------------------------------
 // Test 1: System dark preference
@@ -20,7 +21,7 @@ test.describe('Dark mode — system preference', () => {
   test.use({ colorScheme: 'dark' });
 
   test('html gets dark class when system preference is dark', async ({ page }) => {
-    await page.goto('/');
+    await gotoExpectOk(page,'/');
 
     // next-themes applies the dark class to <html> via an inline blocking script,
     // so it is present as soon as the page is ready.
@@ -42,7 +43,7 @@ test.describe('Dark mode — system preference', () => {
 // initialises with that value. Using page.evaluate() (not addInitScript)
 // ensures the seed does NOT fire again on subsequent reloads within the test.
 async function seedLightTheme(page: import('@playwright/test').Page): Promise<void> {
-  await page.goto('/');
+  await gotoExpectOk(page,'/');
   await page.evaluate(() => localStorage.setItem('theme', 'light'));
   await page.reload();
 }

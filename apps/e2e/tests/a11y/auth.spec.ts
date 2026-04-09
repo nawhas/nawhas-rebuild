@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { assertPageAccessible, testKeyboardNavigation } from './setup';
+import { gotoExpectOk } from '../helpers/goto-expect-ok';
 
 /**
  * Accessibility Tests — Authentication Pages
@@ -10,7 +11,7 @@ import { assertPageAccessible, testKeyboardNavigation } from './setup';
 
 test.describe('Login Page Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
+    await gotoExpectOk(page, '/login');
   });
 
   test('page title is set', async ({ page }) => {
@@ -94,7 +95,7 @@ test.describe('Login Page Accessibility', () => {
 
 test.describe('Register Page Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/register');
+    await gotoExpectOk(page, '/register');
   });
 
   test('page title is set', async ({ page }) => {

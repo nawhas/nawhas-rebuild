@@ -27,6 +27,7 @@ import {
   signIn,
   type TestUser,
 } from './helpers/m6-setup';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const suffix = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
@@ -96,14 +97,14 @@ test.describe('/contribute — unauthenticated redirect', () => {
   });
 
   test('unauthenticated user visiting /contribute is redirected to /login', async ({ page }) => {
-    await page.goto('/contribute');
+    await gotoExpectOk(page,'/contribute');
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
   });
 
   test('unauthenticated user visiting /contribute/reciter/new is redirected to /login', async ({
     page,
   }) => {
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
   });
 });
@@ -118,7 +119,7 @@ test.describe('/contribute — user role sees access-denied page', () => {
     userAccount,
   }) => {
     await signIn(page, userAccount.email, userAccount.password);
-    await page.goto('/contribute');
+    await gotoExpectOk(page,'/contribute');
 
     await expect(
       page.getByRole('heading', { name: /Contributor Access Required/i }),
@@ -133,7 +134,7 @@ test.describe('/contribute — user role sees access-denied page', () => {
     userAccount,
   }) => {
     await signIn(page, userAccount.email, userAccount.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
 
     await expect(
       page.getByRole('heading', { name: /Contributor Access Required/i }),
@@ -151,7 +152,7 @@ test.describe('/contribute — contributor can access', () => {
     contributorAccount,
   }) => {
     await signIn(page, contributorAccount.email, contributorAccount.password);
-    await page.goto('/contribute');
+    await gotoExpectOk(page,'/contribute');
 
     await expect(page.getByRole('heading', { name: /Contribute/i })).toBeVisible({
       timeout: 10_000,
@@ -166,7 +167,7 @@ test.describe('/contribute — contributor can access', () => {
     contributorAccount,
   }) => {
     await signIn(page, contributorAccount.email, contributorAccount.password);
-    await page.goto('/contribute/reciter/new');
+    await gotoExpectOk(page,'/contribute/reciter/new');
 
     await expect(page.getByRole('heading', { name: /New Reciter/i })).toBeVisible({
       timeout: 10_000,
@@ -185,12 +186,12 @@ test.describe('/mod — unauthenticated redirect', () => {
   });
 
   test('unauthenticated user visiting /mod is redirected to /login', async ({ page }) => {
-    await page.goto('/mod');
+    await gotoExpectOk(page,'/mod');
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
   });
 
   test('unauthenticated user visiting /mod/queue is redirected to /login', async ({ page }) => {
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
   });
 });
@@ -202,7 +203,7 @@ test.describe('/mod — unauthenticated redirect', () => {
 test.describe('/mod — non-moderator redirected to /', () => {
   test('user role visiting /mod is redirected to /', async ({ page, userAccount }) => {
     await signIn(page, userAccount.email, userAccount.password);
-    await page.goto('/mod');
+    await gotoExpectOk(page,'/mod');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
   });
 
@@ -211,7 +212,7 @@ test.describe('/mod — non-moderator redirected to /', () => {
     contributorAccount,
   }) => {
     await signIn(page, contributorAccount.email, contributorAccount.password);
-    await page.goto('/mod');
+    await gotoExpectOk(page,'/mod');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
   });
 
@@ -220,7 +221,7 @@ test.describe('/mod — non-moderator redirected to /', () => {
     userAccount,
   }) => {
     await signIn(page, userAccount.email, userAccount.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
   });
 });
@@ -235,7 +236,7 @@ test.describe('/mod — moderator can access', () => {
     moderatorAccount,
   }) => {
     await signIn(page, moderatorAccount.email, moderatorAccount.password);
-    await page.goto('/mod');
+    await gotoExpectOk(page,'/mod');
 
     await expect(
       page.getByRole('heading', { name: /Moderation Overview/i }),
@@ -247,7 +248,7 @@ test.describe('/mod — moderator can access', () => {
     moderatorAccount,
   }) => {
     await signIn(page, moderatorAccount.email, moderatorAccount.password);
-    await page.goto('/mod');
+    await gotoExpectOk(page,'/mod');
 
     const nav = page.getByRole('navigation', { name: /Moderation navigation/i });
     await expect(nav).toBeVisible({ timeout: 10_000 });
@@ -261,7 +262,7 @@ test.describe('/mod — moderator can access', () => {
     moderatorAccount,
   }) => {
     await signIn(page, moderatorAccount.email, moderatorAccount.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
 
     await expect(
       page.getByRole('heading', { name: /Moderation Queue/i }),
@@ -273,7 +274,7 @@ test.describe('/mod — moderator can access', () => {
     moderatorAccount,
   }) => {
     await signIn(page, moderatorAccount.email, moderatorAccount.password);
-    await page.goto('/mod/audit');
+    await gotoExpectOk(page,'/mod/audit');
 
     await expect(
       page.getByRole('heading', { name: /Audit Log/i }),
@@ -285,7 +286,7 @@ test.describe('/mod — moderator can access', () => {
     moderatorAccount,
   }) => {
     await signIn(page, moderatorAccount.email, moderatorAccount.password);
-    await page.goto('/mod/users');
+    await gotoExpectOk(page,'/mod/users');
 
     await expect(
       page.getByRole('heading', { name: /User Management/i }),

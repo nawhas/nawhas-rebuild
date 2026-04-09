@@ -18,6 +18,7 @@
 import { test as base, expect } from '../fixtures/seed';
 import postgres from 'postgres';
 import { clickLoginSubmitAndWaitForAuth } from './helpers/submit-login';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const DATABASE_URL =
@@ -153,7 +154,7 @@ async function signIn(
   page: import('@playwright/test').Page,
   user: VerifiedUser,
 ): Promise<void> {
-  await page.goto('/login');
+  await gotoExpectOk(page,'/login');
   await page.fill('#email', user.email);
   await page.fill('#password', user.password);
   await clickLoginSubmitAndWaitForAuth(page);
@@ -168,15 +169,15 @@ async function signIn(
  *
  * The waitForResponse has a timeout and is caught: in some CI environments
  * the session check is skipped for cached routes, and hanging indefinitely
- * would exhaust the test's 60 s budget and cause subsequent page.goto calls
+ * would exhaust the test's 60 s budget and cause subsequent navigations
  * to fail with "Test ended".
  */
 async function gotoWithSession(
   page: import('@playwright/test').Page,
   url: string,
 ): Promise<void> {
-  // Attach .catch() synchronously before awaiting page.goto so that if the
-  // 15 s timeout fires while goto is still in-flight, Node.js does not emit
+  // Attach .catch() synchronously before awaiting gotoExpectOk so that if the
+  // 15 s timeout fires while navigation is still in-flight, Node.js does not emit
   // an unhandledRejection that Playwright surfaces as a hard test failure.
   const sessionLoaded = page.waitForResponse(
     (res) => res.url().includes('/api/auth/get-session'),
@@ -184,7 +185,7 @@ async function gotoWithSession(
   ).catch(() => {
     // session check may not always fire (e.g. RSC cached routes) — proceed
   });
-  await page.goto(url);
+  await gotoExpectOk(page, url);
   await sessionLoaded;
   await page.waitForLoadState('networkidle', { timeout: 30_000 });
 }
@@ -216,7 +217,7 @@ test.describe('Library — Save & Unsave', () => {
     await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 20_000 });
 
     // Navigate to library
-    await page.goto('/library/tracks');
+    await gotoExpectOk(page,'/library/tracks');
     await expect(page).toHaveURL('/library/tracks');
 
     // Track should appear in the library list
@@ -238,7 +239,7 @@ test.describe('Library — Save & Unsave', () => {
     await expect(page.getByRole('button', { name: /Remove from library/i })).toBeEnabled({ timeout: 20_000 });
 
     // Navigate to library to confirm it's there
-    await page.goto('/library/tracks');
+    await gotoExpectOk(page,'/library/tracks');
     await expect(page.getByText(seedData.track.title)).toBeVisible();
 
     // Unsave — SaveButton on library page has aria-label "Remove from library"
@@ -319,7 +320,7 @@ test.describe('Listening History', () => {
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
     // Navigate to history
-    await page.goto('/history');
+    await gotoExpectOk(page,'/history');
     await expect(page).toHaveURL('/history');
 
     // Track title should appear in the history list
@@ -343,7 +344,7 @@ test.describe('Listening History', () => {
       await sql.end();
     }
 
-    await page.goto('/history');
+    await gotoExpectOk(page,'/history');
     await expect(page.getByText(seedData.track.title)).toBeVisible({ timeout: 10_000 });
 
     // Click "Clear history" button / action
@@ -396,14 +397,14 @@ test.describe('Account — Delete Account', () => {
     const page = await context.newPage();
 
     try {
-      await page.goto('/login');
+      await gotoExpectOk(page,'/login');
       await page.fill('#email', email);
       await page.fill('#password', password);
       await clickLoginSubmitAndWaitForAuth(page);
       await expect(page).toHaveURL('/', { timeout: 30_000 });
 
       // Navigate to settings / account danger zone
-      await page.goto('/settings');
+      await gotoExpectOk(page,'/settings');
 
       // Open the delete account modal (trigger button text: "Delete my account")
       const deleteButton = page.getByRole('button', { name: /Delete my account/i });

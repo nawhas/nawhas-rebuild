@@ -34,6 +34,7 @@ import {
   insertAuditLogEntry,
   type TestUser,
 } from './helpers/m6-setup';
+import { gotoExpectOk } from './helpers/goto-expect-ok';
 
 const suffix = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
@@ -129,7 +130,7 @@ async function createReciterSubmission(
 test.describe('Moderation queue', () => {
   test('queue page renders with correct heading', async ({ page, moderator }) => {
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await expect(page.getByRole('heading', { name: /Moderation Queue/i })).toBeVisible({
       timeout: 10_000,
     });
@@ -145,7 +146,7 @@ test.describe('Moderation queue', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
 
     await expect(page.getByText(reciterName)).toBeVisible({ timeout: 15_000 });
   });
@@ -160,7 +161,7 @@ test.describe('Moderation queue', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
 
     const item = page.getByRole('listitem').filter({ hasText: reciterName });
     await expect(item).toBeVisible({ timeout: 15_000 });
@@ -187,7 +188,7 @@ test.describe('Submission detail page', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
 
     await page.getByText(reciterName).click();
 
@@ -207,7 +208,7 @@ test.describe('Submission detail page', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -232,7 +233,7 @@ test.describe('Approve and apply', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -254,7 +255,7 @@ test.describe('Approve and apply', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -280,7 +281,7 @@ test.describe('Approve and apply', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -315,7 +316,7 @@ test.describe('Reject submission', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -336,7 +337,7 @@ test.describe('Reject submission', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -377,7 +378,7 @@ test.describe('Request changes → resubmit', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -428,7 +429,7 @@ test.describe('Request changes → resubmit', () => {
 
     // Contributor views their contributions
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/profile/contributions');
+    await gotoExpectOk(page,'/profile/contributions');
 
     const list = page.getByRole('list', { name: /Your submissions/i });
     const card = list.locator('li').filter({ hasText: reciterName });
@@ -472,7 +473,7 @@ test.describe('Request changes → resubmit', () => {
 
     // Contributor resubmits
     await signIn(page, contributor.email, contributor.password);
-    await page.goto('/profile/contributions');
+    await gotoExpectOk(page,'/profile/contributions');
 
     const list = page.getByRole('list', { name: /Your submissions/i });
     const card = list.locator('li').filter({ hasText: reciterName });
@@ -504,7 +505,7 @@ test.describe('User role management', () => {
     promotableUser,
   }) => {
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/users');
+    await gotoExpectOk(page,'/mod/users');
 
     await expect(
       page.getByRole('heading', { name: /User Management/i }),
@@ -535,7 +536,7 @@ test.describe('Audit log', () => {
     moderator,
   }) => {
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/audit');
+    await gotoExpectOk(page,'/mod/audit');
 
     await expect(page.getByRole('heading', { name: /Audit Log/i })).toBeVisible({
       timeout: 10_000,
@@ -557,7 +558,7 @@ test.describe('Audit log', () => {
     await createReciterSubmission(browser, contributor, reciterName);
 
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/queue');
+    await gotoExpectOk(page,'/mod/queue');
     await page.getByText(reciterName).click();
     await expect(page).toHaveURL(/\/mod\/submissions\//, { timeout: 20_000 });
 
@@ -572,7 +573,7 @@ test.describe('Audit log', () => {
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);
 
     // Navigate to audit log — should contain a 'submission.applied' or similar entry
-    await page.goto('/mod/audit');
+    await gotoExpectOk(page,'/mod/audit');
     await expect(page).toHaveURL('/mod/audit', { timeout: 10_000 });
     // Use .first() — the audit log accumulates entries across tests (shared worker state);
     // strict mode would fail if multiple approval entries exist from earlier test runs.
@@ -605,7 +606,7 @@ test.describe('Audit log', () => {
 
     // Sign in as moderator and navigate to the audit log page.
     await signIn(page, moderator.email, moderator.password);
-    await page.goto('/mod/audit');
+    await gotoExpectOk(page,'/mod/audit');
     await expect(page).toHaveURL('/mod/audit', { timeout: 10_000 });
 
     // The directly-inserted entry is the newest (DESC order), so it appears at the top

@@ -4,10 +4,11 @@
 
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/seed';
+import { gotoExpectNotFound, gotoExpectOk } from './helpers/goto-expect-ok';
 
 test.describe('Album detail page', () => {
   test('shows album title as heading', async ({ page, seedData }) => {
-    await page.goto(`/albums/${seedData.album.slug}`);
+    await gotoExpectOk(page,`/albums/${seedData.album.slug}`);
 
     await expect(
       page.getByRole('heading', { name: seedData.album.title, level: 1 }),
@@ -15,13 +16,13 @@ test.describe('Album detail page', () => {
   });
 
   test('shows the album year', async ({ page, seedData }) => {
-    await page.goto(`/albums/${seedData.album.slug}`);
+    await gotoExpectOk(page,`/albums/${seedData.album.slug}`);
 
     await expect(page.getByText(String(seedData.album.year))).toBeVisible();
   });
 
   test('shows the reciter name linked to the reciter profile', async ({ page, seedData }) => {
-    await page.goto(`/albums/${seedData.album.slug}`);
+    await gotoExpectOk(page,`/albums/${seedData.album.slug}`);
 
     // AlbumHeader renders a Link to /reciters/[reciterSlug] with the reciter name
     const reciterLink = page.getByRole('link', { name: seedData.reciter.name });
@@ -30,7 +31,7 @@ test.describe('Album detail page', () => {
   });
 
   test('lists tracks in the album', async ({ page, seedData }) => {
-    await page.goto(`/albums/${seedData.album.slug}`);
+    await gotoExpectOk(page,`/albums/${seedData.album.slug}`);
 
     const trackList = page.getByRole('region', { name: 'Tracks' });
     await expect(trackList).toBeVisible();
@@ -43,7 +44,7 @@ test.describe('Album detail page', () => {
   });
 
   test('clicking a track navigates to the track detail page', async ({ page, seedData }) => {
-    await page.goto(`/albums/${seedData.album.slug}`);
+    await gotoExpectOk(page,`/albums/${seedData.album.slug}`);
 
     const trackLink = page.getByRole('link', {
       name: new RegExp(seedData.track.title, 'i'),
@@ -56,7 +57,7 @@ test.describe('Album detail page', () => {
   });
 
   test('shows not-found page for a non-existent album slug', async ({ page }) => {
-    await page.goto('/albums/this-album-does-not-exist-xyz');
+    await gotoExpectNotFound(page, '/albums/this-album-does-not-exist-xyz');
     await expect(
       page.getByRole('heading', { name: /Page not found/i }),
     ).toBeVisible();

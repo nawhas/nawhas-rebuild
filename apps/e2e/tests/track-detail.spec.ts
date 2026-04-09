@@ -4,6 +4,7 @@
 
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/seed';
+import { gotoExpectNotFound, gotoExpectOk } from './helpers/goto-expect-ok';
 
 test.describe('Track detail page', () => {
   function trackUrl(seedData: { reciter: { slug: string }; album: { slug: string }; track: { slug: string } }): string {
@@ -11,7 +12,7 @@ test.describe('Track detail page', () => {
   }
 
   test('shows track title as heading', async ({ page, seedData }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     await expect(
       page.getByRole('heading', { name: seedData.track.title, level: 1 }),
@@ -19,7 +20,7 @@ test.describe('Track detail page', () => {
   });
 
   test('shows reciter name linked to reciter profile', async ({ page, seedData }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // TrackHeader renders a Link to /reciters/[reciter.slug] with the reciter name
     const reciterLink = page.getByRole('link', { name: seedData.reciter.name });
@@ -28,7 +29,7 @@ test.describe('Track detail page', () => {
   });
 
   test('shows album title linked to album detail', async ({ page, seedData }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // TrackHeader renders a Link to /albums/[album.slug] with the album title
     const albumLink = page.getByRole('link', { name: seedData.album.title });
@@ -37,7 +38,7 @@ test.describe('Track detail page', () => {
   });
 
   test('lyrics section is visible', async ({ page, seedData }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     const lyricsSection = page.getByRole('region', { name: 'Lyrics' });
     await expect(lyricsSection).toBeVisible();
@@ -47,7 +48,7 @@ test.describe('Track detail page', () => {
     page,
     seedData,
   }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // LyricsDisplay renders <div role="tablist" aria-label="Lyrics language"> when > 1 language
     const tabList = page.getByRole('tablist', { name: 'Lyrics language' });
@@ -59,7 +60,7 @@ test.describe('Track detail page', () => {
   });
 
   test('Arabic tab is selected by default (highest priority)', async ({ page, seedData }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     const arabicTab = page.getByRole('tab', { name: 'Arabic' });
     await expect(arabicTab).toHaveAttribute('aria-selected', 'true');
@@ -69,7 +70,7 @@ test.describe('Track detail page', () => {
     page,
     seedData,
   }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // Click the English tab
     const englishTab = page.getByRole('tab', { name: 'English' });
@@ -86,7 +87,7 @@ test.describe('Track detail page', () => {
   });
 
   test('Arabic lyrics content renders correctly', async ({ page, seedData }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     // Arabic tab is selected by default — its panel is visible
     const arabicPanel = page.getByRole('tabpanel', { name: 'Arabic' });
@@ -98,7 +99,7 @@ test.describe('Track detail page', () => {
     page,
     seedData,
   }) => {
-    await page.goto(trackUrl(seedData));
+    await gotoExpectOk(page,trackUrl(seedData));
 
     await page.getByRole('tab', { name: 'English' }).click();
 
@@ -107,7 +108,8 @@ test.describe('Track detail page', () => {
   });
 
   test('shows not-found page for a non-existent track slug', async ({ page, seedData }) => {
-    await page.goto(
+    await gotoExpectNotFound(
+      page,
       `/reciters/${seedData.reciter.slug}/albums/${seedData.album.slug}/tracks/this-track-does-not-exist-xyz`,
     );
     await expect(
