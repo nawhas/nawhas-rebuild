@@ -92,7 +92,13 @@ const test = base.extend<Record<string, never>, WorkerFixtures>({
         await page.fill('#name', name);
         await page.fill('#email', email);
         await page.fill('#password', password);
+
+        const signUpResponse = page.waitForResponse(
+          (res) => res.url().includes('/api/auth/sign-up') && res.request().method() === 'POST',
+          { timeout: 30_000 },
+        );
         await page.click('button[type="submit"]');
+        await signUpResponse;
         await page.waitForURL(/\/check-email/, { timeout: 30_000 });
 
         // Retrieve verification email from Mailpit

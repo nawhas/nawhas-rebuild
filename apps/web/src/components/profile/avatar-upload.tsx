@@ -10,7 +10,7 @@ interface AvatarUploadProps {
   /** User's display name — used to derive initials for the placeholder. */
   name: string;
   /** Called after a successful upload with the new image URL. */
-  onUploaded: (newUrl: string) => void;
+  onUploaded?: (newUrl: string) => void;
 }
 
 function getInitials(name: string): string {
@@ -28,7 +28,7 @@ function getInitials(name: string): string {
  * Uploads to POST /api/avatar/upload (multipart, field=file).
  * Shows an overlay on hover. Error message rendered inline.
  */
-export function AvatarUpload({ imageUrl, name, onUploaded }: AvatarUploadProps): React.JSX.Element {
+export function AvatarUpload({ imageUrl, name, onUploaded: onUploadedProp }: AvatarUploadProps): React.JSX.Element {
   const t = useTranslations('profile');
   const [currentUrl, setCurrentUrl] = useState<string | null>(imageUrl);
   const [uploading, setUploading] = useState(false);
@@ -55,7 +55,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded }: AvatarUploadProps):
       const user = (await res.json()) as { image: string | null };
       if (user.image) {
         setCurrentUrl(user.image);
-        onUploaded(user.image);
+        onUploadedProp?.(user.image);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');

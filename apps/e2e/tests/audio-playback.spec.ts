@@ -129,8 +129,17 @@ test.describe('Audio playback — transport controls', () => {
     await expect(seekSlider).toBeVisible();
     await expect(seekSlider).toHaveAttribute('aria-valuemin', '0');
 
-    // Seek to 2 seconds (within the 3-second silent placeholder); position must move away from 0
-    await seekSlider.fill('2');
+    // Range max is 1 until duration metadata loads; wait for a real duration so fill() stays valid.
+    await expect
+      .poll(async () => {
+        const raw = await seekSlider.getAttribute('aria-valuemax');
+        return raw ? parseInt(raw, 10) : 0;
+      }, { timeout: 15_000 })
+      .toBeGreaterThan(0);
+
+    const max = parseInt((await seekSlider.getAttribute('aria-valuemax')) ?? '0', 10);
+    const seekSeconds = Math.min(2, Math.max(1, max));
+    await seekSlider.fill(String(seekSeconds));
     await expect(seekSlider).not.toHaveAttribute('aria-valuenow', '0');
   });
 });

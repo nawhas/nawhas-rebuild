@@ -52,11 +52,11 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
   ]);
 
   const user = sessionData.user;
-  const joinedDate = new Date(user.createdAt).toLocaleDateString(undefined, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const created = user.createdAt != null ? new Date(user.createdAt) : null;
+  const joinedDate =
+    created != null && !Number.isNaN(created.getTime())
+      ? created.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+      : '—';
 
   return (
     <main id="main-content" className="py-10">
@@ -70,14 +70,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
         >
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {/* Avatar */}
-            <AvatarUpload
-              imageUrl={user.image ?? null}
-              name={user.name}
-              onUploaded={() => {
-                // Page will reflect the new URL on next server render.
-                // AvatarUpload manages optimistic client state internally.
-              }}
-            />
+            <AvatarUpload imageUrl={user.image ?? null} name={user.name} />
 
             {/* Name / email */}
             <div className="flex flex-col gap-1 text-center sm:text-left">
