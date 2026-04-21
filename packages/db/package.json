@@ -32,15 +32,15 @@
     "db:typesense-ensure": "tsx src/typesense-ensure-cli.ts"
   },
   "dependencies": {
-    "drizzle-orm": "^0.39.3",
-    "postgres": "^3.4.5",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9",
     "typesense": "^2.0.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.1022.0",
+    "@aws-sdk/client-s3": "^3.1033.0",
     "@nawhas/config": "workspace:*",
     "@types/node": "^22.13.4",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
