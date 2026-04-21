@@ -3,7 +3,7 @@
 # ──────────────────────────────────────────────────────────────────────────────
 # Stage 1: Install all workspace dependencies
 # ──────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ RUN pnpm install --frozen-lockfile
 # ──────────────────────────────────────────────────────────────────────────────
 # Stage 2: Build all packages + the Next.js app
 # ──────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -68,7 +68,7 @@ RUN /app/node_modules/.bin/tsc --build packages/types/tsconfig.json && \
 # ──────────────────────────────────────────────────────────────────────────────
 # Stage 3: Production image — minimal runtime from standalone output
 # ──────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
