@@ -15,6 +15,15 @@ function mockLive(fieldNames: string[]): CollectionSchema {
     created_at: 0,
     num_documents: 0,
     num_memory_shards: 0,
+    // Typesense v3 widened CollectionSchema — these fields are always present
+    // on a real server response. Empty defaults are fine for the outdated-check tests.
+    symbols_to_index: [],
+    token_separators: [],
+    enable_nested_fields: false,
+    metadata: {},
+    voice_query_model: {},
+    synonym_sets: [],
+    curation_sets: [],
   };
 }
 
