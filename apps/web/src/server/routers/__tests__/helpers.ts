@@ -19,6 +19,7 @@ import { likesRouter } from '../likes';
 import { historyRouter } from '../history';
 import { submissionRouter } from '../submission';
 import { moderationRouter } from '../moderation';
+import { searchRouter } from '../search';
 
 export type TestDb = PostgresJsDatabase<typeof schema>;
 
@@ -47,6 +48,30 @@ export async function isDbAvailable(): Promise<boolean> {
   }
 }
 
+/**
+ * Returns true if the configured Typesense instance is reachable and healthy.
+ * Mirrors isDbAvailable() — used by integration tests that seed a real index
+ * to skip gracefully when Typesense is not running (e.g. Quality CI with
+ * --no-deps). Short timeout so the suite fails fast.
+ */
+export async function isTypesenseAvailable(): Promise<boolean> {
+  const host = process.env['TYPESENSE_HOST'] ?? 'localhost';
+  const port = process.env['TYPESENSE_PORT'] ?? '8108';
+  const protocol = process.env['TYPESENSE_PROTOCOL'] ?? 'http';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2000);
+  try {
+    const res = await fetch(`${protocol}://${host}:${port}/health`, {
+      signal: controller.signal,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function makeCtx(db: TestDb) {
   return { db: db as unknown as Database, session: null, user: null };
 }
@@ -65,6 +90,10 @@ export function makeAlbumCaller(db: TestDb) {
 
 export function makeTrackCaller(db: TestDb) {
   return createCallerFactory(trackRouter)(makeCtx(db));
+}
+
+export function makeSearchCaller(db: TestDb) {
+  return createCallerFactory(searchRouter)(makeCtx(db));
 }
 
 // ─── Authenticated context helpers ───────────────────────────────────────────
