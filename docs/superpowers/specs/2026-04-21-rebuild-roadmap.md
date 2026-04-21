@@ -27,17 +27,23 @@ This document lays out the roadmap for taking the rebuild to public launch and b
 
 The alternative considered — running design and upgrades in parallel — was rejected here for two reasons: a two-person team creates real merge friction between the tracks, and locking in tokens against soon-to-change primitives (e.g. Tailwind 4.x minor bumps, Next 16 RSC caching behaviour) risks rework.
 
-## Phase 1 — Stack Upgrades
+## Phase 1 — Stack Upgrades (single batch)
 
-Three separately-specced sub-projects. Each is its own PR stream; do not chain them.
+All upgrades land in a single coordinated PR stream. The upgrades are interlocked — Next 16's caching behaviour interacts with tRPC/react-query, Zod 4 is pulled in by newer versions of some consumers, and TypeScript 6's stricter lib types surface issues across every bumped package — so there is no clean seam at which to split them.
 
-### 1.1 Routine bumps + Node 22 (low risk)
+### Major-version changes (drive the effort)
 
-All minor/patch upgrades that don't change public API.
+- **Next.js 15.1 → 16.2** — async dynamic APIs (work already started via the `headers()/cookies()` ESLint rule in recent commits), new caching defaults, Turbopack default, React Compiler opt-in evaluation.
+- **TypeScript 5.7 → 6.0** — typecheck sweep + stricter lib types.
+- **Zod 3.24 → 4.3** — every tRPC input/output schema, every Better-Auth plugin config, every form validator.
+- **Typesense npm client 2 → 3** + **Typesense server 26 → 28 (Docker)** — sync code, collection schemas, reconciliation runner.
+- **diff 8 → 9** — lyrics diff viewer only.
+- **Node 20 → 22 LTS** — Docker base images + `engines` field.
+
+### Routine minor/patch bumps (ride along)
 
 | Package | From | To |
 |---|---|---|
-| Node (Docker + `engines`) | 20 | 22 LTS |
 | react, react-dom | 19.0 | 19.2 |
 | drizzle-orm | 0.39.3 | 0.45.2 |
 | drizzle-kit | 0.30.4 | 0.31.10 |
@@ -53,22 +59,11 @@ All minor/patch upgrades that don't change public API.
 | @aws-sdk/* | 3.1022 | 3.1033 |
 | postgres | 3.4.5 | 3.4.9 |
 
-**Verification:** all four required CI checks green (quality, build, docker-build, e2e) + Lighthouse thresholds still met + prodlike smoke test passes.
+### Verification
 
-### 1.2 Small-breaking upgrades
+Before starting: expand integration coverage around search and the lyrics diff viewer — these are the two surfaces most likely to regress silently under the major jumps. Those tests become the regression net.
 
-- **Zod 3.24 → 4.3** — every tRPC input/output schema, every Better-Auth plugin config, every form validator. Biggest surface change of this batch.
-- **diff 8 → 9** — used only in the lyrics diff viewer; small blast radius.
-- **Typesense npm client 2 → 3** + **Typesense server 26 → 28 (Docker)** — updates sync code, collection schemas, and the reconciliation runner introduced in recent commits.
-
-**Verification:** expand integration tests around search and lyrics diff *before* the upgrade so the regressions surface loudly. Then the bump itself is near-mechanical.
-
-### 1.3 Biggest jumps
-
-- **Next.js 15 → 16** — async dynamic APIs (work already started via the `headers()/cookies()` ESLint rule in recent commits), new caching defaults, Turbopack default, React Compiler opt-in evaluation.
-- **TypeScript 5.7 → 6.0** — typecheck sweep + stricter lib types.
-
-**Verification:** full CI + e2e + prodlike smoke + Lighthouse + manual smoke of home, reciter, album, track, search, and auth flows. This is the batch most likely to need caching/RSC investigation.
+After landing: all four required CI checks green (quality, build, docker-build, e2e) + Lighthouse thresholds held (perf ≥ 0.8, a11y ≥ 0.9, LCP ≤ 2500ms, FCP ≤ 2000ms, CLS ≤ 0.1) + prodlike smoke test passes + manual smoke of home, reciter, album, track, search, auth, library, contribute, and mod flows. Next 16's caching defaults are the single most likely source of debugging pain; budget accordingly.
 
 ## Phase 2 — Design System + Visual Parity
 
@@ -143,18 +138,18 @@ Discord or Matrix server, a launch post when `nawhas.com` cuts over, reach out t
 ## Dependencies & Sequencing
 
 ```
-Phase 1.1 → 1.2 → 1.3   (must be sequential)
-                     ↓
-               Phase 2.1 → 2.2 → 2.3   (visual work)
-                                    ↓
-                              Phase 3   (launch prep)
-                                    ↓
-                              Phase 4   (can partly overlap with late 3)
+Phase 1 (single batch)
+      ↓
+Phase 2.1 → 2.2 → 2.3   (visual work)
+                  ↓
+            Phase 3   (launch prep)
+                  ↓
+            Phase 4   (can partly overlap with late 3)
 ```
 
 ## Risks
 
-- **Phase 1.3 (Next 15 → 16)** is the single most likely to cause debugging pain (RSC caching defaults changed). Mitigation: expand prodlike smoke coverage before starting.
+- **Phase 1** as a single batch means the PR is large and Next 16's caching defaults are the single most likely source of debugging pain. Mitigation: expand prodlike smoke coverage before the bump, and land against a dedicated long-lived branch so the work can be pushed and reviewed incrementally without blocking `main`.
 - **Phase 2.3** can drift in scope if the token system from 2.1 is weak. Mitigation: tokens reviewed and committed *before* any page redesign starts.
 - **Phase 3.1 data migration** is high-risk if done late. Mitigation: decide path early in Phase 2 so migration code can be written and tested in parallel with the visual work.
 
@@ -166,4 +161,4 @@ Phase 1.1 → 1.2 → 1.3   (must be sequential)
 
 ## What this document is *not*
 
-This roadmap names phases and sub-projects; it does not specify implementation details. Each sub-project (1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1–4.4) gets its own design spec and implementation plan before coding starts.
+This roadmap names phases and sub-projects; it does not specify implementation details. Each sub-project (Phase 1, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1–4.4) gets its own design spec and implementation plan before coding starts.
