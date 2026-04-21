@@ -67,6 +67,10 @@ postgresql:
 # API key is read from the K8s Secret at .Values.secretName (key: TYPESENSE_API_KEY).
 typesense:
   enabled: false
+  # Matches the Typesense server version used in local dev (docker-compose.yml).
+  # Only affects environments with typesense.enabled=true (currently staging);
+  # production runs Typesense out-of-band (enabled:false) and is unaffected.
+  image: docker.io/typesense/typesense:28.0
   port: 8108
   storage:
     storageClass: ""
