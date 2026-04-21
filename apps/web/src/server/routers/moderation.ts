@@ -33,7 +33,7 @@ export const moderationRouter = router({
    * Fetch a single submission by ID.
    */
   get: moderatorProcedure
-    .input(z.object({ submissionId: z.string().uuid() }))
+    .input(z.object({ submissionId: z.uuid() }))
     .query(async ({ ctx, input }): Promise<SubmissionDTO> => {
       const [submission] = await ctx.db
         .select()
@@ -100,7 +100,7 @@ export const moderationRouter = router({
   review: moderatorProcedure
     .input(
       z.object({
-        submissionId: z.string().uuid(),
+        submissionId: z.uuid(),
         action: z.enum(['approved', 'rejected', 'changes_requested']),
         comment: z.string().optional(),
       }),
@@ -182,7 +182,7 @@ export const moderationRouter = router({
    * Writes an audit log entry and fires an approval email.
    */
   applyApproved: moderatorProcedure
-    .input(z.object({ submissionId: z.string().uuid() }))
+    .input(z.object({ submissionId: z.uuid() }))
     .mutation(async ({ ctx, input }): Promise<{ success: true; entityId: string }> => {
       const [submission] = await ctx.db
         .select()

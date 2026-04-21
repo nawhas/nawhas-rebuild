@@ -8,7 +8,7 @@ export const likesRouter = router({
    * Like a track (idempotent upsert).
    */
   like: protectedProcedure
-    .input(z.object({ trackId: z.string().uuid() }))
+    .input(z.object({ trackId: z.uuid() }))
     .mutation(async ({ ctx, input }): Promise<void> => {
       await ctx.db
         .insert(userLikedTracks)
@@ -20,7 +20,7 @@ export const likesRouter = router({
    * Remove a like from a track.
    */
   unlike: protectedProcedure
-    .input(z.object({ trackId: z.string().uuid() }))
+    .input(z.object({ trackId: z.uuid() }))
     .mutation(async ({ ctx, input }): Promise<void> => {
       await ctx.db
         .delete(userLikedTracks)
@@ -36,7 +36,7 @@ export const likesRouter = router({
    * Returns true if the authenticated user has liked the given track.
    */
   isLiked: protectedProcedure
-    .input(z.object({ trackId: z.string().uuid() }))
+    .input(z.object({ trackId: z.uuid() }))
     .query(async ({ ctx, input }): Promise<boolean> => {
       const row = await ctx.db.query.userLikedTracks.findFirst({
         where: and(
@@ -53,7 +53,7 @@ export const likesRouter = router({
    * Avoids N+1 queries in list views.
    */
   batchStatus: protectedProcedure
-    .input(z.object({ trackIds: z.array(z.string().uuid()).max(200) }))
+    .input(z.object({ trackIds: z.array(z.uuid()).max(200) }))
     .query(async ({ ctx, input }): Promise<Record<string, boolean>> => {
       if (input.trackIds.length === 0) return {};
 

@@ -8,7 +8,7 @@ import { FormField, Input } from '@/components/contribute/form-field';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
-  reciterId: z.string().uuid('Must be a valid reciter ID (UUID)'),
+  reciterId: z.uuid('Must be a valid reciter ID (UUID)'),
   slug: z.string().min(1).optional().or(z.literal('')),
   year: z
     .string()
@@ -17,7 +17,7 @@ const schema = z.object({
       (v) => !v || (/^\d{4}$/.test(v) && parseInt(v) >= 1900 && parseInt(v) <= new Date().getFullYear()),
       'Must be a 4-digit year',
     ),
-  artworkUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  artworkUrl: z.url('Must be a valid URL').optional().or(z.literal('')),
 });
 
 type FormValues = z.infer<typeof schema>;

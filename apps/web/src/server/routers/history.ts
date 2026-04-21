@@ -18,7 +18,7 @@ export const historyRouter = router({
    * within the last 30 seconds for this user.
    */
   record: protectedProcedure
-    .input(z.object({ trackId: z.string().uuid() }))
+    .input(z.object({ trackId: z.uuid() }))
     .mutation(async ({ ctx, input }): Promise<void> => {
       const windowStart = new Date(Date.now() - DEDUP_WINDOW_MS);
 

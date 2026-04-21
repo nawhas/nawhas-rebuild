@@ -8,13 +8,13 @@ import { FormField, Input } from '@/components/contribute/form-field';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
-  albumId: z.string().uuid('Must be a valid album ID (UUID)'),
+  albumId: z.uuid('Must be a valid album ID (UUID)'),
   slug: z.string().min(1).optional().or(z.literal('')),
   trackNumber: z
     .string()
     .optional()
     .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), 'Must be a positive integer'),
-  audioUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  audioUrl: z.url('Must be a valid URL').optional().or(z.literal('')),
   youtubeId: z.string().optional().or(z.literal('')),
   duration: z
     .string()

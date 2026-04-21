@@ -21,7 +21,7 @@ export const accountRouter = router({
    * new address; the change only takes effect after the user clicks the link.
    */
   changeEmail: protectedProcedure
-    .input(z.object({ newEmail: z.string().email() }))
+    .input(z.object({ newEmail: z.email() }))
     .mutation(async ({ ctx, input }) => {
       // Reject if the address is already in use by another account.
       const existing = await ctx.db

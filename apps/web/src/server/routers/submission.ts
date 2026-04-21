@@ -21,18 +21,18 @@ export const reciterDataSchema = z.object({
 
 export const albumDataSchema = z.object({
   title: z.string().min(1).max(500),
-  reciterId: z.string().uuid(),
+  reciterId: z.uuid(),
   slug: z.string().min(1).max(500).optional(),
   year: z.number().int().optional(),
-  artworkUrl: z.string().url().optional(),
+  artworkUrl: z.url().optional(),
 });
 
 export const trackDataSchema = z.object({
   title: z.string().min(1).max(500),
-  albumId: z.string().uuid(),
+  albumId: z.uuid(),
   slug: z.string().min(1).max(500).optional(),
   trackNumber: z.number().int().optional(),
-  audioUrl: z.string().url().optional(),
+  audioUrl: z.url().optional(),
   youtubeId: z.string().optional(),
   duration: z.number().int().optional(),
 });
@@ -45,27 +45,27 @@ const createInputSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('reciter'),
     action: z.enum(['create', 'edit']),
-    targetId: z.string().uuid().optional(),
+    targetId: z.uuid().optional(),
     data: reciterDataSchema,
   }),
   z.object({
     type: z.literal('album'),
     action: z.enum(['create', 'edit']),
-    targetId: z.string().uuid().optional(),
+    targetId: z.uuid().optional(),
     data: albumDataSchema,
   }),
   z.object({
     type: z.literal('track'),
     action: z.enum(['create', 'edit']),
-    targetId: z.string().uuid().optional(),
+    targetId: z.uuid().optional(),
     data: trackDataSchema,
   }),
 ]);
 
 const updateInputSchema = z.discriminatedUnion('type', [
-  z.object({ id: z.string().uuid(), type: z.literal('reciter'), data: reciterDataSchema }),
-  z.object({ id: z.string().uuid(), type: z.literal('album'), data: albumDataSchema }),
-  z.object({ id: z.string().uuid(), type: z.literal('track'), data: trackDataSchema }),
+  z.object({ id: z.uuid(), type: z.literal('reciter'), data: reciterDataSchema }),
+  z.object({ id: z.uuid(), type: z.literal('album'), data: albumDataSchema }),
+  z.object({ id: z.uuid(), type: z.literal('track'), data: trackDataSchema }),
 ]);
 
 // ---------------------------------------------------------------------------
@@ -233,7 +233,7 @@ export const submissionRouter = router({
    * The owner can view their own; moderators can view any.
    */
   get: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.uuid() }))
     .query(async ({ ctx, input }): Promise<SubmissionDTO> => {
       const [row] = await ctx.db
         .select()
