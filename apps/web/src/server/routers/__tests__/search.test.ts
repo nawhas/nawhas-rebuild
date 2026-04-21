@@ -11,6 +11,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { reciters, albums, tracks, lyrics } from '@nawhas/db';
 import { syncReciter, syncAlbum, syncTrack, deleteDocument } from '@/lib/typesense/sync';
+import { typesenseClient } from '@/lib/typesense/client';
 import { COLLECTIONS, ensureCollections } from '@/lib/typesense/collections';
 import {
   createTestDb,
@@ -38,6 +39,27 @@ const seededTrackIds: string[] = [];
 // Distinctive token used in our seeded names/titles so queries are unlikely
 // to collide with any other rows already present in the DB/index.
 const TOKEN = `zqtok${suffix}`;
+
+// Bounded poll against Typesense so we don't rely on a fixed sleep for
+// indexing latency. Queries by `title` (always materialised, unlike the
+// `lyrics_*` wildcard fields) and caps at ~5s. If the cap is hit, throw
+// with an explicit message so a regression in indexing latency is obvious
+// rather than masquerading as a ranking bug.
+async function waitForTracksIndexed(expected: number, timeoutMs = 5000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const result = await typesenseClient
+      .collections(COLLECTIONS.tracks)
+      .documents()
+      .search({ q: TOKEN, query_by: 'title', per_page: expected });
+    if ((result.found ?? 0) >= expected) return;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(
+    `Typesense did not index ${expected} tracks within ${timeoutMs}ms; ` +
+      `suggests indexing latency has regressed or sync failed silently.`,
+  );
+}
 
 describe.skipIf(!shouldRun)('Search Router (integration)', () => {
   beforeAll(async () => {
@@ -118,13 +140,23 @@ describe.skipIf(!shouldRun)('Search Router (integration)', () => {
     await Promise.all(seededAlbumIds.map((id) => syncAlbum(id)));
     await Promise.all(seededTrackIds.map((id) => syncTrack(id)));
 
-    // Typesense indexing is near-instant but not synchronous — wait briefly
-    // so multi-search queries see the just-upserted documents.
-    await new Promise((r) => setTimeout(r, 500));
+    // Typesense indexing is near-instant but not synchronous — bounded-poll
+    // until the seeded tracks are searchable so multi-search queries below
+    // see the just-upserted documents.
+    await waitForTracksIndexed(seededTrackIds.length);
   });
 
   afterAll(async () => {
     if (!close) return;
+
+    const { inArray } = await import('drizzle-orm');
+
+    // Belt-and-braces: delete lyrics explicitly so a future FK weakening
+    // (e.g. ON DELETE SET NULL instead of CASCADE) doesn't leak
+    // TOKEN-tagged rows across test suites.
+    if (seededTrackIds.length > 0) {
+      await db.delete(lyrics).where(inArray(lyrics.trackId, seededTrackIds));
+    }
 
     // Delete Typesense docs first (best-effort — the suite is the only owner).
     const tsDeletions: Array<Promise<unknown>> = [];
@@ -141,7 +173,6 @@ describe.skipIf(!shouldRun)('Search Router (integration)', () => {
 
     // Cascade deletes handle albums/tracks under each reciter.
     if (seededReciterIds.length > 0) {
-      const { inArray } = await import('drizzle-orm');
       await db.delete(reciters).where(inArray(reciters.id, seededReciterIds));
     }
 
