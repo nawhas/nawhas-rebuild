@@ -10,10 +10,10 @@ Nawhas.com is a comprehensive platform for discovering, listening to, and catalo
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 15 (App Router), React 19, TypeScript |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript 6 |
 | API | tRPC 11 + TanStack Query |
 | Database | PostgreSQL 16 + Drizzle ORM |
-| Search | Typesense 26 |
+| Search | Typesense 28 (server) + v3 client |
 | Object Storage | MinIO (S3-compatible) |
 | Authentication | Better-Auth |
 | Styling | Tailwind CSS 4 |
@@ -25,7 +25,7 @@ Nawhas.com is a comprehensive platform for discovering, listening to, and catalo
 ```
 nawhas-rebuild/
 ├── apps/
-│   ├── web/          # Next.js 15 app (frontend + tRPC API)
+│   ├── web/          # Next.js 16 app (frontend + tRPC API)
 │   └── e2e/          # Playwright end-to-end tests
 ├── packages/
 │   ├── db/           # Drizzle ORM schema, migrations, and client
@@ -40,7 +40,7 @@ nawhas-rebuild/
 
 ## Quick Start
 
-**Prerequisites:** Docker, Node.js 20+, pnpm 9.15.5+
+**Prerequisites:** Docker, Node.js 22+ (LTS), pnpm 9.15.5+
 
 ```bash
 # 1. Clone and enter the repo

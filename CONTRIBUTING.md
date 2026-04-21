@@ -48,7 +48,7 @@ All four CI checks (`quality`, `build`, `docker-build`, `e2e`) must pass for a P
 
 #### require-dynamic-for-headers-cookies
 
-Pages and layouts using `headers()`, `cookies()` from `next/headers` or accessing `searchParams` from props must export `const dynamic = 'force-dynamic'`. This is required by Next.js 15+ to avoid `DYNAMIC_SERVER_USAGE` errors.
+Pages and layouts using `headers()`, `cookies()` from `next/headers` or accessing `searchParams` from props must export `const dynamic = 'force-dynamic'`. This is required by Next.js 16 (async dynamic APIs) to avoid `DYNAMIC_SERVER_USAGE` errors.
 
 **Example:**
 ```typescript

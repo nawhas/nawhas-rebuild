@@ -206,10 +206,10 @@ Or simply restart the `web` container — it runs migrations automatically on st
 
 ### pnpm install fails
 
-Ensure you are using Node.js 20+ and that corepack is enabled:
+Ensure you are using Node.js 22+ (LTS) and that corepack is enabled:
 
 ```bash
-node --version   # should be v20.x or higher
+node --version   # should be v22.x or higher
 corepack enable
 pnpm install
 ```
