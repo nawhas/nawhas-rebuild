@@ -75,6 +75,9 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       await db.delete(reciters).where(inArray(reciters.id, seededReciterIds));
     }
     if (seededUserIds.length > 0) {
+      // audit_log.actor_user_id FKs user.id; tests that exercise setRole emit
+      // audit rows that must be cleared before the user rows can be deleted.
+      await db.delete(auditLog).where(inArray(auditLog.actorUserId, seededUserIds));
       await db.delete(users).where(inArray(users.id, seededUserIds));
     }
     await close();

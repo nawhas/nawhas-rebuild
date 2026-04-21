@@ -205,7 +205,8 @@ describe.skipIf(!dbAvailable)('Library Router', () => {
 
     it('returns nextCursor = null on the last page', async () => {
       const caller = makeLibraryCaller(db, USER_ID);
-      const result = await caller.list({ limit: 1000 });
+      // limit caps at MAX_LIMIT (100) — 100 is comfortably > the test's seeded row count.
+      const result = await caller.list({ limit: 100 });
       expect(result.nextCursor).toBeNull();
     });
   });

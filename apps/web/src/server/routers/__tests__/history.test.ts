@@ -293,7 +293,8 @@ describe.skipIf(!dbAvailable || !historyRouter)('History Router', () => {
 
     it('returns nextCursor = null on the last page', async () => {
       const caller = makeHistoryCaller(db, USER_ID);
-      const result = await caller.list({ limit: 1000 });
+      // limit caps at MAX_LIMIT (100) — 100 is comfortably > the test's seeded row count.
+      const result = await caller.list({ limit: 100 });
       expect(result.nextCursor).toBeNull();
     });
   });
@@ -343,7 +344,8 @@ describe.skipIf(!dbAvailable || !historyRouter)('History Router', () => {
     it('calling clear when history is already empty does not throw', async () => {
       await clearHistory(USER_ID);
       const caller = makeHistoryCaller(db, USER_ID);
-      await expect(caller.clear()).resolves.toBeDefined();
+      // history.clear is typed Promise<void> — resolving to undefined is correct.
+      await expect(caller.clear()).resolves.toBeUndefined();
     });
   });
 });
