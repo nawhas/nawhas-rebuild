@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { typesenseClient } from '@/lib/typesense/client';
-import { COLLECTIONS } from '@/lib/typesense/collections';
+import { COLLECTIONS, SEARCHABLE_LYRICS_LANGUAGES } from '@/lib/typesense/collections';
 import { router, publicProcedure } from '../trpc/trpc';
 import type {
   AutocompleteDTO,
@@ -44,9 +44,17 @@ interface TrackDoc {
   [key: string]: string | number | undefined;
 }
 
-// Fields searched on tracks — matches the tracks collection schema (NAW-113).
-// Includes all lyrics fields so Arabic/Urdu/transliteration search works.
-const TRACK_QUERY_BY = 'title,albumTitle,reciterName,lyrics_ar,lyrics_ur,lyrics_en,lyrics_fr,lyrics_transliteration';
+// Fields searched on tracks. Each lyrics_<lang> referenced here must also be
+// declared as an explicit field on the tracks collection schema — see
+// SEARCHABLE_LYRICS_LANGUAGES in packages/db/src/typesense/collections.ts.
+// Otherwise Typesense 404s on a fresh index where no doc with that language
+// has been upserted yet.
+const TRACK_QUERY_BY = [
+  'title',
+  'albumTitle',
+  'reciterName',
+  ...SEARCHABLE_LYRICS_LANGUAGES.map((lang) => `lyrics_${lang}`),
+].join(',');
 
 // Below this many results Typesense attempts typo-correction;
 // 1 = always try typos even when a match exists (important for Arabic/Urdu).

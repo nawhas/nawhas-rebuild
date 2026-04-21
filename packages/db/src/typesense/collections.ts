@@ -1,5 +1,5 @@
 import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
-import type { CollectionSchema } from 'typesense/lib/Typesense/Collection';
+import type { CollectionFieldSchema, CollectionSchema } from 'typesense/lib/Typesense/Collection';
 import type { TypesenseAdminClient } from './admin-client.js';
 
 export enum COLLECTIONS {
@@ -7,6 +7,31 @@ export enum COLLECTIONS {
   albums = 'albums',
   tracks = 'tracks',
 }
+
+/**
+ * Languages the search router includes in its `query_by` clause for the tracks
+ * collection. Every language listed here must be declared as an explicit field
+ * on `tracksSchema` below — otherwise Typesense will 404 on the first search
+ * against a fresh collection where no document with that language has been
+ * upserted yet. Adding a language requires running
+ * `reconcileTypesenseCollections()` so the new field is created on the live
+ * collection.
+ */
+export const SEARCHABLE_LYRICS_LANGUAGES = [
+  'ar',
+  'ur',
+  'en',
+  'fr',
+  'transliteration',
+] as const;
+
+export type SearchableLyricsLanguage = (typeof SEARCHABLE_LYRICS_LANGUAGES)[number];
+
+/** Per-language Typesense locale override (missing = default Latin tokenizer). */
+const LYRICS_LOCALE: Partial<Record<SearchableLyricsLanguage, string>> = {
+  ar: 'ar',
+  ur: 'ur',
+};
 
 // ---------------------------------------------------------------------------
 // Collection schemas — derived from @nawhas/types DTOs; keep in sync with search router query_by.
@@ -34,7 +59,19 @@ const albumsSchema: CollectionCreateSchema = {
   default_sorting_field: '',
 };
 
-const tracksSchema: CollectionCreateSchema = {
+const searchableLyricsFields: CollectionFieldSchema[] = SEARCHABLE_LYRICS_LANGUAGES.map(
+  (lang) => {
+    const locale = LYRICS_LOCALE[lang];
+    return {
+      name: `lyrics_${lang}`,
+      type: 'string',
+      optional: true,
+      ...(locale ? { locale } : {}),
+    };
+  },
+);
+
+export const tracksSchema: CollectionCreateSchema = {
   name: COLLECTIONS.tracks,
   fields: [
     { name: 'title', type: 'string', index: true },
@@ -46,8 +83,9 @@ const tracksSchema: CollectionCreateSchema = {
     { name: 'reciterId', type: 'string', facet: true },
     { name: 'reciterName', type: 'string', index: true },
     { name: 'reciterSlug', type: 'string' },
-    { name: 'lyrics_ar', type: 'string', optional: true, locale: 'ar' },
-    { name: 'lyrics_ur', type: 'string', optional: true, locale: 'ur' },
+    ...searchableLyricsFields,
+    // Wildcard catches any other language indexed via syncTrack — stored but not
+    // searchable until the language is added to SEARCHABLE_LYRICS_LANGUAGES.
     { name: 'lyrics_.*', type: 'string', optional: true },
   ],
   default_sorting_field: '',
