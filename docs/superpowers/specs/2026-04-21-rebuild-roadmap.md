@@ -1,8 +1,9 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Design / planning
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2 not started
 **Author:** Asif (brainstormed with Claude)
-**Date:** 2026-04-21
+**Created:** 2026-04-21
+**Last updated:** 2026-04-21
 
 ## Context
 
@@ -27,7 +28,7 @@ This document lays out the roadmap for taking the rebuild to public launch and b
 
 The alternative considered — running design and upgrades in parallel — was rejected here for two reasons: a two-person team creates real merge friction between the tracks, and locking in tokens against soon-to-change primitives (e.g. Tailwind 4.x minor bumps, Next 16 RSC caching behaviour) risks rework.
 
-## Phase 1 — Stack Upgrades (single batch)
+## Phase 1 — Stack Upgrades (single batch) ✅ shipped 2026-04-21
 
 All upgrades land in a single coordinated PR stream. The upgrades are interlocked — Next 16's caching behaviour interacts with tRPC/react-query, Zod 4 is pulled in by newer versions of some consumers, and TypeScript 6's stricter lib types surface issues across every bumped package — so there is no clean seam at which to split them.
 
@@ -65,9 +66,54 @@ Before starting: expand integration coverage around search and the lyrics diff v
 
 After landing: all four required CI checks green (quality, build, docker-build, e2e) + Lighthouse thresholds held (perf ≥ 0.8, a11y ≥ 0.9, LCP ≤ 2500ms, FCP ≤ 2000ms, CLS ≤ 0.1) + prodlike smoke test passes + manual smoke of home, reciter, album, track, search, auth, library, contribute, and mod flows. Next 16's caching defaults are the single most likely source of debugging pain; budget accordingly.
 
+### Outcomes (shipped)
+
+Phase 1 landed as 16 commits on `main` (`832c236..2ad0d9b`). All CI jobs green including Deploy to Staging — staging now runs the full upgraded stack.
+
+**Regression nets** (before the breaking upgrades):
+
+| Commit | Surface |
+|---|---|
+| `bffcfae` + `80293e4` | Search router integration test with bounded Typesense-indexing poll |
+| `ef30ad3` + `8e4f858` | FieldDiff component unit tests, tolerant of diff-v9 tokeniser quirks |
+
+**Stack upgrade commits:**
+
+| Commit | Upgrade | Source-code footprint |
+|---|---|---|
+| `8019c21` | Node 20 → 22 LTS | Dockerfiles, docker-compose, `.nvmrc`, `engines.node` |
+| `dddb7cc` | TypeScript 5.7 → 6.0 | +1 new `global.d.ts` for TS 6's CSS ambient-module change |
+| `056a264` | Routine minor/patch batch (react, drizzle, better-auth, tRPC, react-query, tailwind, turbo, eslint, sentry, vitest, next-intl, aws-sdk, postgres, axe-core, testing-library) | Zero source changes |
+| `7b6398c` | Zod 3 → 4 | 29 deprecated `z.string().email()/.url()/.uuid()` call sites migrated to `z.email()`/`.url()`/`.uuid()` shorthand across 9 files |
+| `3aad6ba` | Typesense client 2 → 3 + server 26 → 28 | Zero source changes — client v3 preserved every signature we use |
+| `05005ce` | diff 8 → 9 | Zero source changes — `Change` shape unchanged |
+| `8fedc28` | Next.js 15 → 16 | `apps/web/middleware.ts` renamed to `apps/web/proxy.ts` via codemod; removed `eslint.ignoreDuringBuilds` (Next 16 dropped built-in ESLint integration) |
+
+**Closeout commits:**
+
+| Commit | Purpose |
+|---|---|
+| `cf8869d` | Refresh stale version refs in README, CONTRIBUTING, docs/dev-setup |
+| `0b2d752` | Update `require-dynamic-for-headers-cookies` ESLint rule message for Next 16 |
+
+### Follow-ups surfaced during / after Phase 1 (all resolved)
+
+| # | Title | Root cause | Commit |
+|---|---|---|---|
+| 11 | Search router fragile on fresh Typesense index | `query_by` referenced `lyrics_en/fr/transliteration` but only `lyrics_ar/ur` were declared as explicit schema fields; wildcard-only fields don't materialise until a doc is upserted, so a fresh index 404s. Introduced `SEARCHABLE_LYRICS_LANGUAGES` as single source of truth for the schema + the router query. | `0b701e0` |
+| 12 | Pre-existing DB-backed router test failures | Four real test bugs: `library.list` / `history.list` passed `limit: 1000` (Zod `max(100)` rejects); `history.clear` asserted `.toBeDefined()` on a correct `Promise<void>` return; `moderation.test.ts` afterAll deleted users before `audit_log` FK rows (added explicit cleanup). | `04b1888` |
+| 13 | "Docker build fails with `@nawhas/db` resolution" | Misdiagnosed on filing — was actually a cascading symptom of Typesense v3's `CollectionSchema = Required<…>` widening the type. A test mock missed 7 new required fields. `pnpm -r typecheck` passed locally because incremental `tsc --build` used a stale `tsconfig.tsbuildinfo` and skipped rechecking. Docker and CI both build fresh, caught it immediately. | `94be04c` |
+| 14 | Helm chart Typesense still at 27.1 | Phase 1 bumped `docker-compose.yml` to `28.0` but the plan didn't enumerate Helm surfaces. Parameterised the image tag via `.Values.typesense.image`, default now `28.0`. Production unaffected (runs Typesense out-of-band with `typesense.enabled: false`). | `2ad0d9b` |
+
+### Lessons worth carrying forward
+
+- **Incremental `tsc --build` masks type regressions after dep major-bumps.** `pnpm -r typecheck` can report clean locally while Docker and CI both fail the same check. Before a dep major-bump's verification pass, run either `tsc --build --force` or delete `tsconfig.tsbuildinfo` workspace-wide so the typecheck matches what CI will see. Bit this cycle in Task 7 (Typesense v3 → `CollectionSchema` widening masked in `collections.test.ts` mock) and only surfaced when CI went red on the post-upgrade push.
+- **The prep work (async-request-API ESLint rule in `f58dbc3`, `dynamic = 'force-dynamic'` in `f0b01d8`) made Next 16 trivial.** The Next 15 → 16 migration was one of the larger blast-radius upgrades in the industry this cycle; this codebase absorbed it in a single commit with a codemod + one config-key removal because the async-dynamic-APIs prerequisite had already been front-loaded. Worth repeating that pattern: when an upcoming framework jump has a known prerequisite, add it as a lint rule / config early and let it bake in over weeks before the actual bump.
+- **Regression-net tests for dep-major-bumps paid off.** Tasks 1 and 2 added tests specifically as regression nets for Tasks 7 and 8 (Typesense and diff). Both ran against their target upgrades and passed — the tests prevented the kind of silent drift that's typical in this class of upgrade. Adopt the same pattern for future breaking bumps in Phase 2 onwards.
+
 ## Phase 2 — Design System + Visual Parity
 
-Starts only when Phase 1 is fully merged, so design tokens and primitives aren't chasing a moving target.
+**Unblocked:** Phase 1 is merged, staging is green on the upgraded stack, and the four post-upgrade follow-ups are closed. Tokens and primitives defined here will land against the stable Next 16 / TS 6 / Tailwind 4.2 baseline.
 
 ### 2.1 Legacy visual audit
 
@@ -149,7 +195,7 @@ Phase 2.1 → 2.2 → 2.3   (visual work)
 
 ## Risks
 
-- **Phase 1** as a single batch means the PR is large and Next 16's caching defaults are the single most likely source of debugging pain. Mitigation: expand prodlike smoke coverage before the bump, and land against a dedicated long-lived branch so the work can be pushed and reviewed incrementally without blocking `main`.
+- ~~**Phase 1** as a single batch: Next 16's caching defaults are the single most likely source of debugging pain.~~ **Resolved:** landed cleanly; the caching-default change had no effect because every app route was already `force-dynamic`. The actual pain came from a different source — see the `tsbuildinfo` lesson under Phase 1 outcomes.
 - **Phase 2.3** can drift in scope if the token system from 2.1 is weak. Mitigation: tokens reviewed and committed *before* any page redesign starts.
 - **Phase 3.1 data migration** is high-risk if done late. Mitigation: decide path early in Phase 2 so migration code can be written and tested in parallel with the visual work.
 
