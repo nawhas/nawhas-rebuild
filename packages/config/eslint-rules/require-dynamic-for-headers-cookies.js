@@ -4,7 +4,9 @@
  * Warns when a file imports headers() or cookies() from 'next/headers'
  * without exporting 'const dynamic = "force-dynamic"'
  *
- * These APIs require route dynamic declaration per Next.js 15 specifications:
+ * These APIs are async dynamic APIs in Next.js 16 and require the enclosing
+ * route to opt out of static rendering; otherwise Next raises a
+ * DYNAMIC_SERVER_USAGE error at build/request time.
  * https://nextjs.org/docs/app/building-your-application/rendering/dynamic-rendering#dynamic-apis
  *
  * Only applies to:
@@ -94,7 +96,7 @@ module.exports = {
           context.report({
             node: context.sourceCode.ast,
             message:
-              'Route components using headers(), cookies() from next/headers or searchParams must export "const dynamic = \'force-dynamic\'" to avoid DYNAMIC_SERVER_USAGE errors in Next.js 15+',
+              'Route components using headers(), cookies() from next/headers or searchParams must export "const dynamic = \'force-dynamic\'" to avoid DYNAMIC_SERVER_USAGE errors under Next.js 16 async dynamic APIs',
             loc: {
               line: 1,
               column: 0,
