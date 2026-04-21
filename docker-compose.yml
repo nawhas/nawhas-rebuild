@@ -72,7 +72,7 @@ services:
       retries: 5
 
   typesense:
-    image: typesense/typesense:26.0
+    image: typesense/typesense:28.0
     ports:
       - "8108:8108"
     environment:
