@@ -53,7 +53,7 @@ function buildGetSessionUrl(request: NextRequest): URL {
   return new URL('/api/auth/get-session', `http://127.0.0.1:${loopbackPort}`);
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
