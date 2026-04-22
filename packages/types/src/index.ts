@@ -55,6 +55,13 @@ export interface AlbumDTO {
   reciterId: string;
   year: number | null;
   artworkUrl: string | null;
+  /**
+   * Precomputed dominant-muted hex color extracted from the album artwork
+   * (via node-vibrant in the offline script at apps/web/scripts/compute-vibrant-colors.ts).
+   * Used as the hero background on album detail pages. Null when no artwork
+   * is available or extraction failed; render layer falls back to --color-muted.
+   */
+  vibrantColor: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -9,13 +9,27 @@ interface AlbumHeaderProps {
 /**
  * Album detail header: cover art, title, linked reciter name, year, and track count.
  *
+ * Hero background uses the album's precomputed vibrantColor (see
+ * apps/web/scripts/compute-vibrant-colors.ts). Falls back to --color-muted
+ * when no color is available, in which case semantic text colors apply so
+ * contrast remains legible in both themes. On a vibrant (dark-muted) color
+ * background, text is forced to white/white-alpha for reliable contrast.
+ *
  * Server Component — no interactivity required.
  */
 export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
   const trackCount = album.tracks.length;
+  const hasVibrant = Boolean(album.vibrantColor);
 
   return (
-    <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:items-start">
+    <div
+      className={`flex flex-col items-center gap-6 rounded-xl px-6 py-8 sm:flex-row sm:items-start sm:px-10 sm:py-10 ${
+        hasVibrant ? 'text-white' : 'text-foreground'
+      }`}
+      style={{
+        backgroundColor: album.vibrantColor ?? 'var(--color-muted)',
+      }}
+    >
       {/* Cover art */}
       <div className="relative h-48 w-48 shrink-0 overflow-hidden rounded-lg bg-muted sm:h-56 sm:w-56">
         {album.artworkUrl ? (
@@ -53,18 +67,30 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
 
       {/* Metadata */}
       <div className="flex flex-col gap-2 text-center sm:text-left">
-        <h1 className="font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground">
+        <h1
+          className={`font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight ${
+            hasVibrant ? 'text-white' : 'text-foreground'
+          }`}
+        >
           {album.title}
         </h1>
 
         <Link
           href={`/reciters/${album.reciterSlug}`}
-          className="text-base font-medium text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+          className={`text-base font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded ${
+            hasVibrant
+              ? 'text-white/80 hover:text-white'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
         >
           {album.reciterName}
         </Link>
 
-        <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground sm:justify-start">
+        <div
+          className={`flex flex-wrap justify-center gap-3 text-sm sm:justify-start ${
+            hasVibrant ? 'text-white/70' : 'text-muted-foreground'
+          }`}
+        >
           {album.year && <span>{album.year}</span>}
           <span>
             {trackCount === 0

@@ -12,6 +12,7 @@ export const albums = pgTable(
       .references(() => reciters.id, { onDelete: 'cascade' }),
     year: integer('year'),
     artworkUrl: text('artwork_url'),
+    vibrantColor: text('vibrant_color'),
     typesenseSyncedAt: timestamp('typesense_synced_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

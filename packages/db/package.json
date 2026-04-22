@@ -7,14 +7,17 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./typesense/admin-client": {
       "import": "./dist/typesense/admin-client.js",
+      "require": "./dist/typesense/admin-client.js",
       "types": "./dist/typesense/admin-client.d.ts"
     },
     "./typesense/collections": {
       "import": "./dist/typesense/collections.js",
+      "require": "./dist/typesense/collections.js",
       "types": "./dist/typesense/collections.d.ts"
     }
   },

@@ -64,6 +64,13 @@
       "when": 1744124400000,
       "tag": "0008_audit_log_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1776869181849,
+      "tag": "0009_warm_namora",
+      "breakpoints": true
     }
   ]
 }
