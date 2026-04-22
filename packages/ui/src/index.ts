@@ -10,3 +10,4 @@ export * from './components/sheet.js';
 export * from './components/input.js';
 export * from './components/select.js';
 export * from './components/badge.js';
+export * from './components/section-title.js';
