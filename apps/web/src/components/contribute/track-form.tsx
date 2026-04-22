@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
+import { Button } from '@nawhas/ui/components/button';
 import { createTrackSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 
@@ -215,13 +216,9 @@ export function TrackForm({
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">{serverError}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-md bg-gray-900 px-5 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
-      >
+      <Button type="submit" disabled={isPending}>
         {isPending ? 'Submitting…' : 'Submit for review'}
-      </button>
+      </Button>
     </form>
   );
 }

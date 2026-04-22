@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
 import { signUp } from '@/lib/auth-client';
 import { SocialButtons } from './social-buttons';
 import type { EnabledSocialProvider } from '@/lib/social-providers';
@@ -120,13 +121,9 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? t('submitting') : t('submit')}
-        </button>
+        </Button>
       </form>
 
       <SocialButtons providers={enabledProviders} callbackUrl="/" />

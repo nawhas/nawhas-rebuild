@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { SavedTrackDTO, TrackDTO } from '@nawhas/types';
+import { Button } from '@nawhas/ui/components/button';
 import { usePlayerStore } from '@/store/player';
 import { LoadMore } from '@/components/pagination/load-more';
 import { SaveButton } from '@/components/SaveButton';
@@ -102,16 +103,15 @@ export function LibraryTracksList({
         <p className="text-sm text-gray-500">
           {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
         </p>
-        <button
+        <Button
           type="button"
           onClick={handlePlayAll}
           disabled={isPlayingAll}
           aria-busy={isPlayingAll}
-          className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:opacity-60"
         >
           <PlayAllIcon />
           {isPlayingAll ? t('playAllLoading') : t('playAll')}
-        </button>
+        </Button>
       </div>
 
       {/* Track list */}

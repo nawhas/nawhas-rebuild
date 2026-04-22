@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@nawhas/ui/components/button';
 import { applySubmission } from '@/server/actions/moderation';
 import { useState } from 'react';
 
@@ -45,14 +46,14 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
       {error && (
         <p role="alert" className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>
       )}
-      <button
+      <Button
         type="button"
         onClick={handleApply}
         disabled={isPending}
-        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 disabled:opacity-50"
+        className="bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-600"
       >
         {isPending ? 'Applying…' : 'Apply to database'}
-      </button>
+      </Button>
     </div>
   );
 }

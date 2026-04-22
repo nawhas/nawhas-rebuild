@@ -1,3 +1,5 @@
+import { Button } from '@nawhas/ui/components/button';
+
 interface EmptyStateAction {
   label: string;
   href: string;
@@ -57,12 +59,9 @@ export function EmptyState({
       </div>
 
       {action && (
-        <a
-          href={action.href}
-          className="mt-2 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:bg-gray-700 dark:hover:bg-gray-600"
-        >
-          {action.label}
-        </a>
+        <Button asChild className="mt-2">
+          <a href={action.href}>{action.label}</a>
+        </Button>
       )}
     </div>
   );

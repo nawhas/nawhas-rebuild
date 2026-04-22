@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
 import { useSession } from '@/lib/auth-client';
 import { saveTrack, unsaveTrack, getIsSaved } from '@/server/actions/library';
 
@@ -93,18 +94,20 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
   const label = isSaved ? t('unsave') : t('save');
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon"
       onClick={handleClick}
       aria-label={label}
       aria-pressed={isSaved}
       disabled={isPending}
       className={[
-        'shrink-0 rounded p-1 transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900',
+        'h-auto w-auto shrink-0 rounded p-1 transition-all focus:ring-2 focus:ring-inset focus:ring-gray-900',
         stateLoaded ? 'opacity-100' : 'opacity-0',
         isSaved
-          ? 'text-gray-900 hover:text-gray-600 dark:text-white dark:hover:text-gray-300'
-          : 'text-gray-400 hover:text-gray-700 dark:text-gray-600 dark:hover:text-gray-400',
+          ? 'text-gray-900 hover:bg-transparent hover:text-gray-600 dark:text-white dark:hover:text-gray-300'
+          : 'text-gray-400 hover:bg-transparent hover:text-gray-700 dark:text-gray-600 dark:hover:text-gray-400',
         isPending ? 'pointer-events-none opacity-60' : '',
         className,
       ]
@@ -112,6 +115,6 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
         .join(' ')}
     >
       <HeartIcon filled={isSaved} />
-    </button>
+    </Button>
   );
 }

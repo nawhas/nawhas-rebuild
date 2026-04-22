@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
 import { requestPasswordReset } from '@/lib/auth-client';
 
 export function ForgotPasswordForm(): React.JSX.Element {
@@ -86,13 +87,9 @@ export function ForgotPasswordForm(): React.JSX.Element {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? t('submitting') : t('submit')}
-        </button>
+        </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
