@@ -18,21 +18,21 @@ export function FieldDiff({ label, current, proposed }: FieldDiffProps): React.J
 
   return (
     <div className="py-3">
-      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       {unchanged ? (
-        <p className="text-sm text-gray-700 dark:text-gray-300">{currentStr || <em className="text-gray-400">—</em>}</p>
+        <p className="text-sm text-foreground">{currentStr || <em className="text-muted-foreground">—</em>}</p>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="mb-1 text-xs text-gray-400 dark:text-gray-500">Current</p>
+            <p className="mb-1 text-xs text-muted-foreground">Current</p>
             <p className="rounded bg-red-50 px-2 py-1 text-sm text-red-800 line-through dark:bg-red-950 dark:text-red-200">
               {currentStr || <em>empty</em>}
             </p>
           </div>
           <div>
-            <p className="mb-1 text-xs text-gray-400 dark:text-gray-500">Proposed</p>
+            <p className="mb-1 text-xs text-muted-foreground">Proposed</p>
             <InlineWordDiff current={currentStr} proposed={proposedStr} />
           </div>
         </div>
@@ -55,7 +55,7 @@ function InlineWordDiff({ current, proposed }: { current: string; proposed: stri
         }
         if (part.removed) return null; // removed parts shown in the "current" column
         return (
-          <span key={i} className="text-gray-800 dark:text-gray-200">{part.value}</span>
+          <span key={i} className="text-foreground">{part.value}</span>
         );
       })}
     </p>
@@ -71,11 +71,11 @@ interface DataPreviewProps {
 export function DataPreview({ label, value }: DataPreviewProps): React.JSX.Element {
   return (
     <div className="py-3">
-      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
-      <p className="text-sm text-gray-700 dark:text-gray-300">
-        {value != null && value !== '' ? String(value) : <em className="text-gray-400">—</em>}
+      <p className="text-sm text-foreground">
+        {value != null && value !== '' ? String(value) : <em className="text-muted-foreground">—</em>}
       </p>
     </div>
   );

@@ -23,18 +23,18 @@ export function FormField({
 }: FormFieldProps): React.JSX.Element {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={id} className="mb-1 block text-sm font-medium text-foreground">
         {label}
-        {required && <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>}
+        {required && <span aria-hidden="true" className="ml-0.5 text-destructive">*</span>}
       </label>
       {children}
       {hint && !error && (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+        <p id={`${id}-hint`} className="mt-1 text-xs text-muted-foreground">
           {hint}
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-red-600 dark:text-red-400">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-destructive">
           {error}
         </p>
       )}

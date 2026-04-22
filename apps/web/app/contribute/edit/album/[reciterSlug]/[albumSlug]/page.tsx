@@ -34,10 +34,10 @@ export default async function EditAlbumPage({
 
   return (
     <main id="main-content" className="mx-auto max-w-xl py-10 px-4">
-      <h1 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">
+      <h1 className="mb-1 text-2xl font-bold text-foreground">
         Edit Album: {album.title}
       </h1>
-      <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      <p className="mb-6 text-sm text-muted-foreground">
         Suggest changes to this album&apos;s details. Your edit will be reviewed before going live.
       </p>
       <AlbumForm

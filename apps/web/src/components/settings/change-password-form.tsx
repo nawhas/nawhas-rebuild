@@ -32,13 +32,13 @@ export function ChangePasswordForm(): React.JSX.Element {
 
   return (
     <section aria-labelledby="password-heading">
-      <h2 id="password-heading" className="text-base font-semibold text-gray-900">
+      <h2 id="password-heading" className="text-base font-semibold text-foreground">
         {t('passwordHeading')}
       </h2>
 
       <form onSubmit={handleSubmit} noValidate className="mt-4 max-w-sm space-y-3">
         <div>
-          <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="current-password" className="block text-sm font-medium text-foreground">
             {t('currentPasswordLabel')}
           </label>
           <input
@@ -49,12 +49,12 @@ export function ChangePasswordForm(): React.JSX.Element {
             required
             autoComplete="current-password"
             disabled={loading}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
           />
         </div>
 
         <div>
-          <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="new-password" className="block text-sm font-medium text-foreground">
             {t('newPasswordLabel')}
           </label>
           <input
@@ -66,13 +66,13 @@ export function ChangePasswordForm(): React.JSX.Element {
             minLength={8}
             autoComplete="new-password"
             disabled={loading}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
           />
-          <p className="mt-1 text-xs text-gray-500">{t('passwordMinLength')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('passwordMinLength')}</p>
         </div>
 
         {error && (
-          <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </p>
         )}
@@ -86,7 +86,7 @@ export function ChangePasswordForm(): React.JSX.Element {
         <button
           type="submit"
           disabled={loading || !currentPassword || !newPassword}
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? t('updatePasswordSubmitting') : t('updatePasswordSubmit')}
         </button>

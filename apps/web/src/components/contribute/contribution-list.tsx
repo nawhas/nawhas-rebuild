@@ -20,7 +20,7 @@ export function ContributionList({ initialItems }: ContributionListProps): React
 
   if (initialItems.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+      <p className="py-8 text-center text-sm text-muted-foreground">
         No submissions yet. Start contributing above.
       </p>
     );
@@ -59,10 +59,10 @@ function SubmissionCard({
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-400 dark:hover:bg-gray-700"
+          className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
         >
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="truncate text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+            <span className="truncate text-sm font-medium text-foreground">{label}</span>
             <div className="flex flex-wrap items-center gap-2">
               <SubmissionTypeBadge type={submission.type} />
               <SubmissionActionBadge action={submission.action} />
@@ -71,7 +71,7 @@ function SubmissionCard({
           </div>
           <time
             dateTime={String(submission.createdAt)}
-            className="shrink-0 text-xs text-gray-400 dark:text-gray-500"
+            className="shrink-0 text-xs text-muted-foreground"
             title={new Date(submission.createdAt).toLocaleString()}
           >
             {new Date(submission.createdAt).toLocaleDateString(undefined, {
@@ -79,20 +79,20 @@ function SubmissionCard({
               day: 'numeric',
             })}
           </time>
-          <span aria-hidden="true" className={`ml-1 shrink-0 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}>
+          <span aria-hidden="true" className={`ml-1 shrink-0 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`}>
             ▾
           </span>
         </button>
 
         {expanded && (
-          <div className="border-t border-gray-100 px-5 py-4 dark:border-gray-700">
+          <div className="border-t border-border px-5 py-4">
             {submission.notes && (
               <div className="mb-3 rounded bg-blue-50 px-3 py-2 dark:bg-blue-950">
                 <p className="mb-0.5 text-xs font-medium text-blue-600 dark:text-blue-400">Moderator notes</p>
                 <p className="text-sm text-blue-900 dark:text-blue-100">{submission.notes}</p>
               </div>
             )}
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Submission ID: <span className="font-mono">{submission.id}</span>
             </p>
 

@@ -39,7 +39,7 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
       {error && (
         <tr>
           <td colSpan={4} className="px-4 py-3">
-            <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p role="alert" className="text-sm text-destructive">{error}</p>
           </td>
         </tr>
       )}
@@ -50,7 +50,7 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
               type="button"
               onClick={handleLoadMore}
               disabled={isPending}
-              className="rounded-md border border-gray-300 px-5 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
             >
               {isPending ? 'Loading…' : 'Load more'}
             </button>
@@ -63,15 +63,15 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
 
 function AuditRow({ entry }: { entry: AuditLogDTO }): React.JSX.Element {
   return (
-    <tr className="border-t border-gray-100 dark:border-gray-700">
-      <td className="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-300">{entry.action}</td>
-      <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+    <tr className="border-t border-border">
+      <td className="px-4 py-3 font-mono text-xs text-foreground">{entry.action}</td>
+      <td className="px-4 py-3 text-xs text-muted-foreground">
         {entry.targetType ?? '—'}
       </td>
-      <td className="px-4 py-3 max-w-xs truncate text-xs text-gray-500 dark:text-gray-400">
+      <td className="px-4 py-3 max-w-xs truncate text-xs text-muted-foreground">
         {entry.targetId ?? '—'}
       </td>
-      <td className="px-4 py-3 text-right text-xs text-gray-400 dark:text-gray-500">
+      <td className="px-4 py-3 text-right text-xs text-muted-foreground">
         <time
           dateTime={String(entry.createdAt)}
           title={new Date(entry.createdAt).toLocaleString()}

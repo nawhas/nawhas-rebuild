@@ -100,12 +100,12 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
       <FormField id={`rs-slug-${submission.id}`} label="Slug" error={errors.slug}>
         <Input id={`rs-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
       </FormField>
-      {serverError && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{serverError}</p>}
+      {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex gap-3">
         <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
           {isPending ? 'Submitting…' : 'Submit for review'}
         </button>
-        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:underline disabled:opacity-50">
+        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:underline disabled:opacity-50">
           Cancel
         </button>
       </div>
@@ -167,12 +167,12 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
       <FormField id={`ra-art-${submission.id}`} label="Artwork URL" error={errors.artworkUrl}>
         <Input id={`ra-art-${submission.id}`} type="url" value={artworkUrl} onChange={(e) => setArtworkUrl(e.target.value)} disabled={isPending} error={errors.artworkUrl} />
       </FormField>
-      {serverError && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{serverError}</p>}
+      {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex gap-3">
         <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
           {isPending ? 'Submitting…' : 'Resubmit'}
         </button>
-        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:underline disabled:opacity-50">Cancel</button>
+        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:underline disabled:opacity-50">Cancel</button>
       </div>
     </form>
   );
@@ -240,12 +240,12 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
       <FormField id={`rt-dur-${submission.id}`} label="Duration (s)" error={errors.duration}>
         <Input id={`rt-dur-${submission.id}`} type="number" value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isPending} min={1} error={errors.duration} />
       </FormField>
-      {serverError && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{serverError}</p>}
+      {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex gap-3">
         <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
           {isPending ? 'Submitting…' : 'Resubmit'}
         </button>
-        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-gray-500 hover:text-gray-700 focus:outline-none focus:underline disabled:opacity-50">Cancel</button>
+        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:underline disabled:opacity-50">Cancel</button>
       </div>
     </form>
   );

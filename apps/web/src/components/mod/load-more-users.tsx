@@ -44,10 +44,10 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
   return (
     <>
       {items.map((user) => (
-        <tr key={user.id} className="border-t border-gray-100 dark:border-gray-700">
+        <tr key={user.id} className="border-t border-border">
           <td className="px-4 py-3">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+            <p className="text-sm font-medium text-foreground">{user.name}</p>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
           </td>
           <td className="px-4 py-3">
             <RoleBadge role={user.role} />
@@ -60,7 +60,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
       {error && (
         <tr>
           <td colSpan={3} className="px-4 py-3">
-            <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p role="alert" className="text-sm text-destructive">{error}</p>
           </td>
         </tr>
       )}
@@ -71,7 +71,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
               type="button"
               onClick={handleLoadMore}
               disabled={isPending}
-              className="rounded-md border border-gray-300 px-5 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
             >
               {isPending ? 'Loading…' : 'Load more'}
             </button>

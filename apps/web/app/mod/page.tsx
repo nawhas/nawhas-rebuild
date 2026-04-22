@@ -39,19 +39,19 @@ export default async function ModOverviewPage(): Promise<React.JSX.Element> {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">Moderation Overview</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Moderation Overview</h1>
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-3xl font-bold text-foreground">
             {queue.items.length}
             {queue.nextCursor ? '+' : ''}
           </p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Pending submissions</p>
+          <p className="mt-1 text-sm text-muted-foreground">Pending submissions</p>
           <Link
             href="/mod/queue"
-            className="mt-2 inline-block text-xs text-gray-400 hover:text-gray-600 hover:underline focus:outline-none focus:underline dark:text-gray-500 dark:hover:text-gray-300"
+            className="mt-2 inline-block text-xs text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
           >
             View queue →
           </Link>
@@ -61,30 +61,30 @@ export default async function ModOverviewPage(): Promise<React.JSX.Element> {
       {/* Recent activity */}
       <section aria-label="Recent moderation activity">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Recent activity</h2>
+          <h2 className="text-base font-semibold text-foreground">Recent activity</h2>
           <Link
             href="/mod/audit"
-            className="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
+            className="text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
           >
             View all →
           </Link>
         </div>
 
         {auditLog.items.length === 0 ? (
-          <p className="py-4 text-sm text-gray-400 dark:text-gray-500">No activity yet.</p>
+          <p className="py-4 text-sm text-muted-foreground">No activity yet.</p>
         ) : (
           <ol
             aria-label="Recent audit log entries"
-            className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+            className="divide-y divide-border rounded-lg border border-border bg-card"
           >
             {auditLog.items.map((entry) => (
               <li key={entry.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                <span className="truncate text-sm font-mono text-gray-700 dark:text-gray-300">
+                <span className="truncate text-sm font-mono text-foreground">
                   {entry.action}
                 </span>
                 <time
                   dateTime={String(entry.createdAt)}
-                  className="shrink-0 text-xs text-gray-400 dark:text-gray-500"
+                  className="shrink-0 text-xs text-muted-foreground"
                   title={new Date(entry.createdAt).toLocaleString()}
                 >
                   {new Date(entry.createdAt).toLocaleDateString(undefined, {

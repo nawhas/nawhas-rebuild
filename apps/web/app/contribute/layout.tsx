@@ -34,10 +34,10 @@ export default async function ContributeLayout({
     return (
       <main id="main-content" className="flex min-h-[60vh] items-center justify-center py-16">
         <div className="mx-auto max-w-md text-center">
-          <h1 className="mb-3 text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mb-3 text-2xl font-bold text-foreground">
             Contributor Access Required
           </h1>
-          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mb-6 text-sm text-muted-foreground">
             You need contributor access to submit content on Nawhas.com. Contributors help keep the
             library accurate and complete.
           </p>
@@ -52,7 +52,7 @@ export default async function ContributeLayout({
           </div>
           <Link
             href="/"
-            className="mt-6 inline-block text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
+            className="mt-6 inline-block text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
           >
             ← Back to home
           </Link>

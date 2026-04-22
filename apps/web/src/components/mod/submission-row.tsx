@@ -21,10 +21,10 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
         <Link
           href={href}
           prefetch={false}
-          className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-400 dark:hover:bg-gray-700"
+          className="flex items-center gap-4 px-5 py-4 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
         >
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="truncate text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+            <span className="truncate text-sm font-medium text-foreground">{label}</span>
             <div className="flex items-center gap-2">
               <SubmissionTypeBadge type={submission.type} />
               <SubmissionActionBadge action={submission.action} />
@@ -33,7 +33,7 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
           </div>
           <time
             dateTime={String(submission.createdAt)}
-            className="shrink-0 text-xs text-gray-400 dark:text-gray-500"
+            className="shrink-0 text-xs text-muted-foreground"
             title={new Date(submission.createdAt).toLocaleString()}
           >
             {new Date(submission.createdAt).toLocaleDateString(undefined, {

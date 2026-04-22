@@ -44,7 +44,7 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
   return (
     <div className="mt-4">
       {error && (
-        <p role="alert" className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p role="alert" className="mb-2 text-xs text-destructive">{error}</p>
       )}
       <Button
         type="button"

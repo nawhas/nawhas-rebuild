@@ -72,12 +72,12 @@ export default async function SubmissionDetailPage({
       {/* Back link */}
       <Link
         href="/mod/queue"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:underline"
       >
         ← Back to queue
       </Link>
 
-      <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+      <h1 className="mb-2 text-2xl font-bold text-foreground">
         Submission detail
       </h1>
 
@@ -88,7 +88,7 @@ export default async function SubmissionDetailPage({
         <SubmissionStatusBadge status={submission.status} />
         <time
           dateTime={String(submission.createdAt)}
-          className="text-xs text-gray-400 dark:text-gray-500"
+          className="text-xs text-muted-foreground"
           title={new Date(submission.createdAt).toLocaleString()}
         >
           Submitted {new Date(submission.createdAt).toLocaleDateString(undefined, {
@@ -115,7 +115,7 @@ export default async function SubmissionDetailPage({
       {/* Field-by-field diff or preview */}
       <section
         aria-label="Submission data"
-        className="mb-6 divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white px-5 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+        className="mb-6 divide-y divide-border rounded-lg border border-border bg-card px-5"
       >
         <SubmissionFields
           submission={submission}

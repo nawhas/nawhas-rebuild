@@ -11,10 +11,10 @@ export function NotificationsSection(): React.JSX.Element {
 
   return (
     <section aria-labelledby="notifications-heading">
-      <h2 id="notifications-heading" className="text-base font-semibold text-gray-900">
+      <h2 id="notifications-heading" className="text-base font-semibold text-foreground">
         {t('notificationsHeading')}
       </h2>
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-muted-foreground">
         {t('notificationsComingSoon')}
       </p>
 
@@ -26,9 +26,9 @@ export function NotificationsSection(): React.JSX.Element {
             type="checkbox"
             defaultChecked={false}
             disabled
-            className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
+            className="h-4 w-4 rounded border-border text-foreground focus:ring-ring"
           />
-          <span className="text-sm text-gray-700">{t('notificationNewAlbums')}</span>
+          <span className="text-sm text-foreground">{t('notificationNewAlbums')}</span>
         </label>
 
         <label className="flex cursor-not-allowed items-center gap-3">
@@ -36,9 +36,9 @@ export function NotificationsSection(): React.JSX.Element {
             type="checkbox"
             defaultChecked={false}
             disabled
-            className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
+            className="h-4 w-4 rounded border-border text-foreground focus:ring-ring"
           />
-          <span className="text-sm text-gray-700">{t('notificationWeeklyDigest')}</span>
+          <span className="text-sm text-foreground">{t('notificationWeeklyDigest')}</span>
         </label>
       </fieldset>
     </section>

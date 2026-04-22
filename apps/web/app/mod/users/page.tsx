@@ -38,30 +38,30 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
-      <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      <h1 className="mb-6 text-2xl font-bold text-foreground">User Management</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
         Promote users to contributor. Moderator promotion is ops-only.
       </p>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700">
+            <tr className="border-b border-border bg-muted">
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 User
               </th>
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 Role
               </th>
               <th
                 scope="col"
-                className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 Change role
               </th>
@@ -70,17 +70,17 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+                <td colSpan={3} className="px-4 py-12 text-center text-sm text-muted-foreground">
                   No users found.
                 </td>
               </tr>
             ) : (
               <>
                 {items.map((user) => (
-                  <tr key={user.id} className="border-t border-gray-100 dark:border-gray-700">
+                  <tr key={user.id} className="border-t border-border">
                     <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                      <p className="text-sm font-medium text-foreground">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
                     </td>
                     <td className="px-4 py-3">
                       <RoleBadge role={user.role} />

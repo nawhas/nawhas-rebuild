@@ -52,7 +52,7 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
         onChange={handleChange}
         disabled={isPending || role === 'moderator'}
         aria-label="Change user role"
-        className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+        className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -66,8 +66,8 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
           </option>
         )}
       </select>
-      {error && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</p>}
-      {isPending && <span className="text-xs text-gray-400">Saving…</span>}
+      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+      {isPending && <span className="text-xs text-muted-foreground">Saving…</span>}
     </div>
   );
 }

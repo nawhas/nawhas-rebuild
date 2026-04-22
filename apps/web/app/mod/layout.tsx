@@ -38,9 +38,9 @@ export default async function ModLayout({
       {/* Sidebar nav */}
       <nav
         aria-label="Moderation navigation"
-        className="w-56 shrink-0 border-r border-gray-200 bg-gray-50 px-4 py-6 dark:border-gray-700 dark:bg-gray-900"
+        className="w-56 shrink-0 border-r border-border bg-muted px-4 py-6"
       >
-        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Moderation
         </p>
         <ul className="space-y-1">
@@ -53,7 +53,7 @@ export default async function ModLayout({
             <li key={href}>
               <Link
                 href={href}
-                className="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                className="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-background hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {label}
               </Link>

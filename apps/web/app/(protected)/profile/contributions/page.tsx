@@ -39,10 +39,10 @@ export default async function ContributionsPage(): Promise<React.JSX.Element> {
   return (
     <main id="main-content" className="mx-auto max-w-3xl py-10 px-4">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Contributions</h1>
+        <h1 className="text-2xl font-bold text-foreground">My Contributions</h1>
         <Link
           href="/contribute"
-          className="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
+          className="text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
         >
           + New submission
         </Link>

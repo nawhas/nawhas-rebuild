@@ -50,7 +50,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
 
     return (
       <div className="mt-4 space-y-3">
-        <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="review-comment" className="block text-sm font-medium text-foreground">
           Comment (optional)
         </label>
         <textarea
@@ -60,10 +60,10 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
           onChange={(e) => setComment(e.target.value)}
           disabled={isPending}
           placeholder="Add a comment for the submitter..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
         />
         {error && (
-          <p role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</p>
+          <p role="alert" className="text-xs text-destructive">{error}</p>
         )}
         <div className="flex gap-3">
           <button
@@ -78,7 +78,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
             type="button"
             onClick={handleCancel}
             disabled={isPending}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
           >
             Cancel
           </button>
@@ -90,7 +90,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
   return (
     <div className="mt-4 flex flex-wrap gap-3">
       {error && (
-        <p role="alert" className="w-full text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p role="alert" className="w-full text-xs text-destructive">{error}</p>
       )}
       <button
         type="button"

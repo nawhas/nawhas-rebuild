@@ -14,8 +14,8 @@ export const metadata: Metadata = buildMetadata({
 export default function NewAlbumPage(): React.JSX.Element {
   return (
     <main id="main-content" className="mx-auto max-w-xl py-10 px-4">
-      <h1 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">New Album</h1>
-      <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      <h1 className="mb-1 text-2xl font-bold text-foreground">New Album</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
         Submit a new album for moderation review.
       </p>
       <AlbumForm action="create" />

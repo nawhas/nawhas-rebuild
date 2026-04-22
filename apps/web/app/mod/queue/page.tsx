@@ -36,11 +36,11 @@ export default async function ModQueuePage(): Promise<React.JSX.Element> {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">Moderation Queue</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Moderation Queue</h1>
 
       {items.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white px-6 py-12 text-center dark:border-gray-700 dark:bg-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-400">The queue is empty. Nothing to review.</p>
+        <div className="rounded-lg border border-border bg-card px-6 py-12 text-center">
+          <p className="text-sm text-muted-foreground">The queue is empty. Nothing to review.</p>
         </div>
       ) : (
         <>

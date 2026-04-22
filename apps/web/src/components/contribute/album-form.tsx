@@ -181,7 +181,7 @@ export function AlbumForm({
       </FormField>
 
       {serverError && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">{serverError}</p>
+        <p role="alert" className="text-sm text-destructive">{serverError}</p>
       )}
 
       <Button type="submit" disabled={isPending}>
