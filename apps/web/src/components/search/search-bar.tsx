@@ -162,11 +162,12 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
             </div>
           ) : (
             <>
-              {groupedSections.map((section) => (
-                <div key={section.key}>
+              {groupedSections.map((section) => {
+                const headerId = `${listboxId}-group-${section.key}`;
+                return (
+                <div key={section.key} role="group" aria-labelledby={headerId}>
                   <div
-                    role="presentation"
-                    aria-label={section.label}
+                    id={headerId}
                     className="bg-gray-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500"
                   >
                     {section.label}
@@ -197,7 +198,8 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
                     </Link>
                   ))}
                 </div>
-              ))}
+                );
+              })}
 
               {/* Search all link */}
               <div className="border-t border-gray-100">

@@ -210,7 +210,7 @@ function TrackResult({
     <Link
       href={href}
       className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-      aria-label={`Play ${item.title} from ${item.albumTitle} by ${item.reciterName}`}
+      aria-label={`View track ${item.title} from ${item.albumTitle} by ${item.reciterName}`}
     >
       {/* Track number badge */}
       {item.trackNumber != null && (

@@ -238,11 +238,12 @@ export function MobileSearchOverlay(): React.JSX.Element {
                   </div>
                 ) : (
                   <>
-                    {groupedSections.map((section) => (
-                      <div key={section.key}>
+                    {groupedSections.map((section) => {
+                      const headerId = `${listboxId}-group-${section.key}`;
+                      return (
+                      <div key={section.key} role="group" aria-labelledby={headerId}>
                         <div
-                          role="presentation"
-                          aria-label={section.label}
+                          id={headerId}
                           className="bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                         >
                           {section.label}
@@ -273,7 +274,8 @@ export function MobileSearchOverlay(): React.JSX.Element {
                           </Link>
                         ))}
                       </div>
-                    ))}
+                      );
+                    })}
 
                     {/* Search all link */}
                     <div className="border-t border-border">
