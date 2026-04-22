@@ -17,7 +17,7 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
   return (
     <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:items-start">
       {/* Cover art */}
-      <div className="relative h-48 w-48 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:h-56 sm:w-56 dark:bg-gray-800">
+      <div className="relative h-48 w-48 shrink-0 overflow-hidden rounded-lg bg-muted sm:h-56 sm:w-56">
         {album.artworkUrl ? (
           <AppImage
             src={album.artworkUrl}
@@ -30,7 +30,7 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-600"
+            className="flex h-full w-full items-center justify-center text-muted-foreground"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -53,16 +53,16 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
 
       {/* Metadata */}
       <div className="flex flex-col gap-2 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{album.title}</h1>
+        <h1 className="text-3xl font-bold text-foreground">{album.title}</h1>
 
         <Link
           href={`/reciters/${album.reciterSlug}`}
-          className="text-base font-medium text-gray-700 hover:text-gray-900 hover:underline focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 rounded dark:text-gray-300 dark:hover:text-white"
+          className="text-base font-medium text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
         >
           {album.reciterName}
         </Link>
 
-        <div className="flex flex-wrap justify-center gap-3 text-sm text-gray-500 sm:justify-start dark:text-gray-400">
+        <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground sm:justify-start">
           {album.year && <span>{album.year}</span>}
           <span>
             {trackCount === 0

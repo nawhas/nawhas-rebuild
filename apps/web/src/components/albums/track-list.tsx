@@ -17,16 +17,16 @@ interface TrackListProps {
 export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): React.JSX.Element {
   return (
     <section aria-labelledby="track-list-heading">
-      <h2 id="track-list-heading" className="mb-4 text-xl font-semibold text-gray-900">
+      <h2 id="track-list-heading" className="mb-4 text-xl font-semibold text-foreground">
         Tracks
       </h2>
 
       {tracks.length === 0 ? (
-        <p className="text-gray-500">No tracks available yet.</p>
+        <p className="text-muted-foreground">No tracks available yet.</p>
       ) : (
         <ol
           aria-label={`${tracks.length} track${tracks.length !== 1 ? 's' : ''}`}
-          className="divide-y divide-gray-100 rounded-lg border border-gray-200"
+          className="divide-y divide-border rounded-lg border border-border"
         >
           {tracks.map((track, index) => {
             const trackNumber = track.trackNumber ?? index + 1;
