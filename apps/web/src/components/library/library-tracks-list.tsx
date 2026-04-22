@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { SavedTrackDTO, TrackDTO } from '@nawhas/types';
 import { Button } from '@nawhas/ui/components/button';
+import { SectionTitle } from '@nawhas/ui/components/section-title';
 import { usePlayerStore } from '@/store/player';
 import { LoadMore } from '@/components/pagination/load-more';
 import { SaveButton } from '@/components/SaveButton';
@@ -79,19 +80,16 @@ export function LibraryTracksList({
   if (items.length === 0) {
     return (
       <div className="py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <MusicNoteIcon />
         </div>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900">{t('emptyTitle')}</h2>
-        <p className="mb-6 text-sm text-gray-500">
+        <SectionTitle className="mb-2 text-lg font-semibold">{t('emptyTitle')}</SectionTitle>
+        <p className="mb-6 text-sm text-muted-foreground">
           {t('emptyDescription')}
         </p>
-        <Link
-          href="/albums"
-          className="inline-flex items-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-        >
-          {t('browseAlbums')}
-        </Link>
+        <Button asChild>
+          <Link href="/albums">{t('browseAlbums')}</Link>
+        </Button>
       </div>
     );
   }
@@ -100,7 +98,7 @@ export function LibraryTracksList({
     <div>
       {/* Play All button */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
         </p>
         <Button
@@ -117,7 +115,7 @@ export function LibraryTracksList({
       {/* Track list */}
       <ol
         aria-label={items.length === 1 ? t('savedTracksListLabel', { count: items.length }) : t('savedTracksListLabelPlural', { count: items.length })}
-        className="divide-y divide-gray-100 rounded-lg border border-gray-200"
+        className="divide-y divide-border rounded-lg border border-border bg-card"
       >
         {items.map((item) => (
           <LibraryTrackRow
@@ -151,17 +149,17 @@ function LibraryTrackRow({ item, onUnsave }: LibraryTrackRowProps): React.JSX.El
   const { track } = item;
 
   return (
-    <li className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+    <li className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
         <MusicNoteIcon />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900">{track.title}</p>
+        <p className="truncate text-sm font-medium text-foreground">{track.title}</p>
       </div>
 
       {track.duration != null && (
-        <span className="shrink-0 text-xs tabular-nums text-gray-500" aria-hidden="true">
+        <span className="shrink-0 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
           {formatDuration(track.duration)}
         </span>
       )}
@@ -172,7 +170,7 @@ function LibraryTrackRow({ item, onUnsave }: LibraryTrackRowProps): React.JSX.El
         onSavedChange={(saved) => {
           if (!saved) onUnsave(track.id);
         }}
-        className="hover:bg-gray-100"
+        className="hover:bg-muted"
       />
     </li>
   );

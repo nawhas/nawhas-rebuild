@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import type { ListenHistoryEntryDTO } from '@nawhas/types';
+import { Button } from '@nawhas/ui/components/button';
+import { SectionTitle } from '@nawhas/ui/components/section-title';
 import { LoadMore } from '@/components/pagination/load-more';
 import { fetchMoreHistoryEntries, clearHistory } from '@/server/actions/history';
 
@@ -74,11 +76,11 @@ export function HistoryList({
   if (items.length === 0 && !isClearing) {
     return (
       <div className="py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <ClockIcon />
         </div>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t('emptyTitle')}</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t('emptySubtitle')}</p>
+        <SectionTitle className="mb-2 text-lg font-semibold">{t('emptyTitle')}</SectionTitle>
+        <p className="text-sm text-muted-foreground">{t('emptySubtitle')}</p>
       </div>
     );
   }
@@ -87,39 +89,44 @@ export function HistoryList({
     <div>
       {/* Header row with count + clear button */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
           {cursor !== null ? '+' : ''}
         </p>
 
         {items.length > 0 && !showConfirm && (
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="sm"
             onClick={() => setShowConfirm(true)}
             disabled={isClearing}
-            className="text-sm text-red-600 hover:text-red-700 focus:outline-none focus:underline disabled:opacity-50"
+            className="h-auto p-0 text-destructive hover:text-destructive/80"
           >
             {t('clearHistory')}
-          </button>
+          </Button>
         )}
 
         {showConfirm && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-300">{t('clearConfirmPrompt')}</span>
-            <button
+            <span className="text-sm text-muted-foreground">{t('clearConfirmPrompt')}</span>
+            <Button
               type="button"
+              variant="destructive"
+              size="sm"
               onClick={handleClearConfirm}
-              className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1"
             >
               {t('clearConfirm')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={() => setShowConfirm(false)}
-              className="text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:underline dark:text-gray-400 dark:hover:text-gray-300"
+              className="h-auto p-0 text-muted-foreground hover:text-foreground"
             >
               {t('clearCancel')}
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -127,7 +134,7 @@ export function HistoryList({
       {/* History list */}
       <ol
         aria-label={items.length === 1 ? t('playedTracksListLabel', { count: items.length }) : t('playedTracksListLabelPlural', { count: items.length })}
-        className="divide-y divide-gray-100 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-700"
+        className="divide-y divide-border rounded-lg border border-border bg-card"
       >
         {items.map((entry) => (
           <HistoryEntryRow key={entry.id} entry={entry} />
@@ -168,17 +175,17 @@ function HistoryEntryRow({ entry }: HistoryEntryRowProps): React.JSX.Element {
 
   return (
     <li className="flex items-center gap-3 px-4 py-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
         <ClockIcon />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{track.title}</p>
+        <p className="truncate text-sm font-medium text-foreground">{track.title}</p>
       </div>
 
       <time
         dateTime={entry.playedAt}
-        className="shrink-0 text-xs text-gray-400 dark:text-gray-600"
+        className="shrink-0 text-xs text-muted-foreground"
         title={new Date(entry.playedAt).toLocaleString()}
       >
         {timeLabel}
