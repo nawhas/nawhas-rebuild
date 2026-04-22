@@ -21,11 +21,11 @@ function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
   return (
     <Link
       href={`/reciters/${album.reciterSlug}/albums/${album.slug}`}
-      className="group flex flex-col gap-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+      className="group flex flex-col gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View album: ${album.title} by ${album.reciterName}${album.year ? `, ${album.year}` : ''}`}
     >
       {/* Album artwork */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
         {album.artworkUrl ? (
           <AppImage
             src={album.artworkUrl}
@@ -37,7 +37,7 @@ function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center text-gray-400"
+            className="flex h-full w-full items-center justify-center text-muted-foreground"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -60,11 +60,11 @@ function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
 
       {/* Album metadata */}
       <div className="flex flex-col gap-0.5">
-        <span className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-gray-700">
+        <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
           {album.title}
         </span>
-        <span className="text-xs text-gray-600">{album.reciterName}</span>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">{album.reciterName}</span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {album.year && <span>{album.year}</span>}
           {album.year && album.trackCount > 0 && <span aria-hidden="true">·</span>}
           {album.trackCount > 0 && (
