@@ -190,6 +190,12 @@
   --color-secondary-foreground: var(--color-secondary-900);
   --color-accent-bg:            var(--color-accent-100);
   --color-accent-foreground:    var(--color-accent-900);
+
+  /* shadcn compat: expose `--color-secondary` / `--color-accent` so Tailwind 4
+   * classes like `bg-secondary`, `bg-accent`, `hover:bg-accent` (emitted by the
+   * shadcn CLI for Button/Dropdown/etc.) resolve to our semantic bg roles. */
+  --color-secondary:            var(--color-secondary-bg);
+  --color-accent:               var(--color-accent-bg);
 }
 
 /* ────────────────────────────────────────────────────────────────────
@@ -217,6 +223,10 @@
   --color-secondary-foreground: var(--color-secondary-50);
   --color-accent-bg:            var(--color-accent-900);
   --color-accent-foreground:    var(--color-accent-50);
+
+  /* shadcn compat (see light-mode block for rationale) */
+  --color-secondary:            var(--color-secondary-bg);
+  --color-accent:               var(--color-accent-bg);
 }
 
 /* ────────────────────────────────────────────────────────────────────
