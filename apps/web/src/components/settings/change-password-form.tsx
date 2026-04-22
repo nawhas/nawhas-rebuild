@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
 import { changePassword } from '@/server/actions/account';
 
 export function ChangePasswordForm(): React.JSX.Element {
@@ -83,13 +84,9 @@ export function ChangePasswordForm(): React.JSX.Element {
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={loading || !currentPassword || !newPassword}
-          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" disabled={loading || !currentPassword || !newPassword}>
           {loading ? t('updatePasswordSubmitting') : t('updatePasswordSubmit')}
-        </button>
+        </Button>
       </form>
     </section>
   );

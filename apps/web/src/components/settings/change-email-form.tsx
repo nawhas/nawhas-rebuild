@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
 import { changeEmail } from '@/server/actions/account';
 
 interface ChangeEmailFormProps {
@@ -72,13 +73,9 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailFormProps): React.J
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={loading || !newEmail}
-          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" disabled={loading || !newEmail}>
           {loading ? t('updateEmailSubmitting') : t('updateEmailSubmit')}
-        </button>
+        </Button>
       </form>
     </section>
   );

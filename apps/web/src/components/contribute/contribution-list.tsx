@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@nawhas/ui/components/button';
 import { Card } from '@nawhas/ui/components/card';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
 import { ResubmitForm } from '@/components/contribute/resubmit-form';
@@ -97,13 +98,15 @@ function SubmissionCard({
             </p>
 
             {canResubmit && !resubmitting && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setResubmitting(true)}
-                className="mt-3 rounded-md border border-orange-400 px-3 py-1.5 text-xs font-medium text-orange-600 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950"
+                className="mt-3"
               >
                 Edit and resubmit
-              </button>
+              </Button>
             )}
 
             {canResubmit && resubmitting && (

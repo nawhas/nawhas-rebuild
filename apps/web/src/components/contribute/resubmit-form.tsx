@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { z } from 'zod';
+import { Button } from '@nawhas/ui/components/button';
 import { resubmitSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 import type { SubmissionDTO, ReciterSubmissionData, AlbumSubmissionData, TrackSubmissionData } from '@nawhas/types';
@@ -101,13 +102,13 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
         <Input id={`rs-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
-      <div className="flex gap-3">
-        <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
+      <div className="flex items-center gap-3">
+        <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? 'Submitting…' : 'Submit for review'}
-        </button>
-        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:underline disabled:opacity-50">
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -168,11 +169,13 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
         <Input id={`ra-art-${submission.id}`} type="url" value={artworkUrl} onChange={(e) => setArtworkUrl(e.target.value)} disabled={isPending} error={errors.artworkUrl} />
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
-      <div className="flex gap-3">
-        <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
+      <div className="flex items-center gap-3">
+        <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? 'Submitting…' : 'Resubmit'}
-        </button>
-        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:underline disabled:opacity-50">Cancel</button>
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+          Cancel
+        </Button>
       </div>
     </form>
   );
@@ -241,11 +244,13 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
         <Input id={`rt-dur-${submission.id}`} type="number" value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isPending} min={1} error={errors.duration} />
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
-      <div className="flex gap-3">
-        <button type="submit" disabled={isPending} className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
+      <div className="flex items-center gap-3">
+        <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? 'Submitting…' : 'Resubmit'}
-        </button>
-        <button type="button" onClick={onCancel} disabled={isPending} className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:underline disabled:opacity-50">Cancel</button>
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+          Cancel
+        </Button>
       </div>
     </form>
   );

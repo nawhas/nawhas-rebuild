@@ -1,8 +1,15 @@
 /**
  * Pill badges for submission type, action, and status.
  * Purely presentational — no interactivity required.
+ *
+ * Wraps the shared <Badge> primitive (variant="secondary") and applies
+ * per-key colour classes via className override. The mod UI relies on
+ * colour for quick visual scanning (entity type / action / status / role),
+ * so we preserve the existing palette rather than collapsing to semantic
+ * Badge variants alone.
  */
 
+import { Badge } from '@nawhas/ui/components/badge';
 import type { SubmissionAction, SubmissionStatus, SubmissionType } from '@nawhas/types';
 
 const TYPE_CLASSES: Record<SubmissionType, string> = {
@@ -32,29 +39,27 @@ const STATUS_LABELS: Record<SubmissionStatus, string> = {
   changes_requested: 'Changes Requested',
 };
 
-const base = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium';
-
 export function SubmissionTypeBadge({ type }: { type: SubmissionType }): React.JSX.Element {
   return (
-    <span className={`${base} ${TYPE_CLASSES[type]}`}>
+    <Badge variant="secondary" className={TYPE_CLASSES[type]}>
       {type.charAt(0).toUpperCase() + type.slice(1)}
-    </span>
+    </Badge>
   );
 }
 
 export function SubmissionActionBadge({ action }: { action: SubmissionAction }): React.JSX.Element {
   return (
-    <span className={`${base} ${ACTION_CLASSES[action]}`}>
+    <Badge variant="secondary" className={ACTION_CLASSES[action]}>
       {action.charAt(0).toUpperCase() + action.slice(1)}
-    </span>
+    </Badge>
   );
 }
 
 export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }): React.JSX.Element {
   return (
-    <span className={`${base} ${STATUS_CLASSES[status]}`}>
+    <Badge variant="secondary" className={STATUS_CLASSES[status]}>
       {STATUS_LABELS[status]}
-    </span>
+    </Badge>
   );
 }
 
@@ -67,8 +72,8 @@ const ROLE_CLASSES: Record<string, string> = {
 export function RoleBadge({ role }: { role: string }): React.JSX.Element {
   const classes = ROLE_CLASSES[role] ?? ROLE_CLASSES.user;
   return (
-    <span className={`${base} ${classes}`}>
+    <Badge variant="secondary" className={classes}>
       {role.charAt(0).toUpperCase() + role.slice(1)}
-    </span>
+    </Badge>
   );
 }

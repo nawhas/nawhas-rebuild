@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@nawhas/ui/components/button';
 import { reviewSubmission } from '@/server/actions/moderation';
 
 interface ReviewActionsProps {
@@ -43,10 +44,6 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
 
   if (expanded) {
     const label = expanded === 'rejected' ? 'Reject' : 'Request Changes';
-    const buttonClass =
-      expanded === 'rejected'
-        ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
-        : 'bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50';
 
     return (
       <div className="mt-4 space-y-3">
@@ -66,22 +63,22 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
           <p role="alert" className="text-xs text-destructive">{error}</p>
         )}
         <div className="flex gap-3">
-          <button
+          <Button
             type="button"
+            variant={expanded === 'rejected' ? 'destructive' : 'outline'}
             onClick={() => handleAction(expanded)}
             disabled={isPending}
-            className={`rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 ${buttonClass}`}
           >
             {isPending ? 'Submitting…' : label}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleCancel}
             disabled={isPending}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -92,30 +89,29 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
       {error && (
         <p role="alert" className="w-full text-xs text-destructive">{error}</p>
       )}
-      <button
+      <Button
         type="button"
         onClick={() => handleAction('approved')}
         disabled={isPending}
-        className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1 disabled:opacity-50"
       >
         {isPending ? 'Submitting…' : 'Approve'}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="outline"
         onClick={() => handleAction('changes_requested')}
         disabled={isPending}
-        className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 disabled:opacity-50"
       >
         Request Changes
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="destructive"
         onClick={() => handleAction('rejected')}
         disabled={isPending}
-        className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1 disabled:opacity-50"
       >
         Reject
-      </button>
+      </Button>
     </div>
   );
 }
