@@ -40,6 +40,16 @@ interface LyricContentProps {
   lyric: LyricDTO;
 }
 
+/**
+ * Map a LyricDTO language code to a BCP-47 `lang` attribute value.
+ * Romanized content is Latin-script transliteration, so we expose it as
+ * `en-Latn` to help screen readers pick an appropriate voice/pronunciation.
+ */
+function langAttrFor(language: string): string {
+  if (language === 'transliteration') return 'en-Latn';
+  return language;
+}
+
 function LyricContent({ lyric }: LyricContentProps): React.JSX.Element {
   if (lyric.language === 'ar') {
     return <ArabicText>{lyric.text}</ArabicText>;
@@ -47,9 +57,14 @@ function LyricContent({ lyric }: LyricContentProps): React.JSX.Element {
   if (lyric.language === 'ur') {
     return <UrduText>{lyric.text}</UrduText>;
   }
-  // English, Romanized, or any unknown language — LTR with standard body font
+  // English, Romanized, or any unknown language — LTR with standard body font.
+  // `lang` is required so screen readers switch to the correct pronunciation
+  // model (Phase 2.3 Task 14, a11y audit Important finding).
   return (
-    <p className="whitespace-pre-wrap text-base leading-loose text-foreground">
+    <p
+      lang={langAttrFor(lyric.language)}
+      className="whitespace-pre-wrap text-base leading-loose text-foreground"
+    >
       {lyric.text}
     </p>
   );
