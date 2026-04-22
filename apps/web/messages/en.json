@@ -204,6 +204,14 @@
     "moveDown": "Move {title} down",
     "remove": "Remove {title} from queue"
   },
+  "reciter": {
+    "discography": {
+      "heading": "Discography",
+      "empty": "No albums available yet.",
+      "loadMore": "Load more albums",
+      "loadingMore": "Loading…"
+    }
+  },
   "profile": {
     "pageTitle": "My Profile",
     "profileSectionLabel": "Profile",

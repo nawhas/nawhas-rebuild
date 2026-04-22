@@ -43,6 +43,8 @@ export async function generateMetadata({ params }: ReciterPageProps): Promise<Me
  * Server Component — fetches a single reciter with their albums via tRPC server-side
  * caller and renders the header and discography sections.
  */
+const INITIAL_ALBUM_PAGE_SIZE = 12;
+
 export default async function ReciterPage({ params }: ReciterPageProps): Promise<React.JSX.Element> {
   setDefaultRequestLocale();
   const { slug } = await params;
@@ -53,13 +55,22 @@ export default async function ReciterPage({ params }: ReciterPageProps): Promise
     notFound();
   }
 
+  const initialPage = await caller.album.listByReciter({
+    reciterSlug: slug,
+    limit: INITIAL_ALBUM_PAGE_SIZE,
+  });
+
   return (
     <div className="py-10">
       <JsonLd data={buildReciterJsonLd(reciter)} />
       <Container>
         <ReciterHeader reciter={reciter} />
         <div className="mt-8">
-          <ReciterDiscography albums={reciter.albums} />
+          <ReciterDiscography
+            reciterSlug={slug}
+            initialAlbums={initialPage.items}
+            initialCursor={initialPage.nextCursor}
+          />
         </div>
       </Container>
     </div>

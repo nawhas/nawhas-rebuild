@@ -1,36 +1,39 @@
+import { getTranslations } from 'next-intl/server';
 import type { AlbumDTO } from '@nawhas/types';
-import { AlbumCard } from '@/components/cards/album-card';
+import { SectionTitle } from '@nawhas/ui/components/section-title';
+import { LoadMoreAlbums } from '@/components/albums/load-more-albums';
 
 interface ReciterDiscographyProps {
-  albums: AlbumDTO[];
+  reciterSlug: string;
+  initialAlbums: AlbumDTO[];
+  initialCursor: string | null;
 }
 
 /**
- * Displays a reciter's full discography as an album grid.
+ * Displays a reciter's discography as a paginated album grid.
  *
- * Server Component — no interactivity required.
+ * Server Component — renders the section heading, then delegates the
+ * interactive "Load More" grid to the <LoadMoreAlbums> client component.
  */
-export function ReciterDiscography({ albums }: ReciterDiscographyProps): React.JSX.Element {
+export async function ReciterDiscography({
+  reciterSlug,
+  initialAlbums,
+  initialCursor,
+}: ReciterDiscographyProps): Promise<React.JSX.Element> {
+  const t = await getTranslations('reciter.discography');
+
   return (
     <section aria-labelledby="discography-heading">
-      <h2 id="discography-heading" className="mb-6 text-xl font-semibold text-foreground">
-        Discography
-      </h2>
+      <SectionTitle id="discography-heading">{t('heading')}</SectionTitle>
 
-      {albums.length === 0 ? (
-        <p className="text-muted-foreground">No albums available yet.</p>
+      {initialAlbums.length === 0 ? (
+        <p className="text-muted-foreground">{t('empty')}</p>
       ) : (
-        <ul
-          role="list"
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-          aria-label={`${albums.length} album${albums.length !== 1 ? 's' : ''}`}
-        >
-          {albums.map((album) => (
-            <li key={album.id}>
-              <AlbumCard album={album} />
-            </li>
-          ))}
-        </ul>
+        <LoadMoreAlbums
+          reciterSlug={reciterSlug}
+          initialAlbums={initialAlbums}
+          initialCursor={initialCursor}
+        />
       )}
     </section>
   );
