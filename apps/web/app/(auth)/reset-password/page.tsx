@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { Card } from '@nawhas/ui/components/card';
 import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 
 // Dynamic rendering required for searchParams access
@@ -24,7 +25,7 @@ export default async function ResetPasswordPage({
 
   if (error === 'INVALID_TOKEN' || error === 'TOKEN_EXPIRED') {
     return (
-      <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+      <Card className="px-8 py-10">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +65,7 @@ export default async function ResetPasswordPage({
             {t('backToSignIn')}
           </a>
         </p>
-      </div>
+      </Card>
     );
   }
 

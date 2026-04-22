@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
 import { signIn } from '@/lib/auth-client';
 import type { EnabledSocialProvider } from '@/lib/social-providers';
 
@@ -74,15 +75,18 @@ const PROVIDER_LABEL_KEYS: Record<EnabledSocialProvider, string> = {
   microsoft: 'continueWithMicrosoft',
 };
 
+const PROVIDER_VARIANT: Record<EnabledSocialProvider, 'outline'> = {
+  google: 'outline',
+  apple: 'outline',
+  facebook: 'outline',
+  microsoft: 'outline',
+};
+
 const PROVIDER_CLASS: Record<EnabledSocialProvider, string> = {
-  google:
-    'w-full flex items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  apple:
-    'w-full flex items-center justify-center gap-3 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  facebook:
-    'w-full flex items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-  microsoft:
-    'w-full flex items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+  google: 'w-full gap-3',
+  apple: 'w-full gap-3 border-black bg-black text-white hover:bg-black/90 hover:text-white',
+  facebook: 'w-full gap-3',
+  microsoft: 'w-full gap-3',
 };
 
 export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): React.JSX.Element | null {
@@ -118,9 +122,10 @@ export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): R
           const label = t(labelKey as Parameters<typeof t>[0]);
           const isLoading = loadingProvider === provider;
           return (
-            <button
+            <Button
               key={provider}
               type="button"
+              variant={PROVIDER_VARIANT[provider]}
               onClick={() => handleSocialSignIn(provider)}
               disabled={loadingProvider !== null}
               className={PROVIDER_CLASS[provider]}
@@ -128,7 +133,7 @@ export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): R
             >
               {PROVIDER_ICONS[provider]}
               {isLoading ? t('redirecting') : label}
-            </button>
+            </Button>
           );
         })}
       </div>

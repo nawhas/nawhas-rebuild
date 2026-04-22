@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
+import { Card } from '@nawhas/ui/components/card';
 import { Input } from '@nawhas/ui/components/input';
 import { requestPasswordReset } from '@/lib/auth-client';
 
@@ -27,7 +28,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
 
   if (submitted) {
     return (
-      <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+      <Card className="px-8 py-10">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -59,12 +60,12 @@ export function ForgotPasswordForm(): React.JSX.Element {
             {t('backToSignIn')}
           </Link>
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+    <Card className="px-8 py-10">
       <h1 className="mb-2 text-2xl font-semibold text-foreground">{t('heading')}</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         {t('description')}
@@ -97,6 +98,6 @@ export function ForgotPasswordForm(): React.JSX.Element {
           {t('backToSignIn')}
         </Link>
       </p>
-    </div>
+    </Card>
   );
 }

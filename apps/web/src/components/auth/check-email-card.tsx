@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Button } from '@nawhas/ui/components/button';
+import { Card } from '@nawhas/ui/components/card';
 import { sendVerificationEmail } from '@/lib/auth-client';
 
 export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element {
@@ -20,7 +22,7 @@ export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element
   }
 
   return (
-    <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+    <Card className="px-8 py-10">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
         {/* envelope icon */}
         <svg
@@ -57,18 +59,19 @@ export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element
       <p className="mb-1 text-sm text-muted-foreground">{t('didntReceive')}</p>
 
       {email ? (
-        <button
+        <Button
           type="button"
+          variant="link"
           onClick={handleResend}
           disabled={resendStatus === 'sending' || resendStatus === 'sent'}
-          className="text-sm font-medium text-foreground underline hover:no-underline disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-auto p-0 text-sm font-medium text-foreground underline hover:no-underline"
         >
           {resendStatus === 'sending'
             ? t('resendSending')
             : resendStatus === 'sent'
               ? t('resendSent')
               : t('resendButton')}
-        </button>
+        </Button>
       ) : null}
 
       {resendStatus === 'error' && (
@@ -82,6 +85,6 @@ export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element
           {t('backToSignIn')}
         </Link>
       </p>
-    </div>
+    </Card>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { Card } from '@nawhas/ui/components/card';
 
 // Dynamic rendering required for searchParams access
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ export default async function VerifyEmailPage({
   if (error) {
     const isExpired = error === 'TOKEN_EXPIRED';
     return (
-      <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+      <Card className="px-8 py-10">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -60,12 +61,12 @@ export default async function VerifyEmailPage({
             {t('backToSignIn')}
           </Link>
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+    <Card className="px-8 py-10">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -91,6 +92,6 @@ export default async function VerifyEmailPage({
       >
         {t('goToNawhas')}
       </Link>
-    </div>
+    </Card>
   );
 }
