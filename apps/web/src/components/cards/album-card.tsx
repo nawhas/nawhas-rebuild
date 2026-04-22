@@ -17,11 +17,11 @@ export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JS
   return (
     <Link
       href={`/albums/${album.slug}`}
-      className="group flex flex-col gap-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+      className="group flex flex-col gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View album: ${album.title}${album.year ? `, ${album.year}` : ''}`}
     >
       {/* Album artwork */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
         {album.artworkUrl ? (
           <AppImage
             src={album.artworkUrl}
@@ -34,7 +34,7 @@ export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JS
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-600"
+            className="flex h-full w-full items-center justify-center text-muted-foreground"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -57,11 +57,11 @@ export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JS
 
       {/* Album metadata */}
       <div className="flex flex-col gap-0.5">
-        <span className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-gray-700 dark:text-white dark:group-hover:text-gray-300">
+        <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
           {album.title}
         </span>
         {album.year && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">{album.year}</span>
+          <span className="text-xs text-muted-foreground">{album.year}</span>
         )}
       </div>
     </Link>
