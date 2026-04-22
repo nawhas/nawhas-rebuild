@@ -34,10 +34,10 @@ export function MediaToggle({ track }: MediaToggleProps): React.JSX.Element {
   const tabButtonClass = (tab: Tab): string =>
     [
       'flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-      'focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
       activeTab === tab
-        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
-        : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white',
+        ? 'bg-card text-foreground shadow-sm'
+        : 'text-muted-foreground hover:text-foreground',
     ].join(' ');
 
   return (
@@ -46,7 +46,7 @@ export function MediaToggle({ track }: MediaToggleProps): React.JSX.Element {
       <div
         role="tablist"
         aria-label="Media player options"
-        className="mb-2 flex gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1 dark:border-gray-700 dark:bg-gray-800"
+        className="mb-2 flex gap-1 rounded-lg border border-border bg-muted p-1"
       >
         <button
           role="tab"

@@ -20,13 +20,13 @@ interface TrackHeaderProps {
  */
 export function TrackHeader({ track }: TrackHeaderProps): React.JSX.Element {
   const linkClass =
-    'font-medium text-gray-700 hover:text-gray-900 hover:underline focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 rounded';
+    'font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded';
 
   return (
     <header className="py-8">
-      <h1 className="text-3xl font-bold text-gray-900">{track.title}</h1>
+      <h1 className="text-3xl font-bold text-foreground">{track.title}</h1>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
         <Link href={`/reciters/${track.reciter.slug}`} className={linkClass}>
           {track.reciter.name}
         </Link>

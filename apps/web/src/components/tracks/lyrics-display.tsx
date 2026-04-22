@@ -48,7 +48,7 @@ function LyricContent({ lyric }: LyricContentProps): React.JSX.Element {
   }
   // English, Romanized, or any unknown language — LTR with standard body font
   return (
-    <p className="whitespace-pre-wrap text-base leading-loose text-neutral-800">
+    <p className="whitespace-pre-wrap text-base leading-loose text-foreground">
       {lyric.text}
     </p>
   );
@@ -92,7 +92,7 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
 
   return (
     <section aria-labelledby="lyrics-heading">
-      <h2 id="lyrics-heading" className="mb-6 text-xl font-semibold text-neutral-900">
+      <h2 id="lyrics-heading" className="mb-6 text-xl font-semibold text-foreground">
         Lyrics
       </h2>
 
@@ -100,7 +100,7 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
         <div
           role="tablist"
           aria-label="Lyrics language"
-          className="mb-6 flex gap-0 border-b border-neutral-200"
+          className="mb-6 flex gap-0 border-b border-border"
         >
           {availableLanguages.map((lang) => (
             <button
@@ -111,10 +111,10 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
               id={`lyrics-tab-${lang}`}
               onClick={() => handleTabChange(lang)}
               className={[
-                'px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2',
+                'px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 lang === activeLanguage
                   ? 'border-b-2 border-primary-600 text-primary-700'
-                  : 'text-neutral-500 hover:text-neutral-700',
+                  : 'text-muted-foreground hover:text-foreground',
               ].join(' ')}
             >
               {LANGUAGE_LABELS[lang] ?? (lang as string).toUpperCase()}
