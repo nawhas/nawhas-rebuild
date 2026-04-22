@@ -36,6 +36,9 @@ coverage/
 .DS_Store
 *.tsbuildinfo
 
+# Git worktrees
+.worktrees/
+
 # SOPS — plaintext secrets must NEVER be committed; only *.yaml.enc files are safe
 deploy/helm/nawhas/secrets/*.yaml
 !deploy/helm/nawhas/secrets/*.yaml.enc
