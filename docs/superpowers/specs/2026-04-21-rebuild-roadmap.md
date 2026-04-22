@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1d shipped (2026-04-22) · Phase 2.2 shipped (2026-04-22) · Phase 2.1c + 2.3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1d shipped (2026-04-22) · Phase 2.2 shipped (2026-04-22) · Phase 2.1c + 2.1e + 2.3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-22
@@ -225,6 +225,30 @@ Shipped as 17 commits on `main` in strict dependency order — tokens first (the
 - Page-specific compositions (`Hero`, `LyricsPanel`, `TrackList`, `ReciterHero`) — owned by Phase 2.3.
 
 Refs: `docs/superpowers/specs/2026-04-22-phase-2-2-design-system-foundation.md`, `docs/superpowers/plans/2026-04-22-phase-2-2-design-system-foundation.md`.
+
+### 2.1e Complete frontend audit
+
+**Status:** not started · blocks Phase 2.3 (each page-redesign spec consumes this audit's per-page findings).
+
+Phase 2.1's audit was narrow — token tables + page skeletons, no per-file deep-dive. That assumption gap bit Phase 2.2: the token flip expected existing components to re-theme via the cascade, but grep revealed **zero** call sites of `bg-primary-*` / `bg-secondary-*` / `bg-neutral-*` in `apps/web/src/`; meanwhile 161 `bg-gray-*`, 362 `text-gray-*`, 46 `bg-white` / `bg-black`, plus ~15 hardcoded `bg-green-*` / `bg-amber-*` / `bg-orange-*` / `bg-emerald-*` / `bg-yellow-*`. The new palette therefore only applied where Phase 2.2's primitive-swap commits landed (~30-40 surfaces), leaving most of the UI visually unchanged after deploy.
+
+2.1e closes that gap by performing a **complete, file-by-file static audit** of the frontend across seven axes:
+
+1. **Token consumption** — semantic tokens vs ramped tokens vs Tailwind-default palette vs literals; per file.
+2. **Dark-mode handling** — proper semantic-token coverage vs explicit `dark:` variants vs incomplete vs absent.
+3. **Responsive coverage** — breakpoint-adaptive patterns, mobile-only / desktop-only chunks, missing-breakpoint concerns.
+4. **Primitive-replacement opportunities** — files that reinvent `<Button>` / `<Card>` / `<Input>` / `<Dialog>` / `<DropdownMenu>` / `<Tooltip>` / etc.
+5. **Accessibility** — ARIA coverage, keyboard nav, semantic HTML, focus-visible.
+6. **Legacy-parity gap** — interactions / copy / affordances present in legacy but absent in rebuild.
+7. **Dead / suspect code** — TODOs, commented-out blocks, unused exports, orphaned state, unrouted components.
+
+**Output:** eight markdown files under `docs/design/audit-complete/` (README + one per axis). Organized by subtree so Phase 2.3's per-page specs can consume a single cross-axis read per page.
+
+**Methodology:** subagent-per-subtree (~11 dispatches), standardized checklist, static review only (no runtime / screenshots). Controller merges partial findings into the seven per-axis master docs + one README index.
+
+**Estimated effort:** ~2-4 hours of subagent work plus controller merging. Direct-to-main per user preference; ~8 commits (one per axis doc + closeout).
+
+Refs: `docs/superpowers/specs/2026-04-22-phase-2-1e-complete-frontend-audit-design.md`. Implementation plan to follow.
 
 ### 2.3 Page-by-page redesign
 
