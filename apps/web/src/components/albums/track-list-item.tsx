@@ -47,17 +47,26 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
 
   return (
     <li
-      className={`group flex items-center gap-3 px-4 py-3 transition-colors ${
+      className={`group relative flex items-center gap-3 px-4 py-3 transition-colors ${
         isActive ? 'bg-muted' : 'hover:bg-muted'
       }`}
     >
-      {/* Play/pause button — replaces track number on hover, always shows icon when active */}
-      <TrackPlayButton track={track} trackNumber={trackNumber} />
+      {/* Play/pause button — replaces track number on hover, always shows icon when active.
+          Wrapped in a `relative z-10` div so it stays clickable above the
+          stretched-link overlay (::before) on the title link below. */}
+      <div className="relative z-10">
+        <TrackPlayButton track={track} trackNumber={trackNumber} />
+      </div>
 
-      {/* Track title — navigates to track detail page */}
+      {/* Track title — navigates to track detail page.
+          The `before:` pseudo-element stretches the link's hit area across the
+          whole row so clicking empty space also navigates (matches the visual
+          hover highlight on the <li>). Sibling interactive controls use
+          `relative z-10` to stay above the overlay and remain clickable. */}
       <Link
         href={href}
-        className={`min-w-0 flex-1 truncate text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+        aria-label={track.title}
+        className={`min-w-0 flex-1 truncate text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring before:absolute before:inset-0 before:content-[''] ${
           isCurrentlyPlaying ? 'text-foreground' : 'text-foreground hover:text-muted-foreground'
         }`}
         tabIndex={0}
@@ -65,20 +74,22 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
         {track.title}
         {isActive && (
           <span
+            role="img"
             aria-label={isCurrentlyPlaying ? 'currently playing' : 'paused'}
             className="ml-2 inline-block h-2 w-2 rounded-full bg-foreground align-middle"
           />
         )}
       </Link>
 
-      {/* Save + Like — visible on hover */}
+      {/* Save + Like — visible on hover. `relative z-10` keeps them clickable
+          above the stretched-link overlay on the title. */}
       <SaveButton
         trackId={track.id}
-        className="opacity-0 hover:bg-muted focus:opacity-100 group-hover:opacity-100"
+        className="relative z-10 opacity-0 hover:bg-muted focus:opacity-100 group-hover:opacity-100"
       />
       <LikeButton
         trackId={track.id}
-        className="opacity-0 hover:bg-muted focus:opacity-100 group-hover:opacity-100"
+        className="relative z-10 opacity-0 hover:bg-muted focus:opacity-100 group-hover:opacity-100"
       />
 
       {/* Add to queue — visible on hover */}
@@ -90,7 +101,7 @@ export function TrackListItem({ track, trackNumber, href }: TrackListItemProps):
           addToQueue(track);
         }}
         aria-label={`Add ${track.title} to queue`}
-        className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring group-hover:opacity-100"
+        className="relative z-10 shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring group-hover:opacity-100"
       >
         <AddToQueueIcon />
       </button>
