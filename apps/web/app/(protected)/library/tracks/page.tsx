@@ -43,7 +43,9 @@ export default async function LibraryTracksPage(): Promise<React.JSX.Element> {
   const { items, nextCursor } = await caller.library.list({ limit: 20 });
 
   return (
-    <main id="main-content" className="py-10">
+    // Note: root <main id="main-content"> is emitted by PageLayout in app/layout.tsx;
+    // we intentionally render a <div> here to avoid a duplicate main landmark.
+    <div className="py-10">
       <Container>
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">{t('pageTitle')}</h1>
@@ -52,6 +54,6 @@ export default async function LibraryTracksPage(): Promise<React.JSX.Element> {
 
         <LibraryTracksList initialItems={items} initialCursor={nextCursor} />
       </Container>
-    </main>
+    </div>
   );
 }
