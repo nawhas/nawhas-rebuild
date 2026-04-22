@@ -202,7 +202,11 @@ export function PlayerBar(): React.JSX.Element {
       // affects page flow.
       className={[
         'fixed bottom-0 left-0 right-0 z-50',
-        'border-t border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900',
+        'border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900',
+        // Upward-casting shadow — Tailwind's shadow-lg casts downward (off-viewport),
+        // so we use an explicit upward cast matching legacy nawhas.com's treatment
+        // (legacy: 0 -2px 8px 4px rgba(0,0,0,0.16); dark-mode boost for contrast).
+        'shadow-[0_-2px_8px_4px_rgba(0,0,0,0.16)] dark:shadow-[0_-2px_8px_4px_rgba(0,0,0,0.40)]',
         'transition-transform duration-300 ease-in-out',
         isVisible ? 'translate-y-0' : 'translate-y-full',
       ].join(' ')}

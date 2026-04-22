@@ -104,6 +104,19 @@ describe('PlayerBar', () => {
     });
   });
 
+  describe('shadow direction (regression guard)', () => {
+    // Phase 2.1 legacy audit surfaced: Tailwind's shadow-lg casts downward,
+    // which is wasted against the viewport bottom for a fixed bottom-0 bar.
+    // Legacy hand-rolled an upward-casting shadow to lift the bar off content
+    // behind it. This guard prevents a regression to shadow-lg.
+    it('casts upward (not downward shadow-lg)', () => {
+      const { container } = render(<PlayerBar />);
+      const bar = container.querySelector('[role="region"]');
+      expect(bar?.className).not.toContain('shadow-lg');
+      expect(bar?.className).toContain('shadow-[0_-2px_8px_4px_rgba(0,0,0,0.16)]');
+    });
+  });
+
   describe('track info', () => {
     it('displays the track title', () => {
       usePlayerStore.getState().play(makeTrack({ title: 'Ya Husayn' }));

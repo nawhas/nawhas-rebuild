@@ -1,3 +1,5 @@
+import { PlayerBarSpacer } from '@/components/player/PlayerBarSpacer';
+
 interface PageLayoutProps {
   /** Site header (navigation bar). */
   header: React.ReactNode;
@@ -26,6 +28,7 @@ export function PageLayout({
       <header role="banner">{header}</header>
       <main id="main-content" role="main" className="flex-1">
         {children}
+        <PlayerBarSpacer />
       </main>
       <footer role="contentinfo">{footer}</footer>
     </div>
