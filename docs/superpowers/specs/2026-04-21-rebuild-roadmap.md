@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1d shipped (2026-04-22) · Phase 2.1c + 2.2 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1d shipped (2026-04-22) · Phase 2.2 shipped (2026-04-22) · Phase 2.1c + 2.3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-22
@@ -187,9 +187,44 @@ Two regressions Phase 2.1 surfaced, shipped as a single commit on branch `fix/pl
 
 Verification: 444 existing Vitest tests still pass; two new tests (`PlayerBarSpacer.test.tsx`) cover the spacer; one regression guard added to `PlayerBar.test.tsx`. Typecheck clean, lint clean (pre-existing warnings only).
 
-### 2.2 Design-system foundation in `packages/ui`
+### 2.2 Design-system foundation in `packages/ui` ✅ shipped 2026-04-22
 
-The groundwork is already in place: Radix Slot, class-variance-authority, tailwind-merge — the shadcn/ui recipe. This phase codifies the tokens into the Tailwind 4 theme layer and fills in the missing primitives: Button variants, Card, Dialog, Tabs, DropdownMenu, Tooltip, Sheet, Input, Select, Toast. Each primitive ships with a Vitest render test and a visual snapshot.
+Shipped as 17 commits on `main` in strict dependency order — tokens first (the visible day-one flip), then primitives, then mechanical replacements, then closeout (this update).
+
+**Tokens** (`7cfa284`, `eada1c4`):
+- `apps/web/app/globals.css` — legacy-derived palette ramps (red/zinc/orange + full semantic ramps for error/info/success/warning), radius scale (2/4/6/8/9999), shadow scale (including `--shadow-player-up` from 2.1d), motion (150/280/400ms + Material-standard easing). Shadcn semantic token layer (`--color-primary`, `--color-card`, `--color-muted`, `--color-border`, `--color-ring`, etc.) with class-based `.dark` overrides makes the entire app dark-mode-complete.
+- `apps/web/app/layout.tsx` — Bellefair + Roboto Slab + Roboto Mono loaded via `next/font/google`; `<Toaster />` mounted at root (sonner). `lucide-react` installed for primitive icons.
+- `packages/ui/components.json` — shadcn base color flipped from `slate` to `zinc`.
+
+**Primitives** (`14a3ddf` through `a5b33d5` — 11 commits):
+- Ten shadcn-generated (`Button`, `Card`, `Dialog`, `Tabs`, `DropdownMenu`, `Tooltip`, `Sheet`, `Input`, `Select`, `Badge`) — Radix-backed where applicable.
+- One hand-authored (`SectionTitle`) — formalizes legacy's `.section__title` pattern (Vuetify h5 map + 1.4rem + 12px margin-bottom) surfaced by the 2.1 audit.
+- Each primitive ships with Vitest render tests (3–5 per primitive). Package-total: 40 tests across 12 files, all green.
+- Toast plumbing via `sonner` (Task 2); no separate primitive file.
+
+**Replacements** (`61a8121`, `d0283c4`, `b0f69d2`, `eb4ed96` — 4 commits):
+- `<Button>`: 12 files, swapped inline `<button>` with className drift (`rounded` / `rounded-md` / `rounded-lg` mix) for the primitive across SaveButton, LikeButton, auth forms, contribute forms, library CTAs, empty-state, mod apply-button.
+- `<Card>`: 5 files swapped (reciter/album Links intentionally NOT wrapped — their `rounded-lg` is focus-ring only, not a card shell).
+- `<Input>`: 4 auth form files + 1 shared `form-field.tsx` wrapper (which propagates transitively to ~31 consumer call sites across the contribute flow).
+- `<DropdownMenu>`: user-menu rewritten (119 → 81 LOC) — Radix now handles click-outside, keyboard nav, focus trap, portal mounting.
+
+**Shadcn CLI × Tailwind 4 × React 19 compatibility notes** (captured during Task 3 probe):
+- `components.json` schema required three fixes (typo `rsx` → `rsc`; `style: "default"` → `"new-york"`; added `iconLibrary: "lucide"`).
+- Every `shadcn add` writes to the wrong path (`packages/ui/@nawhas/ui/components/ui/*.tsx`) and must be `mv`'d to `packages/ui/src/components/*.tsx`.
+- Every generated file's `cn` import must be rewritten from `@nawhas/ui/lib/utils` to `../lib/utils.js` (NodeNext requires the `.js` extension on relative imports).
+- Occasional `exactOptionalPropertyTypes` conflicts when shadcn forwards optional controlled-state props (e.g. `checked={checked}`) — fixed with conditional spread `{...(x !== undefined ? { x } : {})}`.
+
+**Verification:** `./dev typecheck` + `./dev lint` green throughout. `pnpm --filter @nawhas/web test` maintained 444 passed / 135 skipped across all 17 commits. `./dev test` and `./dev test:e2e` were not run due to a local port conflict with another project's containers (bcewhub-app holding Postgres:5432 + Typesense:8108) — the user should run `./dev qa` + `./dev test:e2e` in a clean environment as the final sanity gate.
+
+**Deferred for follow-ups:**
+- Dev-server manual smoke of the 10 live routes with the new palette + fonts — the user's call on when to do this.
+- E2E suite run in a clean docker environment.
+- Additional `<Button>` replacements surfaced during Task 14 (resubmit-form, change-password-form, change-email-form, delete-account-section, contribution-list, check-email-card, social-buttons) — these were deliberately left scoped out of Task 14 to keep the commit focused; opportunistic sweep in 2.3.
+- Full visual-regression snapshot suite — folds into 2.1b or a future pass.
+- Hand-authored SVG icons in `apps/web/src/components/layout/mobile-nav.tsx` etc. — swap to `lucide-react` opportunistically during 2.3.
+- Page-specific compositions (`Hero`, `LyricsPanel`, `TrackList`, `ReciterHero`) — owned by Phase 2.3.
+
+Refs: `docs/superpowers/specs/2026-04-22-phase-2-2-design-system-foundation.md`, `docs/superpowers/plans/2026-04-22-phase-2-2-design-system-foundation.md`.
 
 ### 2.3 Page-by-page redesign
 
