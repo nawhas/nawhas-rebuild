@@ -8,3 +8,4 @@ export * from './components/dropdown-menu.js';
 export * from './components/tooltip.js';
 export * from './components/sheet.js';
 export * from './components/input.js';
+export * from './components/select.js';
