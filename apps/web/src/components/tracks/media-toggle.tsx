@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import type { TrackDTO } from '@nawhas/types';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@nawhas/ui/components/tabs';
 import { usePlayerStore } from '@/store/player';
 import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
 import { YoutubeEmbedSlot } from './youtube-embed-slot';
-
-type Tab = 'listen' | 'watch';
 
 interface MediaToggleProps {
   track: TrackDTO;
@@ -18,76 +16,44 @@ interface MediaToggleProps {
  * Rendered on the track detail page only when `track.youtubeId` is non-null.
  * Pauses any playing Howler audio before activating the Watch tab.
  *
+ * Uses the Radix-backed <Tabs> primitive (Phase 2.2 Task 6). The Watch panel
+ * guards on `track.youtubeId` so direct renders with a null id (as exercised
+ * by unit tests) still render the tab list but omit the iframe payload.
+ *
  * Client Component — requires interactivity (tab state) and Zustand access.
  */
 export function MediaToggle({ track }: MediaToggleProps): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<Tab>('listen');
   const pause = usePlayerStore((s) => s.pause);
 
-  function handleTabChange(tab: Tab): void {
-    if (tab === 'watch') {
+  function handleValueChange(value: string): void {
+    if (value === 'watch') {
       pause();
     }
-    setActiveTab(tab);
   }
 
-  const tabButtonClass = (tab: Tab): string =>
-    [
-      'flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-      activeTab === tab
-        ? 'bg-card text-foreground shadow-sm'
-        : 'text-muted-foreground hover:text-foreground',
-    ].join(' ');
-
   return (
-    <div className="mt-2">
-      {/* Tab list */}
-      <div
-        role="tablist"
-        aria-label="Media player options"
-        className="mb-2 flex gap-1 rounded-lg border border-border bg-muted p-1"
-      >
-        <button
-          role="tab"
-          type="button"
-          id="tab-listen"
-          aria-selected={activeTab === 'listen'}
-          aria-controls="panel-listen"
-          onClick={() => handleTabChange('listen')}
-          className={tabButtonClass('listen')}
-        >
+    <Tabs defaultValue="listen" onValueChange={handleValueChange} className="mt-2">
+      <TabsList aria-label="Media player options" className="mb-2 flex w-full gap-1">
+        <TabsTrigger value="listen" className="flex-1">
           Listen
-        </button>
-        <button
-          role="tab"
-          type="button"
-          id="tab-watch"
-          aria-selected={activeTab === 'watch'}
-          aria-controls="panel-watch"
-          onClick={() => handleTabChange('watch')}
-          className={tabButtonClass('watch')}
-        >
+        </TabsTrigger>
+        <TabsTrigger value="watch" className="flex-1">
           Watch
-        </button>
-      </div>
+        </TabsTrigger>
+      </TabsList>
 
-      {/* Listen panel — audio play button */}
-      {activeTab === 'listen' && (
-        <div role="tabpanel" id="panel-listen" aria-labelledby="tab-listen">
-          <TrackDetailPlayButton track={track} />
-        </div>
-      )}
+      <TabsContent value="listen">
+        <TrackDetailPlayButton track={track} />
+      </TabsContent>
 
-      {/* Watch panel — YouTube embed (only mounted when active to avoid eager iframe load) */}
-      {activeTab === 'watch' && track.youtubeId && (
-        <div role="tabpanel" id="panel-watch" aria-labelledby="tab-watch">
+      {track.youtubeId && (
+        <TabsContent value="watch">
           <YoutubeEmbedSlot
             youtubeId={track.youtubeId}
             title={`${track.title} — YouTube video`}
           />
-        </div>
+        </TabsContent>
       )}
-    </div>
+    </Tabs>
   );
 }

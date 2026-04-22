@@ -24,7 +24,9 @@ export function TrackHeader({ track }: TrackHeaderProps): React.JSX.Element {
 
   return (
     <header className="py-8">
-      <h1 className="text-3xl font-bold text-foreground">{track.title}</h1>
+      <h1 className="font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground">
+        {track.title}
+      </h1>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
         <Link href={`/reciters/${track.reciter.slug}`} className={linkClass}>

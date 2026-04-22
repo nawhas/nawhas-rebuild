@@ -4,6 +4,14 @@ import type { TrackDTO } from '@nawhas/types';
 import { usePlayerStore } from '@/store/player';
 import { MediaToggle } from '@/components/tracks/media-toggle';
 
+// Radix Tabs activate on mousedown (primary-button), not plain click. jsdom's
+// fireEvent.click doesn't synthesise a preceding mousedown, so trigger it
+// explicitly here to keep the existing suite's semantics.
+function activateTab(tab: HTMLElement): void {
+  fireEvent.mouseDown(tab, { button: 0 });
+  fireEvent.click(tab);
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -70,7 +78,7 @@ describe('MediaToggle', () => {
   it('shows the YouTube iframe when Watch tab is clicked', () => {
     const track = makeTrack({ youtubeId: 'abc123', title: 'My Nawha' });
     render(<MediaToggle track={track} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Watch' }));
+    activateTab(screen.getByRole('tab', { name: 'Watch' }));
     const iframe = screen.getByTitle('My Nawha — YouTube video');
     expect(iframe).toBeDefined();
     expect((iframe as HTMLIFrameElement).src).toContain('abc123');
@@ -80,7 +88,7 @@ describe('MediaToggle', () => {
     const track = makeTrack({ youtubeId: 'abc123' });
     usePlayerStore.setState({ currentTrack: track, isPlaying: true });
     render(<MediaToggle track={track} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Watch' }));
+    activateTab(screen.getByRole('tab', { name: 'Watch' }));
     expect(usePlayerStore.getState().isPlaying).toBe(false);
   });
 
@@ -89,10 +97,10 @@ describe('MediaToggle', () => {
     usePlayerStore.setState({ currentTrack: track, isPlaying: true });
     render(<MediaToggle track={track} />);
     // Switch to Watch (pauses audio)
-    fireEvent.click(screen.getByRole('tab', { name: 'Watch' }));
+    activateTab(screen.getByRole('tab', { name: 'Watch' }));
     expect(usePlayerStore.getState().isPlaying).toBe(false);
     // Switch back to Listen
-    fireEvent.click(screen.getByRole('tab', { name: 'Listen' }));
+    activateTab(screen.getByRole('tab', { name: 'Listen' }));
     // Should still be paused — no auto-play
     expect(usePlayerStore.getState().isPlaying).toBe(false);
   });
@@ -100,16 +108,16 @@ describe('MediaToggle', () => {
   it('unmounts the YouTube iframe when switching back to Listen tab', () => {
     const track = makeTrack({ youtubeId: 'abc123', title: 'My Nawha' });
     render(<MediaToggle track={track} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Watch' }));
+    activateTab(screen.getByRole('tab', { name: 'Watch' }));
     expect(screen.getByTitle('My Nawha — YouTube video')).toBeDefined();
-    fireEvent.click(screen.getByRole('tab', { name: 'Listen' }));
+    activateTab(screen.getByRole('tab', { name: 'Listen' }));
     expect(screen.queryByTitle('My Nawha — YouTube video')).toBeNull();
   });
 
   it('sets Watch tab aria-selected=true when Watch is active', () => {
     const track = makeTrack({ youtubeId: 'abc123' });
     render(<MediaToggle track={track} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Watch' }));
+    activateTab(screen.getByRole('tab', { name: 'Watch' }));
     expect(screen.getByRole('tab', { name: 'Watch' }).getAttribute('aria-selected')).toBe('true');
     expect(screen.getByRole('tab', { name: 'Listen' }).getAttribute('aria-selected')).toBe('false');
   });
@@ -117,8 +125,11 @@ describe('MediaToggle', () => {
   it('does not render Watch tab panel content when youtubeId is null', () => {
     const track = makeTrack({ youtubeId: null });
     render(<MediaToggle track={track} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Watch' }));
-    // Even though Watch tab is clicked, no iframe renders (guard in template)
+    // With no youtubeId, the Watch TabsContent is not mounted at all. Radix
+    // still renders a placeholder `role="tab"` for the trigger and the Listen
+    // panel, but activating Watch yields no panel whose accessible name matches
+    // /watch/i — which is exactly what this assertion guards.
+    activateTab(screen.getByRole('tab', { name: 'Watch' }));
     expect(screen.queryByRole('tabpanel', { name: /watch/i })).toBeNull();
   });
 });

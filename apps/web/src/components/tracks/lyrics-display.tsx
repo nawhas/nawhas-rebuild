@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { LyricDTO } from '@nawhas/types';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@nawhas/ui/components/tabs';
 import { ArabicText } from '@/components/ui/arabic-text';
 import { UrduText } from '@/components/ui/urdu-text';
 
@@ -64,29 +65,50 @@ interface LyricsDisplayProps {
  * - Defaults to Arabic > Urdu > English.
  * - Persists the selected tab to localStorage so preference is remembered across tracks.
  * - English UI chrome is always LTR; RTL is scoped to individual content blocks.
+ * - Uses the Radix-backed <Tabs> primitive (Phase 2.2 Task 6).
+ *
+ * NOTE: Timestamp-driven highlight/scroll-sync is parked for Phase 2.1c research.
+ * The `LyricDTO` shape preserves any timestamp field it already carries; we just
+ * don't consume it yet.
  *
  * Client Component — required for localStorage and tab interactivity.
  */
 export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element | null {
-  if (lyrics.length === 0) return null;
+  // --- Hooks FIRST (Rules of Hooks) --------------------------------------
+  // Previously this component returned null before the first useState/useEffect
+  // call when `lyrics` was empty. That violated the Rules of Hooks and was
+  // dormant only because the parent mounts us conditionally. Hooks now run
+  // unconditionally; the empty-state return is moved AFTER them.
 
-  const availableLanguages = getAvailableLanguages(lyrics);
-  const defaultLanguage = getDefaultLanguage(availableLanguages);
+  const availableLanguages = useMemo(() => getAvailableLanguages(lyrics), [lyrics]);
+  const defaultLanguage = useMemo(
+    () => getDefaultLanguage(availableLanguages),
+    [availableLanguages],
+  );
 
   const [activeLanguage, setActiveLanguage] = useState<string>(defaultLanguage);
 
   // Restore persisted language preference after mount (avoids hydration mismatch).
+  // Depends on `availableLanguages` so we only apply a saved value we can honour;
+  // the useMemo above keeps the reference stable across renders for a given
+  // `lyrics` input, so this does not re-fire unnecessarily.
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && availableLanguages.includes(saved)) {
       setActiveLanguage(saved);
     }
-  }, []);
+  }, [availableLanguages]);
 
-  function handleTabChange(lang: string): void {
+  function handleValueChange(lang: string): void {
     setActiveLanguage(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, lang);
+    }
   }
+
+  // --- Conditional return AFTER all hooks --------------------------------
+  if (lyrics.length === 0) return null;
 
   const showTabs = availableLanguages.length > 1;
 
@@ -96,49 +118,34 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
         Lyrics
       </h2>
 
-      {showTabs && (
-        <div
-          role="tablist"
-          aria-label="Lyrics language"
-          className="mb-6 flex gap-0 border-b border-border"
-        >
-          {availableLanguages.map((lang) => (
-            <button
-              key={lang}
-              role="tab"
-              aria-selected={lang === activeLanguage}
-              aria-controls={`lyrics-panel-${lang}`}
-              id={`lyrics-tab-${lang}`}
-              onClick={() => handleTabChange(lang)}
-              className={[
-                'px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                lang === activeLanguage
-                  ? 'border-b-2 border-primary-600 text-primary-700'
-                  : 'text-muted-foreground hover:text-foreground',
-              ].join(' ')}
-            >
-              {LANGUAGE_LABELS[lang] ?? (lang as string).toUpperCase()}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {availableLanguages.map((lang) => {
-        const lyric = lyrics.find((l) => l.language === lang);
-        if (!lyric) return null;
-
-        return (
-          <div
-            key={lang}
-            role={showTabs ? 'tabpanel' : undefined}
-            id={showTabs ? `lyrics-panel-${lang}` : undefined}
-            aria-labelledby={showTabs ? `lyrics-tab-${lang}` : undefined}
-            hidden={lang !== activeLanguage}
+      <Tabs value={activeLanguage} onValueChange={handleValueChange}>
+        {showTabs && (
+          <TabsList
+            aria-label="Lyrics language"
+            className="mb-6 h-auto w-full justify-start gap-0 rounded-none border-b border-border bg-transparent p-0"
           >
-            <LyricContent lyric={lyric} />
-          </div>
-        );
-      })}
+            {availableLanguages.map((lang) => (
+              <TabsTrigger
+                key={lang}
+                value={lang}
+                className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-muted-foreground shadow-none data-[state=active]:border-primary-600 data-[state=active]:bg-transparent data-[state=active]:text-primary-700 data-[state=active]:shadow-none"
+              >
+                {LANGUAGE_LABELS[lang] ?? lang.toUpperCase()}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        )}
+
+        {availableLanguages.map((lang) => {
+          const lyric = lyrics.find((l) => l.language === lang);
+          if (!lyric) return null;
+          return (
+            <TabsContent key={lang} value={lang}>
+              <LyricContent lyric={lyric} />
+            </TabsContent>
+          );
+        })}
+      </Tabs>
     </section>
   );
 }
