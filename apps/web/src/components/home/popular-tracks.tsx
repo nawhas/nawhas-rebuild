@@ -1,4 +1,5 @@
 import { Card } from '@nawhas/ui/components/card';
+import { SectionTitle } from '@nawhas/ui/components/section-title';
 import type { TrackDTO } from '@nawhas/types';
 
 interface PopularTracksProps {
@@ -24,12 +25,7 @@ export function PopularTracks({ tracks }: PopularTracksProps): React.JSX.Element
 
   return (
     <section aria-labelledby="popular-tracks-heading">
-      <h2
-        id="popular-tracks-heading"
-        className="mb-6 text-xl font-semibold text-foreground"
-      >
-        Popular Tracks
-      </h2>
+      <SectionTitle id="popular-tracks-heading">Popular Tracks</SectionTitle>
 
       <Card className="overflow-hidden">
         <ol

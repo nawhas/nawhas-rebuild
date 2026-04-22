@@ -1,4 +1,5 @@
 import type { AlbumDTO } from '@nawhas/types';
+import { SectionTitle } from '@nawhas/ui/components/section-title';
 import { AlbumCard } from '@/components/cards/album-card';
 
 interface RecentAlbumsProps {
@@ -17,12 +18,7 @@ export function RecentAlbums({ albums }: RecentAlbumsProps): React.JSX.Element |
 
   return (
     <section aria-labelledby="recent-albums-heading">
-      <h2
-        id="recent-albums-heading"
-        className="mb-6 text-xl font-semibold text-gray-900 dark:text-white"
-      >
-        Recent Albums
-      </h2>
+      <SectionTitle id="recent-albums-heading">Recent Albums</SectionTitle>
 
       <ul
         role="list"
