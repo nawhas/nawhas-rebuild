@@ -53,7 +53,9 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
 
       {/* Metadata */}
       <div className="flex flex-col gap-2 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-foreground">{album.title}</h1>
+        <h1 className="font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground">
+          {album.title}
+        </h1>
 
         <Link
           href={`/reciters/${album.reciterSlug}`}

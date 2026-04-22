@@ -1,4 +1,5 @@
 import type { TrackDTO } from '@nawhas/types';
+import { SectionTitle } from '@nawhas/ui/components/section-title';
 import { TrackListItem } from '@/components/albums/track-list-item';
 
 interface TrackListProps {
@@ -17,9 +18,7 @@ interface TrackListProps {
 export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): React.JSX.Element {
   return (
     <section aria-labelledby="track-list-heading">
-      <h2 id="track-list-heading" className="mb-4 text-xl font-semibold text-foreground">
-        Tracks
-      </h2>
+      <SectionTitle id="track-list-heading">Tracks</SectionTitle>
 
       {tracks.length === 0 ? (
         <p className="text-muted-foreground">No tracks available yet.</p>

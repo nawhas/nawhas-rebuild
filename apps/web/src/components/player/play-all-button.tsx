@@ -1,6 +1,7 @@
 'use client';
 
 import type { TrackDTO } from '@nawhas/types';
+import { Button } from '@nawhas/ui/components/button';
 import { usePlayerStore } from '@/store/player';
 
 function PlayIcon(): React.JSX.Element {
@@ -27,13 +28,9 @@ export function PlayAllButton({ tracks }: PlayAllButtonProps): React.JSX.Element
   if (tracks.length === 0) return null;
 
   return (
-    <button
-      type="button"
-      onClick={() => playAlbum(tracks)}
-      className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-    >
+    <Button type="button" onClick={() => playAlbum(tracks)}>
       <PlayIcon />
       Play All
-    </button>
+    </Button>
   );
 }
