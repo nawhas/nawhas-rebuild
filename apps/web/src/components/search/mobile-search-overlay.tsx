@@ -135,7 +135,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
         onClick={() => setOverlayOpen(true)}
         aria-label={t('openSearch')}
         aria-haspopup="dialog"
-        className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 md:hidden"
+        className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
       >
         <svg
           width="20"
@@ -159,12 +159,12 @@ export function MobileSearchOverlay(): React.JSX.Element {
           role="dialog"
           aria-modal="true"
           aria-label={t('dialogLabel')}
-          className="fixed inset-0 z-50 flex flex-col bg-white"
+          className="fixed inset-0 z-50 flex flex-col bg-background"
         >
           {/* Header row: input + close button */}
-          <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-3">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             {/* Search icon */}
-            <span className="flex-shrink-0 text-gray-400" aria-hidden="true">
+            <span className="flex-shrink-0 text-muted-foreground" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
@@ -193,7 +193,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
               onFocus={() => {
                 if (query.trim()) setDropdownOpen(true);
               }}
-              className="min-w-0 flex-1 bg-transparent text-base text-gray-900 placeholder-gray-400 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-base text-foreground placeholder-muted-foreground focus:outline-none"
             />
 
             {/* Close button */}
@@ -201,7 +201,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
               type="button"
               onClick={closeOverlay}
               aria-label={t('closeSearch')}
-              className="flex-shrink-0 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="flex-shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <svg
                 width="20"
@@ -228,12 +228,12 @@ export function MobileSearchOverlay(): React.JSX.Element {
                 aria-label={t('resultsLabel')}
               >
                 {isPending ? (
-                  <div className="flex items-center gap-2 px-4 py-4 text-sm text-gray-500" aria-live="polite">
+                  <div className="flex items-center gap-2 px-4 py-4 text-sm text-muted-foreground" aria-live="polite">
                     <Spinner />
                     {t('searching')}
                   </div>
                 ) : !hasResults ? (
-                  <div className="px-4 py-4 text-sm text-gray-500" aria-live="polite">
+                  <div className="px-4 py-4 text-sm text-muted-foreground" aria-live="polite">
                     {t('noResults', { query })}
                   </div>
                 ) : (
@@ -243,7 +243,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
                         <div
                           role="presentation"
                           aria-label={section.label}
-                          className="bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                          className="bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                         >
                           {section.label}
                         </div>
@@ -257,18 +257,18 @@ export function MobileSearchOverlay(): React.JSX.Element {
                             onClick={closeOverlay}
                             className={`flex flex-col px-4 py-3 text-sm outline-none transition-colors ${
                               activeIndex === globalIndex
-                                ? 'bg-gray-100 text-gray-900'
-                                : 'text-gray-700 active:bg-gray-100'
+                                ? 'bg-muted text-foreground'
+                                : 'text-foreground active:bg-muted'
                             }`}
                           >
-                            <span className="font-medium [&_mark]:bg-yellow-100 [&_mark]:text-gray-900">
+                            <span className="font-medium [&_mark]:bg-yellow-500/25 [&_mark]:text-foreground">
                               <HighlightedText
                                 {...(item.highlightSnippet !== undefined ? { snippet: item.highlightSnippet } : {})}
                                 fallback={item.primaryText}
                               />
                             </span>
                             {item.secondaryText && (
-                              <span className="text-xs text-gray-500">{item.secondaryText}</span>
+                              <span className="text-xs text-muted-foreground">{item.secondaryText}</span>
                             )}
                           </Link>
                         ))}
@@ -276,11 +276,11 @@ export function MobileSearchOverlay(): React.JSX.Element {
                     ))}
 
                     {/* Search all link */}
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-border">
                       <Link
                         href={`/search?q=${encodeURIComponent(query)}`}
                         onClick={closeOverlay}
-                        className="flex items-center gap-1 px-4 py-3 text-sm text-gray-500 active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                        className="flex items-center gap-1 px-4 py-3 text-sm text-muted-foreground active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         <span>{t('seeAllResults', { query })}</span>
                         <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -299,7 +299,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
 
             {/* Empty state — no query entered yet */}
             {!dropdownOpen && !query && (
-              <div className="px-4 py-8 text-center text-sm text-gray-400">
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                 {t('emptyPromptMobile')}
               </div>
             )}

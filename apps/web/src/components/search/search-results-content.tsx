@@ -11,6 +11,7 @@ import type {
   TrackSearchItemDTO,
   SearchHighlightDTO,
 } from '@nawhas/types';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@nawhas/ui/components/tabs';
 import { AppImage } from '@/components/ui/image';
 
 // ---------------------------------------------------------------------------
@@ -113,16 +114,16 @@ function ReciterResult({
   return (
     <Link
       href={`/reciters/${item.slug}`}
-      className="group flex flex-col items-center gap-3 rounded-lg p-4 text-center transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+      className="group flex flex-col items-center gap-3 rounded-lg p-4 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View ${item.name}'s profile`}
     >
       <div
         aria-hidden="true"
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-lg font-semibold text-gray-700 transition-colors group-hover:bg-gray-300"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-semibold text-muted-foreground transition-colors group-hover:bg-muted/80"
       >
         {initials}
       </div>
-      <span className="text-sm font-medium text-gray-900 group-hover:text-gray-700">
+      <span className="text-sm font-medium text-foreground group-hover:text-muted-foreground">
         <HighlightedText snippet={nameSnippet} fallback={item.name} />
       </span>
     </Link>
@@ -142,10 +143,10 @@ function AlbumResult({
   return (
     <Link
       href={`/albums/${item.slug}`}
-      className="group flex flex-col gap-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+      className="group flex flex-col gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View album: ${item.title}${item.year ? `, ${item.year}` : ''}`}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
         {item.artworkUrl ? (
           <AppImage
             src={item.artworkUrl}
@@ -157,7 +158,7 @@ function AlbumResult({
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center text-gray-400"
+            className="flex h-full w-full items-center justify-center text-muted-foreground"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -178,10 +179,10 @@ function AlbumResult({
         )}
       </div>
       <div className="flex flex-col gap-0.5">
-        <span className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-gray-700">
+        <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
           <HighlightedText snippet={titleSnippet} fallback={item.title} />
         </span>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           <HighlightedText snippet={reciterSnippet} fallback={item.reciterName} />
           {item.year ? ` · ${item.year}` : ''}
         </span>
@@ -208,30 +209,30 @@ function TrackResult({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900"
+      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       aria-label={`Play ${item.title} from ${item.albumTitle} by ${item.reciterName}`}
     >
       {/* Track number badge */}
       {item.trackNumber != null && (
         <span
           aria-hidden="true"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs tabular-nums text-gray-500 group-hover:bg-gray-200"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs tabular-nums text-muted-foreground group-hover:bg-muted/80"
         >
           {item.trackNumber}
         </span>
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900 group-hover:text-gray-700">
+        <p className="truncate text-sm font-medium text-foreground group-hover:text-muted-foreground">
           <HighlightedText snippet={titleSnippet} fallback={item.title} />
         </p>
-        <p className="truncate text-xs text-gray-500">
+        <p className="truncate text-xs text-muted-foreground">
           <HighlightedText snippet={reciterSnippet} fallback={item.reciterName} />
           {' · '}
           <HighlightedText snippet={albumSnippet} fallback={item.albumTitle} />
         </p>
         {lyricsHighlight && (
-          <p className="mt-0.5 truncate text-xs italic text-gray-600">
+          <p className="mt-0.5 truncate text-xs italic text-muted-foreground">
             <HighlightedText
               snippet={lyricsHighlight.snippet}
               fallback=""
@@ -256,81 +257,6 @@ function SearchHit({ hit }: { hit: SearchHitDTO }) {
     return <AlbumResult item={hit.item} highlights={hit.highlights} />;
   }
   return <TrackResult item={hit.item} highlights={hit.highlights} />;
-}
-
-// ---------------------------------------------------------------------------
-// Tab bar
-// ---------------------------------------------------------------------------
-
-interface TabItem {
-  type: SearchType;
-  label: string;
-  count: number;
-}
-
-function SearchTabs({
-  query,
-  currentType,
-  typeCounts,
-  totalFound,
-}: {
-  query: string;
-  currentType: SearchType;
-  typeCounts: TypeCounts;
-  totalFound: number;
-}) {
-  const t = useTranslations('search');
-
-  const tabs: TabItem[] = [
-    { type: 'all', label: t('tabs.all'), count: totalFound },
-    { type: 'reciters', label: t('tabs.reciters'), count: typeCounts.reciters },
-    { type: 'albums', label: t('tabs.albums'), count: typeCounts.albums },
-    { type: 'tracks', label: t('tabs.tracks'), count: typeCounts.tracks },
-  ];
-
-  function tabHref(tabType: SearchType): string {
-    const params = new URLSearchParams({ q: query });
-    if (tabType !== 'all') params.set('type', tabType);
-    return `/search?${params.toString()}`;
-  }
-
-  return (
-    <nav aria-label={t('tabsNavLabel')} className="mb-6">
-      <ul role="tablist" className="flex gap-1 border-b border-gray-200">
-        {tabs.map((tab) => {
-          const isActive = currentType === tab.type;
-          return (
-            <li key={tab.type} role="presentation">
-              <Link
-                href={tabHref(tab.type)}
-                role="tab"
-                aria-selected={isActive}
-                className={`inline-flex items-center gap-1.5 border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 ${
-                  isActive
-                    ? 'border-gray-900 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                {tab.label}
-                {tab.count > 0 && (
-                  <span
-                    aria-label={t('resultsCount', { count: tab.count })}
-                    className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${
-                      isActive
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -370,7 +296,7 @@ function Pagination({
       {hasPrev ? (
         <Link
           href={pageHref(currentPage - 1)}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('previousLabel')}
         >
           {t('previous')}
@@ -378,21 +304,21 @@ function Pagination({
       ) : (
         <button
           disabled
-          className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"
+          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
           aria-label={t('previousLabel')}
         >
           {t('previous')}
         </button>
       )}
 
-      <span className="text-sm text-gray-600" aria-live="polite" aria-atomic="true">
+      <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
         {t('pageOf', { current: currentPage, total: totalPages })}
       </span>
 
       {hasNext ? (
         <Link
           href={pageHref(currentPage + 1)}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('nextLabel')}
           scroll={false}
         >
@@ -401,7 +327,7 @@ function Pagination({
       ) : (
         <button
           disabled
-          className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"
+          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
           aria-label={t('nextLabel')}
         >
           {t('next')}
@@ -425,13 +351,13 @@ function EmptyState({ query }: { query: string }) {
       className="flex flex-col items-center gap-4 py-16 text-center"
     >
       <div aria-hidden="true" className="text-5xl">🔍</div>
-      <p className="text-lg font-medium text-gray-900">
+      <p className="text-lg font-medium text-foreground">
         {t.rich('noResults', {
           query,
           italic: (chunks) => <span className="italic">&ldquo;{chunks}&rdquo;</span>,
         })}
       </p>
-      <ul className="mt-2 space-y-1 text-sm text-gray-500">
+      <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
         <li>{t('tip1')}</li>
         <li>{t('tip2')}</li>
         <li>{t('tip3')}</li>
@@ -477,7 +403,7 @@ function ResultsGrid({
   if (currentType === 'tracks') {
     // Track results displayed as a list (like AlbumDetail track list).
     return (
-      <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100">
+      <ul className="divide-y divide-border rounded-lg border border-border">
         {hits.map((hit) => (
           <li key={`${hit.type}-${hit.item.id}`}>
             <SearchHit hit={hit} />
@@ -529,9 +455,9 @@ function ResultsGrid({
     <div className="space-y-10">
       {groups.map((group) => (
         <section key={group.type} aria-label={group.label}>
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">{group.label}</h2>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">{group.label}</h2>
           {group.type === 'track' ? (
-            <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100">
+            <ul className="divide-y divide-border rounded-lg border border-border">
               {group.hits.map((hit) => (
                 <li key={`${hit.type}-${hit.item.id}`}>
                   <SearchHit hit={hit} />
@@ -554,16 +480,68 @@ function ResultsGrid({
 }
 
 // ---------------------------------------------------------------------------
+// Tabs panel content — renders results (or empty state) for the active tab.
+//
+// Only the `currentType` tab's hits are fetched server-side, so the other
+// three TabsContent blocks render empty placeholders. Radix hides them via
+// `hidden` anyway; they exist purely so every TabsTrigger has a valid
+// aria-controls target and the tab/tabpanel pairing is complete.
+// ---------------------------------------------------------------------------
+
+function ActivePanelBody({
+  query,
+  results,
+  currentType,
+  currentPage,
+}: {
+  query: string;
+  results: SearchResultDTO;
+  currentType: SearchType;
+  currentPage: number;
+}) {
+  if (results.hits.length === 0) {
+    return <EmptyState query={query} />;
+  }
+  return (
+    <>
+      <ResultsGrid hits={results.hits} currentType={currentType} />
+      <Pagination
+        query={query}
+        currentType={currentType}
+        currentPage={currentPage}
+        totalPages={results.totalPages}
+      />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Root client component
 // ---------------------------------------------------------------------------
+
+interface TabDescriptor {
+  type: SearchType;
+  label: string;
+  count: number;
+}
 
 /**
  * Client wrapper for the search results page.
  *
  * Receives pre-fetched results from the Server Component parent; handles:
- * - Tab navigation via URL params (Link-based, no JS required for navigation)
- * - Grouped / typed result rendering with highlight support
- * - URL-based pagination with scroll-to-top on page change
+ * - Tab navigation via URL params — each TabsTrigger delegates to a
+ *   Next.js <Link> (asChild) so clicking a tab navigates to a new URL,
+ *   triggering a fresh server render with updated searchParams. The
+ *   Radix <Tabs> `value` is bound to `currentType` so the active-tab
+ *   styling and `aria-selected` stay in sync with the URL.
+ * - Grouped / typed result rendering with highlight support.
+ * - URL-based pagination with scroll-to-top on page change.
+ *
+ * Swapping the hand-rolled tablist for Radix <Tabs> resolves the Critical
+ * a11y finding from the 2.1e audit: the previous markup had role="tab"
+ * triggers but no matching role="tabpanel" nor aria-controls wiring.
+ * <Tabs>/<TabsContent> provides both automatically, plus keyboard
+ * arrow-key navigation and roving tabindex.
  */
 export function SearchResultsContent({
   query,
@@ -572,6 +550,8 @@ export function SearchResultsContent({
   currentType,
   currentPage,
 }: SearchResultsContentProps) {
+  const t = useTranslations('search');
+
   // Scroll to top when page changes (pagination navigation).
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -580,28 +560,72 @@ export function SearchResultsContent({
   const totalFound =
     typeCounts.reciters + typeCounts.albums + typeCounts.tracks;
 
-  return (
-    <div>
-      <SearchTabs
-        query={query}
-        currentType={currentType}
-        typeCounts={typeCounts}
-        totalFound={totalFound}
-      />
+  const tabs: TabDescriptor[] = [
+    { type: 'all', label: t('tabs.all'), count: totalFound },
+    { type: 'reciters', label: t('tabs.reciters'), count: typeCounts.reciters },
+    { type: 'albums', label: t('tabs.albums'), count: typeCounts.albums },
+    { type: 'tracks', label: t('tabs.tracks'), count: typeCounts.tracks },
+  ];
 
-      {results.hits.length === 0 ? (
-        <EmptyState query={query} />
-      ) : (
-        <>
-          <ResultsGrid hits={results.hits} currentType={currentType} />
-          <Pagination
-            query={query}
-            currentType={currentType}
-            currentPage={currentPage}
-            totalPages={results.totalPages}
-          />
-        </>
-      )}
-    </div>
+  function tabHref(tabType: SearchType): string {
+    const params = new URLSearchParams({ q: query });
+    if (tabType !== 'all') params.set('type', tabType);
+    return `/search?${params.toString()}`;
+  }
+
+  return (
+    <Tabs value={currentType}>
+      <TabsList
+        aria-label={t('tabsNavLabel')}
+        className="mb-6 flex h-auto w-full justify-start gap-1 rounded-none border-b border-border bg-transparent p-0 text-muted-foreground"
+      >
+        {tabs.map((tab) => {
+          const isActive = currentType === tab.type;
+          return (
+            <TabsTrigger
+              key={tab.type}
+              value={tab.type}
+              asChild
+              className="inline-flex items-center gap-1.5 rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              <Link href={tabHref(tab.type)}>
+                {tab.label}
+                {tab.count > 0 && (
+                  <span
+                    aria-label={t('resultsCount', { count: tab.count })}
+                    className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${
+                      isActive
+                        ? 'bg-foreground text-background'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </Link>
+            </TabsTrigger>
+          );
+        })}
+      </TabsList>
+
+      {/*
+       * Render a TabsContent block for every tab value so Radix can wire
+       * role="tabpanel" + aria-controls on every trigger. Only the active
+       * tab's body is populated (others render nothing — Radix hides them
+       * with `hidden` anyway).
+       */}
+      {tabs.map((tab) => (
+        <TabsContent key={tab.type} value={tab.type}>
+          {tab.type === currentType ? (
+            <ActivePanelBody
+              query={query}
+              results={results}
+              currentType={currentType}
+              currentPage={currentPage}
+            />
+          ) : null}
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 }
