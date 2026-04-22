@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -33,18 +34,19 @@ export default async function ModQueuePage(): Promise<React.JSX.Element> {
   });
 
   const { items, nextCursor } = await caller.moderation.queue({ limit: 20 });
+  const t = await getTranslations('mod.queue');
 
   return (
     <div className="max-w-4xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">Moderation Queue</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
 
       {items.length === 0 ? (
         <div className="rounded-lg border border-border bg-card px-6 py-12 text-center">
-          <p className="text-sm text-muted-foreground">The queue is empty. Nothing to review.</p>
+          <p className="text-sm text-muted-foreground">{t('empty')}</p>
         </div>
       ) : (
         <>
-          <ol aria-label="Pending submissions" className="space-y-3">
+          <ol aria-label={t('listLabel')} className="space-y-3">
             {items.map((submission) => (
               <SubmissionRow key={submission.id} submission={submission} />
             ))}

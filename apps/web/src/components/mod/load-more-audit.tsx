@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { fetchAuditLogPage } from '@/server/actions/moderation-fetch';
 import type { AuditLogDTO } from '@nawhas/types';
 
@@ -12,6 +13,8 @@ interface LoadMoreAuditProps {
  * Client component that loads additional audit log pages on demand.
  */
 export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.Element {
+  const t = useTranslations('mod.audit');
+  const tQueue = useTranslations('mod.queue');
   const [items, setItems] = useState<AuditLogDTO[]>([]);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isPending, startTransition] = useTransition();
@@ -26,7 +29,7 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
         setItems((prev) => [...prev, ...result.items]);
         setCursor(result.nextCursor);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load more.');
+        setError(err instanceof Error ? err.message : t('loadFailed'));
       }
     });
   }
@@ -52,7 +55,7 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
               disabled={isPending}
               className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
             >
-              {isPending ? 'Loading…' : 'Load more'}
+              {isPending ? tQueue('loadingMore') : tQueue('loadMore')}
             </button>
           </td>
         </tr>

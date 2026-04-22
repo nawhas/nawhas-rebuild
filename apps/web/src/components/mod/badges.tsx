@@ -9,6 +9,7 @@
  * Badge variants alone.
  */
 
+import { useTranslations } from 'next-intl';
 import { Badge } from '@nawhas/ui/components/badge';
 import type { SubmissionAction, SubmissionStatus, SubmissionType } from '@nawhas/types';
 
@@ -31,34 +32,29 @@ const STATUS_CLASSES: Record<SubmissionStatus, string> = {
   changes_requested: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
 };
 
-const STATUS_LABELS: Record<SubmissionStatus, string> = {
-  draft: 'Draft',
-  pending: 'Pending',
-  approved: 'Approved',
-  rejected: 'Rejected',
-  changes_requested: 'Changes Requested',
-};
-
 export function SubmissionTypeBadge({ type }: { type: SubmissionType }): React.JSX.Element {
+  const t = useTranslations('mod.type');
   return (
     <Badge variant="secondary" className={TYPE_CLASSES[type]}>
-      {type.charAt(0).toUpperCase() + type.slice(1)}
+      {t(type)}
     </Badge>
   );
 }
 
 export function SubmissionActionBadge({ action }: { action: SubmissionAction }): React.JSX.Element {
+  const t = useTranslations('mod.action');
   return (
     <Badge variant="secondary" className={ACTION_CLASSES[action]}>
-      {action.charAt(0).toUpperCase() + action.slice(1)}
+      {t(action)}
     </Badge>
   );
 }
 
 export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }): React.JSX.Element {
+  const t = useTranslations('mod.status');
   return (
     <Badge variant="secondary" className={STATUS_CLASSES[status]}>
-      {STATUS_LABELS[status]}
+      {t(status)}
     </Badge>
   );
 }
@@ -70,10 +66,13 @@ const ROLE_CLASSES: Record<string, string> = {
 };
 
 export function RoleBadge({ role }: { role: string }): React.JSX.Element {
+  const t = useTranslations('mod.role');
   const classes = ROLE_CLASSES[role] ?? ROLE_CLASSES.user;
+  const known = role === 'moderator' || role === 'contributor' || role === 'user';
+  const label = known ? t(role) : role.charAt(0).toUpperCase() + role.slice(1);
   return (
     <Badge variant="secondary" className={classes}>
-      {role.charAt(0).toUpperCase() + role.slice(1)}
+      {label}
     </Badge>
   );
 }

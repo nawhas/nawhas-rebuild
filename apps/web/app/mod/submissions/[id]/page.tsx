@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db, reciters, albums, tracks } from '@nawhas/db';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
@@ -67,6 +68,8 @@ export default async function SubmissionDetailPage({
   const canReview = submission.status === 'pending' || submission.status === 'changes_requested';
   const canApply = submission.status === 'approved';
 
+  const t = await getTranslations('mod.submission');
+
   return (
     <div className="max-w-3xl">
       {/* Back link */}
@@ -74,11 +77,11 @@ export default async function SubmissionDetailPage({
         href="/mod/queue"
         className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:underline"
       >
-        ← Back to queue
+        {t('backToQueue')}
       </Link>
 
       <h1 className="mb-2 text-2xl font-bold text-foreground">
-        Submission detail
+        {t('heading')}
       </h1>
 
       {/* Meta badges */}
@@ -91,10 +94,12 @@ export default async function SubmissionDetailPage({
           className="text-xs text-muted-foreground"
           title={new Date(submission.createdAt).toLocaleString()}
         >
-          Submitted {new Date(submission.createdAt).toLocaleDateString(undefined, {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
+          {t('submittedAt', {
+            date: new Date(submission.createdAt).toLocaleDateString(undefined, {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            }),
           })}
         </time>
       </div>
@@ -102,11 +107,11 @@ export default async function SubmissionDetailPage({
       {/* Notes from submitter */}
       {submission.notes && (
         <section
-          aria-label="Submitter notes"
+          aria-label={t('submitterNotesLabel')}
           className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950"
         >
           <p className="mb-1 text-xs font-medium uppercase tracking-wider text-blue-500 dark:text-blue-400">
-            Submitter notes
+            {t('submitterNotesHeading')}
           </p>
           <p className="text-sm text-blue-900 dark:text-blue-100">{submission.notes}</p>
         </section>
@@ -114,12 +119,13 @@ export default async function SubmissionDetailPage({
 
       {/* Field-by-field diff or preview */}
       <section
-        aria-label="Submission data"
+        aria-label={t('dataLabel')}
         className="mb-6 divide-y divide-border rounded-lg border border-border bg-card px-5"
       >
         <SubmissionFields
           submission={submission}
           currentValues={currentValues}
+          t={t}
         />
       </section>
 
@@ -177,9 +183,11 @@ async function fetchCurrentValues(submission: SubmissionDTO): Promise<CurrentVal
 function SubmissionFields({
   submission,
   currentValues,
+  t,
 }: {
   submission: SubmissionDTO;
   currentValues: CurrentValues | null;
+  t: (key: string) => string;
 }): React.JSX.Element {
   const isEdit = submission.action === 'edit' && currentValues !== null;
 
@@ -188,15 +196,15 @@ function SubmissionFields({
     if (isEdit) {
       return (
         <>
-          <FieldDiff label="Name" current={currentValues!.name} proposed={data.name} />
-          <FieldDiff label="Slug" current={currentValues!.slug} proposed={data.slug} />
+          <FieldDiff label={t('fieldNameLabel')} current={currentValues!.name} proposed={data.name} />
+          <FieldDiff label={t('fieldSlugLabel')} current={currentValues!.slug} proposed={data.slug} />
         </>
       );
     }
     return (
       <>
-        <DataPreview label="Name" value={data.name} />
-        <DataPreview label="Slug" value={data.slug} />
+        <DataPreview label={t('fieldNameLabel')} value={data.name} />
+        <DataPreview label={t('fieldSlugLabel')} value={data.slug} />
       </>
     );
   }
@@ -206,21 +214,21 @@ function SubmissionFields({
     if (isEdit) {
       return (
         <>
-          <FieldDiff label="Title" current={currentValues!.title} proposed={data.title} />
-          <FieldDiff label="Slug" current={currentValues!.slug} proposed={data.slug} />
-          <FieldDiff label="Reciter ID" current={currentValues!.reciterId} proposed={data.reciterId} />
-          <FieldDiff label="Year" current={currentValues!.year} proposed={data.year} />
-          <FieldDiff label="Artwork URL" current={currentValues!.artworkUrl} proposed={data.artworkUrl} />
+          <FieldDiff label={t('fieldTitleLabel')} current={currentValues!.title} proposed={data.title} />
+          <FieldDiff label={t('fieldSlugLabel')} current={currentValues!.slug} proposed={data.slug} />
+          <FieldDiff label={t('fieldReciterIdLabel')} current={currentValues!.reciterId} proposed={data.reciterId} />
+          <FieldDiff label={t('fieldYearLabel')} current={currentValues!.year} proposed={data.year} />
+          <FieldDiff label={t('fieldArtworkUrlLabel')} current={currentValues!.artworkUrl} proposed={data.artworkUrl} />
         </>
       );
     }
     return (
       <>
-        <DataPreview label="Title" value={data.title} />
-        <DataPreview label="Slug" value={data.slug} />
-        <DataPreview label="Reciter ID" value={data.reciterId} />
-        <DataPreview label="Year" value={data.year} />
-        <DataPreview label="Artwork URL" value={data.artworkUrl} />
+        <DataPreview label={t('fieldTitleLabel')} value={data.title} />
+        <DataPreview label={t('fieldSlugLabel')} value={data.slug} />
+        <DataPreview label={t('fieldReciterIdLabel')} value={data.reciterId} />
+        <DataPreview label={t('fieldYearLabel')} value={data.year} />
+        <DataPreview label={t('fieldArtworkUrlLabel')} value={data.artworkUrl} />
       </>
     );
   }
@@ -230,25 +238,25 @@ function SubmissionFields({
   if (isEdit) {
     return (
       <>
-        <FieldDiff label="Title" current={currentValues!.title} proposed={data.title} />
-        <FieldDiff label="Slug" current={currentValues!.slug} proposed={data.slug} />
-        <FieldDiff label="Album ID" current={currentValues!.albumId} proposed={data.albumId} />
-        <FieldDiff label="Track Number" current={currentValues!.trackNumber} proposed={data.trackNumber} />
-        <FieldDiff label="Audio URL" current={currentValues!.audioUrl} proposed={data.audioUrl} />
-        <FieldDiff label="YouTube ID" current={currentValues!.youtubeId} proposed={data.youtubeId} />
-        <FieldDiff label="Duration (s)" current={currentValues!.duration} proposed={data.duration} />
+        <FieldDiff label={t('fieldTitleLabel')} current={currentValues!.title} proposed={data.title} />
+        <FieldDiff label={t('fieldSlugLabel')} current={currentValues!.slug} proposed={data.slug} />
+        <FieldDiff label={t('fieldAlbumIdLabel')} current={currentValues!.albumId} proposed={data.albumId} />
+        <FieldDiff label={t('fieldTrackNumberLabel')} current={currentValues!.trackNumber} proposed={data.trackNumber} />
+        <FieldDiff label={t('fieldAudioUrlLabel')} current={currentValues!.audioUrl} proposed={data.audioUrl} />
+        <FieldDiff label={t('fieldYouTubeIdLabel')} current={currentValues!.youtubeId} proposed={data.youtubeId} />
+        <FieldDiff label={t('fieldDurationLabel')} current={currentValues!.duration} proposed={data.duration} />
       </>
     );
   }
   return (
     <>
-      <DataPreview label="Title" value={data.title} />
-      <DataPreview label="Slug" value={data.slug} />
-      <DataPreview label="Album ID" value={data.albumId} />
-      <DataPreview label="Track Number" value={data.trackNumber} />
-      <DataPreview label="Audio URL" value={data.audioUrl} />
-      <DataPreview label="YouTube ID" value={data.youtubeId} />
-      <DataPreview label="Duration (s)" value={data.duration} />
+      <DataPreview label={t('fieldTitleLabel')} value={data.title} />
+      <DataPreview label={t('fieldSlugLabel')} value={data.slug} />
+      <DataPreview label={t('fieldAlbumIdLabel')} value={data.albumId} />
+      <DataPreview label={t('fieldTrackNumberLabel')} value={data.trackNumber} />
+      <DataPreview label={t('fieldAudioUrlLabel')} value={data.audioUrl} />
+      <DataPreview label={t('fieldYouTubeIdLabel')} value={data.youtubeId} />
+      <DataPreview label={t('fieldDurationLabel')} value={data.duration} />
     </>
   );
 }

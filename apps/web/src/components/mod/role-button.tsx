@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { setUserRole } from '@/server/actions/moderation';
 
 type Role = 'user' | 'contributor' | 'moderator';
@@ -16,14 +17,15 @@ interface RoleButtonProps {
  * Moderator-to-moderator promotion is NOT exposed — ops-only via DB for M6.
  */
 export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.Element {
+  const t = useTranslations('mod.users');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState(currentRole);
 
   const options: { value: Role; label: string }[] = [
-    { value: 'user', label: 'User' },
-    { value: 'contributor', label: 'Contributor' },
+    { value: 'user', label: t('roleUser') },
+    { value: 'contributor', label: t('roleContributor') },
   ];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>): void {
@@ -40,7 +42,7 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
         router.refresh();
       } catch (err) {
         setRole(previous);
-        setError(err instanceof Error ? err.message : 'Failed to update role.');
+        setError(err instanceof Error ? err.message : t('updateFailed'));
       }
     });
   }
@@ -51,7 +53,7 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
         value={role}
         onChange={handleChange}
         disabled={isPending || role === 'moderator'}
-        aria-label="Change user role"
+        aria-label={t('changeRoleLabel')}
         className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
       >
         {options.map((o) => (
@@ -62,12 +64,12 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
         {/* Show moderator as non-selectable option when user already has that role */}
         {role === 'moderator' && (
           <option value="moderator" disabled>
-            Moderator
+            {t('roleModerator')}
           </option>
         )}
       </select>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
-      {isPending && <span className="text-xs text-muted-foreground">Saving…</span>}
+      {isPending && <span className="text-xs text-muted-foreground">{t('saving')}</span>}
     </div>
   );
 }

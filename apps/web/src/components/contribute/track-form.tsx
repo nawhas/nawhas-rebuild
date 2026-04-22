@@ -2,28 +2,21 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { Button } from '@nawhas/ui/components/button';
 import { createTrackSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 
-const schema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  albumId: z.uuid('Must be a valid album ID (UUID)'),
-  slug: z.string().min(1).optional().or(z.literal('')),
-  trackNumber: z
-    .string()
-    .optional()
-    .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), 'Must be a positive integer'),
-  audioUrl: z.url('Must be a valid URL').optional().or(z.literal('')),
-  youtubeId: z.string().optional().or(z.literal('')),
-  duration: z
-    .string()
-    .optional()
-    .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), 'Must be a positive number of seconds'),
-});
-
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  title: string;
+  albumId: string;
+  slug?: string | undefined;
+  trackNumber?: string | undefined;
+  audioUrl?: string | undefined;
+  youtubeId?: string | undefined;
+  duration?: string | undefined;
+};
 type Errors = Partial<Record<keyof FormValues, string>>;
 
 interface TrackFormProps {
@@ -52,6 +45,7 @@ export function TrackForm({
   defaultAlbumId,
   onSuccess,
 }: TrackFormProps): React.JSX.Element {
+  const t = useTranslations('contribute');
   const router = useRouter();
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [albumId, setAlbumId] = useState(initialValues?.albumId ?? defaultAlbumId ?? '');
@@ -63,6 +57,22 @@ export function TrackForm({
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const schema = z.object({
+    title: z.string().min(1, t('form.titleRequired')),
+    albumId: z.uuid(t('form.albumUuidInvalid')),
+    slug: z.string().min(1).optional().or(z.literal('')),
+    trackNumber: z
+      .string()
+      .optional()
+      .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), t('form.trackNumberInvalid')),
+    audioUrl: z.url(t('form.urlInvalid')).optional().or(z.literal('')),
+    youtubeId: z.string().optional().or(z.literal('')),
+    duration: z
+      .string()
+      .optional()
+      .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), t('form.durationInvalidSeconds')),
+  });
 
   function validate(): boolean {
     const result = schema.safeParse({
@@ -112,31 +122,31 @@ export function TrackForm({
           router.push('/profile/contributions');
         }
       } catch (err) {
-        setServerError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+        setServerError(err instanceof Error ? err.message : t('form.genericFailure'));
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
-      <FormField id="title" label="Title" required error={errors.title}>
+      <FormField id="title" label={t('track.titleLabel')} required error={errors.title}>
         <Input
           id="title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. Ya Hussain"
+          placeholder={t('track.titlePlaceholder')}
           error={errors.title}
         />
       </FormField>
 
       <FormField
         id="albumId"
-        label="Album ID"
+        label={t('track.albumIdLabel')}
         required
         error={errors.albumId}
-        hint="The UUID of the album this track belongs to."
+        hint={t('track.albumIdHint')}
       >
         <Input
           id="albumId"
@@ -144,69 +154,69 @@ export function TrackForm({
           value={albumId}
           onChange={(e) => setAlbumId(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+          placeholder={t('track.albumIdPlaceholder')}
           error={errors.albumId}
         />
       </FormField>
 
-      <FormField id="slug" label="Slug" error={errors.slug} hint="Leave blank to auto-generate.">
+      <FormField id="slug" label={t('form.slugLabel')} error={errors.slug} hint={t('form.slugHintBlankAutogen')}>
         <Input
           id="slug"
           type="text"
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. ya-hussain"
+          placeholder={t('track.slugPlaceholder')}
           error={errors.slug}
         />
       </FormField>
 
-      <FormField id="trackNumber" label="Track number" error={errors.trackNumber}>
+      <FormField id="trackNumber" label={t('track.trackNumberLabel')} error={errors.trackNumber}>
         <Input
           id="trackNumber"
           type="number"
           value={trackNumber}
           onChange={(e) => setTrackNumber(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. 1"
+          placeholder={t('track.trackNumberPlaceholder')}
           min={1}
           error={errors.trackNumber}
         />
       </FormField>
 
-      <FormField id="audioUrl" label="Audio URL" error={errors.audioUrl}>
+      <FormField id="audioUrl" label={t('track.audioUrlLabel')} error={errors.audioUrl}>
         <Input
           id="audioUrl"
           type="url"
           value={audioUrl}
           onChange={(e) => setAudioUrl(e.target.value)}
           disabled={isPending}
-          placeholder="https://..."
+          placeholder={t('track.audioUrlPlaceholder')}
           error={errors.audioUrl}
         />
       </FormField>
 
-      <FormField id="youtubeId" label="YouTube ID" error={errors.youtubeId} hint="The 11-character video ID from the YouTube URL.">
+      <FormField id="youtubeId" label={t('track.youtubeIdLabel')} error={errors.youtubeId} hint={t('track.youtubeIdHint')}>
         <Input
           id="youtubeId"
           type="text"
           value={youtubeId}
           onChange={(e) => setYoutubeId(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. dQw4w9WgXcQ"
+          placeholder={t('track.youtubeIdPlaceholder')}
           maxLength={11}
           error={errors.youtubeId}
         />
       </FormField>
 
-      <FormField id="duration" label="Duration (seconds)" error={errors.duration}>
+      <FormField id="duration" label={t('track.durationLabel')} error={errors.duration}>
         <Input
           id="duration"
           type="number"
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. 240"
+          placeholder={t('track.durationPlaceholder')}
           min={1}
           error={errors.duration}
         />
@@ -217,7 +227,7 @@ export function TrackForm({
       )}
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? 'Submitting…' : 'Submit for review'}
+        {isPending ? t('form.submitting') : t('form.submit')}
       </Button>
     </form>
   );

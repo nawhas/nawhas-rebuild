@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -35,12 +36,13 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
   });
 
   const { items, nextCursor } = await caller.moderation.users({ limit: 20 });
+  const t = await getTranslations('mod.users');
 
   return (
     <div className="max-w-4xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">User Management</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
       <p className="mb-6 text-sm text-muted-foreground">
-        Promote users to contributor. Moderator promotion is ops-only.
+        {t('intro')}
       </p>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
@@ -51,19 +53,19 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                User
+                {t('columnUser')}
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Role
+                {t('columnRole')}
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Change role
+                {t('columnChangeRole')}
               </th>
             </tr>
           </thead>
@@ -71,7 +73,7 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
             {items.length === 0 ? (
               <tr>
                 <td colSpan={3} className="px-4 py-12 text-center text-sm text-muted-foreground">
-                  No users found.
+                  {t('empty')}
                 </td>
               </tr>
             ) : (

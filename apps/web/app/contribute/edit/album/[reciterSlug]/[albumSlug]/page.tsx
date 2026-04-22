@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -32,13 +33,15 @@ export default async function EditAlbumPage({
   const album = await caller.album.getBySlug({ reciterSlug, albumSlug }).catch(() => null);
   if (!album) notFound();
 
+  const t = await getTranslations('contribute.pages');
+
   return (
     <main id="main-content" className="mx-auto max-w-xl py-10 px-4">
       <h1 className="mb-1 text-2xl font-bold text-foreground">
-        Edit Album: {album.title}
+        {t('editAlbumTitle', { title: album.title })}
       </h1>
       <p className="mb-6 text-sm text-muted-foreground">
-        Suggest changes to this album&apos;s details. Your edit will be reviewed before going live.
+        {t('editAlbumSubtitle')}
       </p>
       <AlbumForm
         action="edit"

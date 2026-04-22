@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Card } from '@nawhas/ui/components/card';
 import { fetchQueuePage } from '@/server/actions/moderation-fetch';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
@@ -15,6 +16,8 @@ interface LoadMoreQueueProps {
  * Client component that loads additional queue pages on demand.
  */
 export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.Element {
+  const t = useTranslations('mod.queue');
+  const tHistory = useTranslations('contribute.history');
   const [items, setItems] = useState<SubmissionDTO[]>([]);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isPending, startTransition] = useTransition();
@@ -29,7 +32,7 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
         setItems((prev) => [...prev, ...result.items]);
         setCursor(result.nextCursor);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load more.');
+        setError(err instanceof Error ? err.message : t('loadFailed'));
       }
     });
   }
@@ -45,7 +48,7 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="truncate text-sm font-medium text-foreground">
-                  {getLabel(submission)}
+                  {getLabel(submission, tHistory)}
                 </span>
                 <div className="flex items-center gap-2">
                   <SubmissionTypeBadge type={submission.type} />
@@ -76,7 +79,7 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
             disabled={isPending}
             className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
           >
-            {isPending ? 'Loading…' : 'Load more'}
+            {isPending ? t('loadingMore') : t('loadMore')}
           </button>
         </li>
       )}
@@ -84,10 +87,13 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
   );
 }
 
-function getLabel(submission: SubmissionDTO): string {
+function getLabel(
+  submission: SubmissionDTO,
+  t: (key: string) => string,
+): string {
   const data = submission.data as unknown as Record<string, unknown>;
-  if (submission.type === 'reciter') return (data.name as string) ?? 'Unnamed reciter';
-  if (submission.type === 'album') return (data.title as string) ?? 'Unnamed album';
-  if (submission.type === 'track') return (data.title as string) ?? 'Unnamed track';
+  if (submission.type === 'reciter') return (data.name as string) ?? t('unnamedReciter');
+  if (submission.type === 'album') return (data.title as string) ?? t('unnamedAlbum');
+  if (submission.type === 'track') return (data.title as string) ?? t('unnamedTrack');
   return submission.id;
 }

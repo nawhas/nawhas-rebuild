@@ -252,6 +252,225 @@
     "editDisplayNameLabel": "Edit display name",
     "failedToUpdateName": "Failed to update name"
   },
+  "contribute": {
+    "landing": {
+      "heading": "Contribute",
+      "intro": "Help grow the Nawhas library by submitting new content or suggesting edits to existing entries. All submissions go through a moderation review before going live.",
+      "addNewHeading": "Add new content",
+      "addNewSectionLabel": "Submit new content",
+      "yourContributionsHeading": "Your contributions",
+      "yourContributionsSectionLabel": "Your contributions",
+      "viewHistory": "View your submission history →",
+      "newReciter": "New Reciter",
+      "newReciterDescription": "Add a reciter not yet in the library.",
+      "newAlbum": "New Album",
+      "newAlbumDescription": "Add an album for an existing reciter.",
+      "newTrack": "New Track",
+      "newTrackDescription": "Add a track to an existing album."
+    },
+    "access": {
+      "heading": "Contributor Access Required",
+      "description": "You need contributor access to submit content on Nawhas.com. Contributors help keep the library accurate and complete.",
+      "howToHeading": "How to become a contributor",
+      "howToDescription": "Contact a moderator to have your account promoted to contributor status. Once promoted, you can submit new reciters, albums, and tracks for review.",
+      "backToHome": "← Back to home"
+    },
+    "pages": {
+      "newReciterTitle": "New Reciter",
+      "newReciterSubtitle": "Submit a new reciter for moderation review.",
+      "newAlbumTitle": "New Album",
+      "newAlbumSubtitle": "Submit a new album for moderation review.",
+      "newTrackTitle": "New Track",
+      "newTrackSubtitle": "Submit a new track for moderation review.",
+      "editReciterTitle": "Edit Reciter: {name}",
+      "editReciterSubtitle": "Suggest changes to this reciter's details. Your edit will be reviewed before going live.",
+      "editAlbumTitle": "Edit Album: {title}",
+      "editAlbumSubtitle": "Suggest changes to this album's details. Your edit will be reviewed before going live.",
+      "editTrackTitle": "Edit Track: {title}",
+      "editTrackSubtitle": "Suggest changes to this track's details. Your edit will be reviewed before going live."
+    },
+    "form": {
+      "submit": "Submit for review",
+      "submitting": "Submitting…",
+      "resubmit": "Resubmit",
+      "cancel": "Cancel",
+      "genericFailure": "Submission failed. Please try again.",
+      "resubmitFailure": "Resubmit failed.",
+      "resubmitHeading": "Edit and resubmit",
+      "slugLabel": "Slug",
+      "slugHintBlankAutogen": "Leave blank to auto-generate.",
+      "slugHintReciter": "URL-friendly identifier. Leave blank to auto-generate.",
+      "nameRequired": "Name is required",
+      "titleRequired": "Title is required",
+      "reciterUuidInvalid": "Must be a valid reciter ID (UUID)",
+      "albumUuidInvalid": "Must be a valid album ID (UUID)",
+      "yearInvalid": "Must be a 4-digit year",
+      "urlInvalid": "Must be a valid URL",
+      "trackNumberInvalid": "Must be a positive integer",
+      "durationInvalidSeconds": "Must be a positive number of seconds",
+      "durationInvalid": "Must be a positive number"
+    },
+    "reciter": {
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Nadeem Sarwar",
+      "slugPlaceholder": "e.g. nadeem-sarwar"
+    },
+    "album": {
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Shajar-e-Tooba",
+      "reciterIdLabel": "Reciter ID",
+      "reciterIdHint": "The UUID of the reciter this album belongs to.",
+      "reciterIdPlaceholder": "e.g. 550e8400-e29b-41d4-a716-446655440000",
+      "slugPlaceholder": "e.g. shajar-e-tooba",
+      "yearLabel": "Year",
+      "yearPlaceholder": "e.g. 2010",
+      "artworkUrlLabel": "Artwork URL",
+      "artworkUrlPlaceholder": "https://..."
+    },
+    "track": {
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Ya Hussain",
+      "albumIdLabel": "Album ID",
+      "albumIdHint": "The UUID of the album this track belongs to.",
+      "albumIdPlaceholder": "e.g. 550e8400-e29b-41d4-a716-446655440000",
+      "slugPlaceholder": "e.g. ya-hussain",
+      "trackNumberLabel": "Track number",
+      "trackNumberPlaceholder": "e.g. 1",
+      "audioUrlLabel": "Audio URL",
+      "audioUrlPlaceholder": "https://...",
+      "youtubeIdLabel": "YouTube ID",
+      "youtubeIdHint": "The 11-character video ID from the YouTube URL.",
+      "youtubeIdPlaceholder": "e.g. dQw4w9WgXcQ",
+      "durationLabel": "Duration (seconds)",
+      "durationShortLabel": "Duration (s)",
+      "durationPlaceholder": "e.g. 240"
+    },
+    "history": {
+      "pageTitle": "My Contributions",
+      "newSubmission": "+ New submission",
+      "empty": "No submissions yet. Start contributing above.",
+      "listLabel": "Your submissions",
+      "moderatorNotesHeading": "Moderator notes",
+      "submissionId": "Submission ID:",
+      "editAndResubmit": "Edit and resubmit",
+      "unnamedReciter": "Unnamed reciter",
+      "unnamedAlbum": "Unnamed album",
+      "unnamedTrack": "Unnamed track"
+    }
+  },
+  "mod": {
+    "nav": {
+      "heading": "Moderation",
+      "label": "Moderation navigation",
+      "overview": "Overview",
+      "queue": "Queue",
+      "users": "Users",
+      "audit": "Audit Log"
+    },
+    "overview": {
+      "heading": "Moderation Overview",
+      "pendingSubmissions": "Pending submissions",
+      "viewQueue": "View queue →",
+      "recentActivityHeading": "Recent activity",
+      "recentActivitySectionLabel": "Recent moderation activity",
+      "recentActivityListLabel": "Recent audit log entries",
+      "viewAll": "View all →",
+      "noActivity": "No activity yet."
+    },
+    "queue": {
+      "heading": "Moderation Queue",
+      "empty": "The queue is empty. Nothing to review.",
+      "listLabel": "Pending submissions",
+      "loadMore": "Load more",
+      "loadingMore": "Loading…",
+      "loadFailed": "Failed to load more."
+    },
+    "audit": {
+      "heading": "Audit Log",
+      "empty": "No audit log entries yet.",
+      "columnAction": "Action",
+      "columnTargetType": "Target type",
+      "columnTargetId": "Target ID",
+      "columnDate": "Date",
+      "loadFailed": "Failed to load more."
+    },
+    "users": {
+      "heading": "User Management",
+      "intro": "Promote users to contributor. Moderator promotion is ops-only.",
+      "empty": "No users found.",
+      "columnUser": "User",
+      "columnRole": "Role",
+      "columnChangeRole": "Change role",
+      "changeRoleLabel": "Change user role",
+      "roleUser": "User",
+      "roleContributor": "Contributor",
+      "roleModerator": "Moderator",
+      "saving": "Saving…",
+      "updateFailed": "Failed to update role.",
+      "loadFailed": "Failed to load more."
+    },
+    "submission": {
+      "backToQueue": "← Back to queue",
+      "heading": "Submission detail",
+      "dataLabel": "Submission data",
+      "submittedAt": "Submitted {date}",
+      "submitterNotesHeading": "Submitter notes",
+      "submitterNotesLabel": "Submitter notes",
+      "fieldNameLabel": "Name",
+      "fieldSlugLabel": "Slug",
+      "fieldTitleLabel": "Title",
+      "fieldReciterIdLabel": "Reciter ID",
+      "fieldYearLabel": "Year",
+      "fieldArtworkUrlLabel": "Artwork URL",
+      "fieldAlbumIdLabel": "Album ID",
+      "fieldTrackNumberLabel": "Track Number",
+      "fieldAudioUrlLabel": "Audio URL",
+      "fieldYouTubeIdLabel": "YouTube ID",
+      "fieldDurationLabel": "Duration (s)"
+    },
+    "reviewActions": {
+      "commentLabel": "Comment (optional)",
+      "commentPlaceholder": "Add a comment for the submitter...",
+      "submitting": "Submitting…",
+      "approve": "Approve",
+      "reject": "Reject",
+      "requestChanges": "Request Changes",
+      "cancel": "Cancel",
+      "reviewFailed": "Failed to submit review."
+    },
+    "apply": {
+      "button": "Apply to database",
+      "applying": "Applying…",
+      "applied": "Applied successfully",
+      "failed": "Failed to apply submission."
+    },
+    "diff": {
+      "current": "Current",
+      "proposed": "Proposed",
+      "empty": "empty"
+    },
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "changes_requested": "Changes Requested"
+    },
+    "type": {
+      "reciter": "Reciter",
+      "album": "Album",
+      "track": "Track"
+    },
+    "action": {
+      "create": "Create",
+      "edit": "Edit"
+    },
+    "role": {
+      "user": "User",
+      "contributor": "Contributor",
+      "moderator": "Moderator"
+    }
+  },
   "settings": {
     "emailHeading": "Email address",
     "emailCurrent": "Current:",

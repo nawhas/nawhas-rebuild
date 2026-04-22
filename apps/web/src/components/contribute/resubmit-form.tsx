@@ -1,41 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { Button } from '@nawhas/ui/components/button';
 import { resubmitSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 import type { SubmissionDTO, ReciterSubmissionData, AlbumSubmissionData, TrackSubmissionData } from '@nawhas/types';
-
-// ---------------------------------------------------------------------------
-// Per-type schemas (mirrors submission router input schemas)
-// ---------------------------------------------------------------------------
-
-const reciterSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  slug: z.string().min(1).optional().or(z.literal('')),
-});
-
-const albumSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  reciterId: z.uuid('Must be a valid reciter ID (UUID)'),
-  slug: z.string().min(1).optional().or(z.literal('')),
-  year: z
-    .string()
-    .optional()
-    .refine((v) => !v || (/^\d{4}$/.test(v) && parseInt(v) >= 1900 && parseInt(v) <= new Date().getFullYear()), 'Must be a 4-digit year'),
-  artworkUrl: z.url('Must be a valid URL').optional().or(z.literal('')),
-});
-
-const trackSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  albumId: z.uuid('Must be a valid album ID (UUID)'),
-  slug: z.string().min(1).optional().or(z.literal('')),
-  trackNumber: z.string().optional().refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), 'Must be a positive integer'),
-  audioUrl: z.url('Must be a valid URL').optional().or(z.literal('')),
-  youtubeId: z.string().optional().or(z.literal('')),
-  duration: z.string().optional().refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), 'Must be a positive number'),
-});
 
 type Errors = Record<string, string>;
 
@@ -64,6 +35,7 @@ export function ResubmitForm({ submission, onSuccess, onCancel }: ResubmitFormPr
 // ---------------------------------------------------------------------------
 
 function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormProps): React.JSX.Element {
+  const t = useTranslations('contribute');
   const data = submission.data as ReciterSubmissionData;
   const [name, setName] = useState(data.name);
   const [slug, setSlug] = useState(data.slug ?? '');
@@ -71,9 +43,14 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const schema = z.object({
+    name: z.string().min(1, t('form.nameRequired')),
+    slug: z.string().min(1).optional().or(z.literal('')),
+  });
+
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
-    const result = reciterSchema.safeParse({ name, slug: slug || undefined });
+    const result = schema.safeParse({ name, slug: slug || undefined });
     if (!result.success) {
       const errs: Errors = {};
       for (const issue of result.error.issues) { errs[String(issue.path[0])] = issue.message; }
@@ -87,27 +64,27 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
         await resubmitSubmission(submission.id, 'reciter', { name, slug: slug || undefined });
         onSuccess();
       } catch (err) {
-        setServerError(err instanceof Error ? err.message : 'Resubmit failed.');
+        setServerError(err instanceof Error ? err.message : t('form.resubmitFailure'));
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Edit and resubmit</p>
-      <FormField id="name" label="Name" required error={errors.name}>
+      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">{t('form.resubmitHeading')}</p>
+      <FormField id="name" label={t('reciter.nameLabel')} required error={errors.name}>
         <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} error={errors.name} />
       </FormField>
-      <FormField id={`rs-slug-${submission.id}`} label="Slug" error={errors.slug}>
+      <FormField id={`rs-slug-${submission.id}`} label={t('form.slugLabel')} error={errors.slug}>
         <Input id={`rs-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex items-center gap-3">
         <Button type="submit" size="sm" disabled={isPending}>
-          {isPending ? 'Submitting…' : 'Submit for review'}
+          {isPending ? t('form.submitting') : t('form.submit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-          Cancel
+          {t('form.cancel')}
         </Button>
       </div>
     </form>
@@ -119,6 +96,7 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
 // ---------------------------------------------------------------------------
 
 function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormProps): React.JSX.Element {
+  const t = useTranslations('contribute');
   const data = submission.data as AlbumSubmissionData;
   const [title, setTitle] = useState(data.title);
   const [reciterId, setReciterId] = useState(data.reciterId);
@@ -129,9 +107,23 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const schema = z.object({
+    title: z.string().min(1, t('form.titleRequired')),
+    reciterId: z.uuid(t('form.reciterUuidInvalid')),
+    slug: z.string().min(1).optional().or(z.literal('')),
+    year: z
+      .string()
+      .optional()
+      .refine(
+        (v) => !v || (/^\d{4}$/.test(v) && parseInt(v) >= 1900 && parseInt(v) <= new Date().getFullYear()),
+        t('form.yearInvalid'),
+      ),
+    artworkUrl: z.url(t('form.urlInvalid')).optional().or(z.literal('')),
+  });
+
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
-    const result = albumSchema.safeParse({ title, reciterId, slug: slug || undefined, year: year || undefined, artworkUrl: artworkUrl || undefined });
+    const result = schema.safeParse({ title, reciterId, slug: slug || undefined, year: year || undefined, artworkUrl: artworkUrl || undefined });
     if (!result.success) {
       const errs: Errors = {};
       for (const issue of result.error.issues) { errs[String(issue.path[0])] = issue.message; }
@@ -145,36 +137,36 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
         await resubmitSubmission(submission.id, 'album', { title, reciterId, slug: slug || undefined, year: year ? parseInt(year) : undefined, artworkUrl: artworkUrl || undefined });
         onSuccess();
       } catch (err) {
-        setServerError(err instanceof Error ? err.message : 'Resubmit failed.');
+        setServerError(err instanceof Error ? err.message : t('form.resubmitFailure'));
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Edit and resubmit</p>
-      <FormField id={`ra-title-${submission.id}`} label="Title" required error={errors.title}>
+      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">{t('form.resubmitHeading')}</p>
+      <FormField id={`ra-title-${submission.id}`} label={t('album.titleLabel')} required error={errors.title}>
         <Input id={`ra-title-${submission.id}`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending} error={errors.title} />
       </FormField>
-      <FormField id={`ra-rid-${submission.id}`} label="Reciter ID" required error={errors.reciterId}>
+      <FormField id={`ra-rid-${submission.id}`} label={t('album.reciterIdLabel')} required error={errors.reciterId}>
         <Input id={`ra-rid-${submission.id}`} type="text" value={reciterId} onChange={(e) => setReciterId(e.target.value)} disabled={isPending} error={errors.reciterId} />
       </FormField>
-      <FormField id={`ra-slug-${submission.id}`} label="Slug" error={errors.slug}>
+      <FormField id={`ra-slug-${submission.id}`} label={t('form.slugLabel')} error={errors.slug}>
         <Input id={`ra-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
       </FormField>
-      <FormField id={`ra-year-${submission.id}`} label="Year" error={errors.year}>
+      <FormField id={`ra-year-${submission.id}`} label={t('album.yearLabel')} error={errors.year}>
         <Input id={`ra-year-${submission.id}`} type="number" value={year} onChange={(e) => setYear(e.target.value)} disabled={isPending} min={1900} error={errors.year} />
       </FormField>
-      <FormField id={`ra-art-${submission.id}`} label="Artwork URL" error={errors.artworkUrl}>
+      <FormField id={`ra-art-${submission.id}`} label={t('album.artworkUrlLabel')} error={errors.artworkUrl}>
         <Input id={`ra-art-${submission.id}`} type="url" value={artworkUrl} onChange={(e) => setArtworkUrl(e.target.value)} disabled={isPending} error={errors.artworkUrl} />
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex items-center gap-3">
         <Button type="submit" size="sm" disabled={isPending}>
-          {isPending ? 'Submitting…' : 'Resubmit'}
+          {isPending ? t('form.submitting') : t('form.resubmit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-          Cancel
+          {t('form.cancel')}
         </Button>
       </div>
     </form>
@@ -186,6 +178,7 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
 // ---------------------------------------------------------------------------
 
 function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormProps): React.JSX.Element {
+  const t = useTranslations('contribute');
   const data = submission.data as TrackSubmissionData;
   const [title, setTitle] = useState(data.title);
   const [albumId, setAlbumId] = useState(data.albumId);
@@ -198,9 +191,19 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const schema = z.object({
+    title: z.string().min(1, t('form.titleRequired')),
+    albumId: z.uuid(t('form.albumUuidInvalid')),
+    slug: z.string().min(1).optional().or(z.literal('')),
+    trackNumber: z.string().optional().refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), t('form.trackNumberInvalid')),
+    audioUrl: z.url(t('form.urlInvalid')).optional().or(z.literal('')),
+    youtubeId: z.string().optional().or(z.literal('')),
+    duration: z.string().optional().refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), t('form.durationInvalid')),
+  });
+
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
-    const result = trackSchema.safeParse({ title, albumId, slug: slug || undefined, trackNumber: trackNumber || undefined, audioUrl: audioUrl || undefined, youtubeId: youtubeId || undefined, duration: duration || undefined });
+    const result = schema.safeParse({ title, albumId, slug: slug || undefined, trackNumber: trackNumber || undefined, audioUrl: audioUrl || undefined, youtubeId: youtubeId || undefined, duration: duration || undefined });
     if (!result.success) {
       const errs: Errors = {};
       for (const issue of result.error.issues) { errs[String(issue.path[0])] = issue.message; }
@@ -214,42 +217,42 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
         await resubmitSubmission(submission.id, 'track', { title, albumId, slug: slug || undefined, trackNumber: trackNumber ? parseInt(trackNumber) : undefined, audioUrl: audioUrl || undefined, youtubeId: youtubeId || undefined, duration: duration ? parseInt(duration) : undefined });
         onSuccess();
       } catch (err) {
-        setServerError(err instanceof Error ? err.message : 'Resubmit failed.');
+        setServerError(err instanceof Error ? err.message : t('form.resubmitFailure'));
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Edit and resubmit</p>
-      <FormField id={`rt-title-${submission.id}`} label="Title" required error={errors.title}>
+      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">{t('form.resubmitHeading')}</p>
+      <FormField id={`rt-title-${submission.id}`} label={t('track.titleLabel')} required error={errors.title}>
         <Input id={`rt-title-${submission.id}`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending} error={errors.title} />
       </FormField>
-      <FormField id={`rt-aid-${submission.id}`} label="Album ID" required error={errors.albumId}>
+      <FormField id={`rt-aid-${submission.id}`} label={t('track.albumIdLabel')} required error={errors.albumId}>
         <Input id={`rt-aid-${submission.id}`} type="text" value={albumId} onChange={(e) => setAlbumId(e.target.value)} disabled={isPending} error={errors.albumId} />
       </FormField>
-      <FormField id={`rt-slug-${submission.id}`} label="Slug" error={errors.slug}>
+      <FormField id={`rt-slug-${submission.id}`} label={t('form.slugLabel')} error={errors.slug}>
         <Input id={`rt-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
       </FormField>
-      <FormField id={`rt-tn-${submission.id}`} label="Track number" error={errors.trackNumber}>
+      <FormField id={`rt-tn-${submission.id}`} label={t('track.trackNumberLabel')} error={errors.trackNumber}>
         <Input id={`rt-tn-${submission.id}`} type="number" value={trackNumber} onChange={(e) => setTrackNumber(e.target.value)} disabled={isPending} min={1} error={errors.trackNumber} />
       </FormField>
-      <FormField id={`rt-au-${submission.id}`} label="Audio URL" error={errors.audioUrl}>
+      <FormField id={`rt-au-${submission.id}`} label={t('track.audioUrlLabel')} error={errors.audioUrl}>
         <Input id={`rt-au-${submission.id}`} type="url" value={audioUrl} onChange={(e) => setAudioUrl(e.target.value)} disabled={isPending} error={errors.audioUrl} />
       </FormField>
-      <FormField id={`rt-yt-${submission.id}`} label="YouTube ID" error={errors.youtubeId}>
+      <FormField id={`rt-yt-${submission.id}`} label={t('track.youtubeIdLabel')} error={errors.youtubeId}>
         <Input id={`rt-yt-${submission.id}`} type="text" value={youtubeId} onChange={(e) => setYoutubeId(e.target.value)} disabled={isPending} maxLength={11} error={errors.youtubeId} />
       </FormField>
-      <FormField id={`rt-dur-${submission.id}`} label="Duration (s)" error={errors.duration}>
+      <FormField id={`rt-dur-${submission.id}`} label={t('track.durationShortLabel')} error={errors.duration}>
         <Input id={`rt-dur-${submission.id}`} type="number" value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isPending} min={1} error={errors.duration} />
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex items-center gap-3">
         <Button type="submit" size="sm" disabled={isPending}>
-          {isPending ? 'Submitting…' : 'Resubmit'}
+          {isPending ? t('form.submitting') : t('form.resubmit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-          Cancel
+          {t('form.cancel')}
         </Button>
       </div>
     </form>

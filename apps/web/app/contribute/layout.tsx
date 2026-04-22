@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { auth } from '@/lib/auth';
 
 // Mark as dynamic since we use headers() for auth checks on every request
@@ -31,30 +32,29 @@ export default async function ContributeLayout({
   const hasAccess = role === 'contributor' || role === 'moderator';
 
   if (!hasAccess) {
+    const t = await getTranslations('contribute.access');
     return (
       <main id="main-content" className="flex min-h-[60vh] items-center justify-center py-16">
         <div className="mx-auto max-w-md text-center">
           <h1 className="mb-3 text-2xl font-bold text-foreground">
-            Contributor Access Required
+            {t('heading')}
           </h1>
           <p className="mb-6 text-sm text-muted-foreground">
-            You need contributor access to submit content on Nawhas.com. Contributors help keep the
-            library accurate and complete.
+            {t('description')}
           </p>
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-5 py-4 text-left dark:border-blue-800 dark:bg-blue-950">
             <p className="mb-2 text-sm font-medium text-blue-900 dark:text-blue-100">
-              How to become a contributor
+              {t('howToHeading')}
             </p>
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              Contact a moderator to have your account promoted to contributor status. Once promoted,
-              you can submit new reciters, albums, and tracks for review.
+              {t('howToDescription')}
             </p>
           </div>
           <Link
             href="/"
             className="mt-6 inline-block text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
           >
-            ← Back to home
+            {t('backToHome')}
           </Link>
         </div>
       </main>

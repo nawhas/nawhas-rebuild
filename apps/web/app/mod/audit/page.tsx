@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -33,10 +34,11 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
   });
 
   const { items, nextCursor } = await caller.moderation.auditLog({ limit: 20 });
+  const t = await getTranslations('mod.audit');
 
   return (
     <div className="max-w-5xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">Audit Log</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full table-fixed">
@@ -46,25 +48,25 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
                 scope="col"
                 className="w-2/5 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Action
+                {t('columnAction')}
               </th>
               <th
                 scope="col"
                 className="w-1/5 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Target type
+                {t('columnTargetType')}
               </th>
               <th
                 scope="col"
                 className="w-1/5 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Target ID
+                {t('columnTargetId')}
               </th>
               <th
                 scope="col"
                 className="w-1/5 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Date
+                {t('columnDate')}
               </th>
             </tr>
           </thead>
@@ -72,7 +74,7 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
             {items.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-12 text-center text-sm text-muted-foreground">
-                  No audit log entries yet.
+                  {t('empty')}
                 </td>
               </tr>
             ) : (

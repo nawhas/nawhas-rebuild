@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { auth } from '@/lib/auth';
 
 // Mark as dynamic since we use headers() for auth checks on every request
@@ -33,23 +34,27 @@ export default async function ModLayout({
     redirect('/');
   }
 
+  const t = await getTranslations('mod.nav');
+
+  const items = [
+    { href: '/mod', label: t('overview') },
+    { href: '/mod/queue', label: t('queue') },
+    { href: '/mod/users', label: t('users') },
+    { href: '/mod/audit', label: t('audit') },
+  ];
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar nav */}
       <nav
-        aria-label="Moderation navigation"
+        aria-label={t('label')}
         className="w-56 shrink-0 border-r border-border bg-muted px-4 py-6"
       >
         <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Moderation
+          {t('heading')}
         </p>
         <ul className="space-y-1">
-          {[
-            { href: '/mod', label: 'Overview' },
-            { href: '/mod/queue', label: 'Queue' },
-            { href: '/mod/users', label: 'Users' },
-            { href: '/mod/audit', label: 'Audit Log' },
-          ].map(({ href, label }) => (
+          {items.map(({ href, label }) => (
             <li key={href}>
               <Link
                 href={href}

@@ -4,6 +4,7 @@
  */
 
 import { diffWords } from 'diff';
+import { useTranslations } from 'next-intl';
 
 interface FieldDiffProps {
   label: string;
@@ -12,6 +13,7 @@ interface FieldDiffProps {
 }
 
 export function FieldDiff({ label, current, proposed }: FieldDiffProps): React.JSX.Element | null {
+  const t = useTranslations('mod.diff');
   const currentStr = current != null ? String(current) : '';
   const proposedStr = proposed != null ? String(proposed) : '';
   const unchanged = currentStr === proposedStr;
@@ -26,13 +28,13 @@ export function FieldDiff({ label, current, proposed }: FieldDiffProps): React.J
       ) : (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="mb-1 text-xs text-muted-foreground">Current</p>
+            <p className="mb-1 text-xs text-muted-foreground">{t('current')}</p>
             <p className="rounded bg-red-50 px-2 py-1 text-sm text-red-800 line-through dark:bg-red-950 dark:text-red-200">
-              {currentStr || <em>empty</em>}
+              {currentStr || <em>{t('empty')}</em>}
             </p>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted-foreground">Proposed</p>
+            <p className="mb-1 text-xs text-muted-foreground">{t('proposed')}</p>
             <InlineWordDiff current={currentStr} proposed={proposedStr} />
           </div>
         </div>

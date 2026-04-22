@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
 import { reviewSubmission } from '@/server/actions/moderation';
 
@@ -14,6 +15,7 @@ interface ReviewActionsProps {
  * Calls the moderation.review server action and refreshes the route on success.
  */
 export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.Element {
+  const t = useTranslations('mod.reviewActions');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [comment, setComment] = useState('');
@@ -31,7 +33,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         await reviewSubmission(submissionId, action, comment.trim() || undefined);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to submit review.');
+        setError(err instanceof Error ? err.message : t('reviewFailed'));
       }
     });
   }
@@ -43,12 +45,12 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
   }
 
   if (expanded) {
-    const label = expanded === 'rejected' ? 'Reject' : 'Request Changes';
+    const label = expanded === 'rejected' ? t('reject') : t('requestChanges');
 
     return (
       <div className="mt-4 space-y-3">
         <label htmlFor="review-comment" className="block text-sm font-medium text-foreground">
-          Comment (optional)
+          {t('commentLabel')}
         </label>
         <textarea
           id="review-comment"
@@ -56,7 +58,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           disabled={isPending}
-          placeholder="Add a comment for the submitter..."
+          placeholder={t('commentPlaceholder')}
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
         />
         {error && (
@@ -69,7 +71,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
             onClick={() => handleAction(expanded)}
             disabled={isPending}
           >
-            {isPending ? 'Submitting…' : label}
+            {isPending ? t('submitting') : label}
           </Button>
           <Button
             type="button"
@@ -77,7 +79,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
             onClick={handleCancel}
             disabled={isPending}
           >
-            Cancel
+            {t('cancel')}
           </Button>
         </div>
       </div>
@@ -94,7 +96,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         onClick={() => handleAction('approved')}
         disabled={isPending}
       >
-        {isPending ? 'Submitting…' : 'Approve'}
+        {isPending ? t('submitting') : t('approve')}
       </Button>
       <Button
         type="button"
@@ -102,7 +104,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         onClick={() => handleAction('changes_requested')}
         disabled={isPending}
       >
-        Request Changes
+        {t('requestChanges')}
       </Button>
       <Button
         type="button"
@@ -110,7 +112,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         onClick={() => handleAction('rejected')}
         disabled={isPending}
       >
-        Reject
+        {t('reject')}
       </Button>
     </div>
   );

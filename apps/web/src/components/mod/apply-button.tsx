@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@nawhas/ui/components/badge';
 import { Button } from '@nawhas/ui/components/button';
 import { applySubmission } from '@/server/actions/moderation';
@@ -15,6 +16,7 @@ interface ApplyButtonProps {
  * Only shown for approved submissions.
  */
 export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Element {
+  const t = useTranslations('mod.apply');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
         setApplied(true);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to apply submission.');
+        setError(err instanceof Error ? err.message : t('failed'));
       }
     });
   }
@@ -39,7 +41,7 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
         variant="secondary"
         className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
       >
-        Applied successfully
+        {t('applied')}
       </Badge>
     );
   }
@@ -50,7 +52,7 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
         <p role="alert" className="mb-2 text-xs text-destructive">{error}</p>
       )}
       <Button type="button" onClick={handleApply} disabled={isPending}>
-        {isPending ? 'Applying…' : 'Apply to database'}
+        {isPending ? t('applying') : t('button')}
       </Button>
     </div>
   );

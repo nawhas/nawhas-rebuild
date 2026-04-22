@@ -1,18 +1,23 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Card } from '@nawhas/ui/components/card';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
 import type { SubmissionDTO } from '@nawhas/types';
 
-function getSubmissionLabel(submission: SubmissionDTO): string {
+function getSubmissionLabel(
+  submission: SubmissionDTO,
+  t: (key: string) => string,
+): string {
   const data = submission.data as unknown as Record<string, unknown>;
-  if (submission.type === 'reciter') return (data.name as string) ?? 'Unnamed reciter';
-  if (submission.type === 'album') return (data.title as string) ?? 'Unnamed album';
-  if (submission.type === 'track') return (data.title as string) ?? 'Unnamed track';
+  if (submission.type === 'reciter') return (data.name as string) ?? t('unnamedReciter');
+  if (submission.type === 'album') return (data.title as string) ?? t('unnamedAlbum');
+  if (submission.type === 'track') return (data.title as string) ?? t('unnamedTrack');
   return submission.id;
 }
 
 export function SubmissionRow({ submission }: { submission: SubmissionDTO }): React.JSX.Element {
-  const label = getSubmissionLabel(submission);
+  const t = useTranslations('contribute.history');
+  const label = getSubmissionLabel(submission, t);
   const href = `/mod/submissions/${submission.id}`;
 
   return (

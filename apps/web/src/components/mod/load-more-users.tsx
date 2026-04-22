@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { fetchUsersPage } from '@/server/actions/moderation-fetch';
 import { RoleBadge } from '@/components/mod/badges';
 import { RoleButton } from '@/components/mod/role-button';
@@ -22,6 +23,8 @@ interface LoadMoreUsersProps {
  * Client component that loads additional user pages on demand.
  */
 export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): React.JSX.Element {
+  const t = useTranslations('mod.users');
+  const tQueue = useTranslations('mod.queue');
   const [items, setItems] = useState<User[]>([]);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isPending, startTransition] = useTransition();
@@ -36,7 +39,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
         setItems((prev) => [...prev, ...result.items]);
         setCursor(result.nextCursor);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load more.');
+        setError(err instanceof Error ? err.message : t('loadFailed'));
       }
     });
   }
@@ -73,7 +76,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
               disabled={isPending}
               className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
             >
-              {isPending ? 'Loading…' : 'Load more'}
+              {isPending ? tQueue('loadingMore') : tQueue('loadMore')}
             </button>
           </td>
         </tr>

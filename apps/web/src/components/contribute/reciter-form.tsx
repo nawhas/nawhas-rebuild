@@ -2,17 +2,13 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { Button } from '@nawhas/ui/components/button';
 import { createReciterSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 
-const schema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  slug: z.string().min(1).optional().or(z.literal('')),
-});
-
-type Errors = Partial<Record<keyof z.infer<typeof schema>, string>>;
+type Errors = Partial<Record<'name' | 'slug', string>>;
 
 interface ReciterFormProps {
   /** For edit mode. */
@@ -36,12 +32,18 @@ export function ReciterForm({
   action,
   onSuccess,
 }: ReciterFormProps): React.JSX.Element {
+  const t = useTranslations('contribute');
   const router = useRouter();
   const [name, setName] = useState(initialValues?.name ?? '');
   const [slug, setSlug] = useState(initialValues?.slug ?? '');
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const schema = z.object({
+    name: z.string().min(1, t('form.nameRequired')),
+    slug: z.string().min(1).optional().or(z.literal('')),
+  });
 
   function validate(): boolean {
     const result = schema.safeParse({ name, slug: slug || undefined });
@@ -75,30 +77,30 @@ export function ReciterForm({
           router.push('/profile/contributions');
         }
       } catch (err) {
-        setServerError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+        setServerError(err instanceof Error ? err.message : t('form.genericFailure'));
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
-      <FormField id="name" label="Name" required error={errors.name}>
+      <FormField id="name" label={t('reciter.nameLabel')} required error={errors.name}>
         <Input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. Nadeem Sarwar"
+          placeholder={t('reciter.namePlaceholder')}
           error={errors.name}
         />
       </FormField>
 
       <FormField
         id="slug"
-        label="Slug"
+        label={t('form.slugLabel')}
         error={errors.slug}
-        hint="URL-friendly identifier. Leave blank to auto-generate."
+        hint={t('form.slugHintReciter')}
       >
         <Input
           id="slug"
@@ -106,7 +108,7 @@ export function ReciterForm({
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           disabled={isPending}
-          placeholder="e.g. nadeem-sarwar"
+          placeholder={t('reciter.slugPlaceholder')}
           error={errors.slug}
         />
       </FormField>
@@ -116,7 +118,7 @@ export function ReciterForm({
       )}
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? 'Submitting…' : 'Submit for review'}
+        {isPending ? t('form.submitting') : t('form.submit')}
       </Button>
     </form>
   );

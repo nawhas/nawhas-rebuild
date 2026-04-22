@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -35,16 +36,17 @@ export default async function ContributionsPage(): Promise<React.JSX.Element> {
   });
 
   const { items } = await caller.submission.myHistory({ limit: 20 });
+  const t = await getTranslations('contribute.history');
 
   return (
     <main id="main-content" className="mx-auto max-w-3xl py-10 px-4">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">My Contributions</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t('pageTitle')}</h1>
         <Link
           href="/contribute"
           className="text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
         >
-          + New submission
+          {t('newSubmission')}
         </Link>
       </div>
 
