@@ -99,11 +99,11 @@ describe('SaveButton', () => {
       expect(btn.getAttribute('aria-pressed')).toBe('false');
     });
 
-    it('redirects to /login with callbackUrl on click', () => {
+    it('redirects to /login with callbackUrl and reason=save on click', () => {
       render(<SaveButton trackId="track-1" initialSaved={false} />);
       fireEvent.click(screen.getByRole('button'));
       expect(mockPush).toHaveBeenCalledWith(
-        `/login?callbackUrl=${encodeURIComponent(mockPathname)}`,
+        `/login?callbackUrl=${encodeURIComponent(mockPathname)}&reason=save`,
       );
     });
 
@@ -195,11 +195,11 @@ describe('LikeButton', () => {
       expect(screen.getByRole('button', { name: /like track/i })).toBeDefined();
     });
 
-    it('redirects to /login with callbackUrl on click', () => {
+    it('redirects to /login with callbackUrl and reason=like on click', () => {
       render(<LikeButton trackId="track-1" initialLiked={false} />);
       fireEvent.click(screen.getByRole('button'));
       expect(mockPush).toHaveBeenCalledWith(
-        `/login?callbackUrl=${encodeURIComponent(mockPathname)}`,
+        `/login?callbackUrl=${encodeURIComponent(mockPathname)}&reason=like`,
       );
     });
 

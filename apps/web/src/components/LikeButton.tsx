@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
 import { useSession } from '@/lib/auth-client';
+import { buildLoginHref } from '@/lib/auth-reason';
 import { likeTrack, unlikeTrack, getIsLiked } from '@/server/actions/likes';
 
 function ThumbUpIcon({ filled }: { filled: boolean }): React.JSX.Element {
@@ -30,7 +31,8 @@ interface LikeButtonProps {
  * Thumb-up button that toggles a track's liked state.
  *
  * - Optimistic UI: state flips immediately; rolled back on server error.
- * - Unauthenticated click: redirects to /login?callbackUrl=<current-path>.
+ * - Unauthenticated click: redirects to /login?callbackUrl=<current-path>&reason=like
+ *   so the login page can show contextual copy ("Sign in to like this track").
  * - If `initialLiked` is not provided, fetches state on mount for logged-in users.
  *
  * Client Component — requires interaction and auth session.
@@ -69,7 +71,7 @@ export function LikeButton({ trackId, initialLiked, className = '' }: LikeButton
 
   function handleClick(): void {
     if (!session?.user) {
-      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      router.push(buildLoginHref({ callbackUrl: pathname ?? '/', reason: 'like' }));
       return;
     }
     const nextLiked = !isLiked;

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
 import { useSession } from '@/lib/auth-client';
+import { buildLoginHref } from '@/lib/auth-reason';
 import { saveTrack, unsaveTrack, getIsSaved } from '@/server/actions/library';
 
 function HeartIcon({ filled }: { filled: boolean }): React.JSX.Element {
@@ -32,7 +33,8 @@ interface SaveButtonProps {
  * Heart button that toggles a track's saved state in the user's library.
  *
  * - Optimistic UI: state flips immediately; rolled back on server error.
- * - Unauthenticated click: redirects to /login?callbackUrl=<current-path>.
+ * - Unauthenticated click: redirects to /login?callbackUrl=<current-path>&reason=save
+ *   so the login page can show contextual copy ("Sign in to save this track").
  * - If `initialSaved` is not provided, fetches state on mount for logged-in users.
  *
  * Client Component — requires interaction and auth session.
@@ -71,7 +73,7 @@ export function SaveButton({ trackId, initialSaved, onSavedChange, className = '
 
   function handleClick(): void {
     if (!session?.user) {
-      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      router.push(buildLoginHref({ callbackUrl: pathname ?? '/', reason: 'save' }));
       return;
     }
     const nextSaved = !isSaved;

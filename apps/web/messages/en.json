@@ -41,7 +41,21 @@
       "submitting": "Signing in\u2026",
       "noAccount": "Don't have an account?",
       "register": "Register",
-      "fallbackError": "Invalid email or password."
+      "fallbackError": "Invalid email or password.",
+      "reasonHeading": {
+        "save": "Sign in to save this track",
+        "like": "Sign in to like this track",
+        "library": "Sign in to view your library",
+        "contribute": "Sign in to contribute",
+        "comment": "Sign in to comment"
+      },
+      "reasonSubtext": {
+        "save": "We'll bring you right back here after you sign in.",
+        "like": "We'll bring you right back here after you sign in.",
+        "library": "Your saved tracks, listening history, and likes live here.",
+        "contribute": "Help grow the nawhas catalogue.",
+        "comment": "Join the conversation."
+      }
     },
     "register": {
       "heading": "Create an account",
