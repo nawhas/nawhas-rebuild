@@ -51,18 +51,18 @@ Pages and patterns from the legacy codebase that are **not** in scope for the re
   - Off-grid `14px` margin on `.card__title .icon` at `nawhas/nawhas:nuxt/assets/tracks/_cards.scss#L8` — rebuild should normalise to 16px.
   - Inline hero typography `Roboto 200 / 64px / 75px / -1.5px` at `HomePage.vue#L265-271` — belongs in tokens if kept.
 
-## Verify before porting
+## Decisions (resolved 2026-04-22)
 
-Items the audit surfaced as needing a product or design decision BEFORE Phase 2.2 or 2.3 implementation can proceed:
+These are the product / design decisions the audit surfaced, now resolved by the roadmap owner. Phase 2.2 planning should treat them as fixed inputs.
 
-- **Brand hue.** Rebuild's green-primary / amber-secondary is hue-flipped from legacy's red/grey. Intentional rebuild-era rebrand, or should 2.2 restore legacy's red/orange/grey?
-- **PWA manifest.** Rebuild has none. Port legacy's `theme_color #da0000` / `background_color #ff7252`, or leave the rebuild without PWA at launch?
-- **Display fonts.** Decide in 2.2 whether to port Bellefair + Roboto Slab, or swap to rebuild-chosen equivalents (e.g. Playfair Display, Literata).
-- **Scrollable lyrics highlight + scroll-sync.** Rebuild's lyrics are fully static. Is timestamp-sync a launch-blocker for parity, or a post-launch nice-to-have?
-- **Library IA.** Rebuild collapses 3 library routes to 1. Restore anon landing + home dashboard, or ship the simpler one-route model?
-- **Search entry points.** Rebuild has both a header `SearchBar` AND a `/search` page; legacy had only a dialog. Intentional IA, or does one need to be demoted?
-- **Contextual AuthReason copy.** Legacy's login dialog customised copy per trigger; rebuild uses generic auth-page copy. Port the customisation, or accept the simpler copy?
-- **PlayerBar regressions** (body `pb-20` reservation + upward shadow). Code-fixable, not design decisions — noting here because they are design-decision-adjacent and likely belong in 2.2 alongside other primitives.
+- **Brand hue — restore legacy red/grey.** Not a rebrand; the rebuild's green/amber was a shadcn-starter default. Both light and dark modes derive from legacy's palette (`colors.red.base` `#F44336` primary, `colors.grey.darken2` `#616161` secondary, `colors.orange.accent3` `#FF6D00` accent, `#DA0000` wordmark). 2.2 builds new `--color-*` ramps anchored on these hues for both modes.
+- **PWA — skip entirely.** The rebuild is not a PWA and there is no near-term plan to become one. Drop the `theme_color` / `background_color` rows from the 2.2 work list. If PWA support is added later it becomes its own sub-project.
+- **Display fonts — port both Bellefair and Roboto Slab.** Match legacy. Load via `next/font/google` in `apps/web/app/layout.tsx`; add `--font-display-serif` (Bellefair) and `--font-slab` (Roboto Slab) tokens. Roboto Mono also ports for lyrics timestamps.
+- **Lyrics highlight + scroll-sync — parked for dedicated research.** Rebuild's current lyrics implementation (schema, data flow, timestamp persistence) needs a code-first investigation before we can decide whether highlight + scroll-sync is a launch-blocker or post-launch work. Tracked as an explicit roadmap sub-project — see [`2026-04-21-rebuild-roadmap.md`](../superpowers/specs/2026-04-21-rebuild-roadmap.md) Phase 2.x-research.
+- **Library IA — ship the simpler one-route model.** Keep rebuild's `/library/tracks` + `/history`; do not restore the legacy anon landing or `/library/home` dashboard. Fold the "Recently Saved" strip into the top of `/library/tracks` if there is real UX value at list-load.
+- **Search entry points — keep both.** Header `SearchBar` for jump-to-result intent (autocomplete, ≤5 hits); `/search` page for browse intent (paginated, filterable). Same dual pattern as Spotify / YouTube; legacy conflated them into one dialog.
+- **Contextual AuthReason copy — port.** Add a `?reason=save|like|library|contribute` query param on redirects to `/login`, map to copy variants in the auth page shell. Small effort; real UX win on conversion.
+- **PlayerBar regressions — fix as a pre-2.2 side-quest.** Two code-fixable bugs: (a) conditional `pb-20` on `<main>` when `selectCurrentTrack !== null`; (b) replace `shadow-lg` with an upward-casting custom box-shadow matching legacy's intent. Ship separately from Phase 2.2 proper.
 
 ## Deferred: visual verification agenda
 

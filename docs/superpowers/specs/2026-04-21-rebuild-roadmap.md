@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · Phase 2.2 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1c/d + 2.2 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-22
@@ -142,7 +142,16 @@ The most impactful deltas the audit surfaced — each is a product/design decisi
 - Rebuild has drifted larger on radius across the board (cards 8px vs 4px, buttons/inputs 6px vs 4px, etc.) — either ratify the drift or revert.
 - Legacy uses three competing motion vocabularies (Vuetify, custom cubic-bezier, Material standard easing); Tailwind's `ease-in-out` is byte-identical to the Material standard curve, so rebuild can consolidate on Tailwind defaults without loss.
 
-The README's "Verify before porting" section enumerates the full list of product/design decisions that must resolve before 2.2 starts.
+The README's "Verify before porting" section enumerated the full list of product/design decisions that had to resolve before 2.2 could start. All resolved 2026-04-22 — see the `## Decisions (resolved 2026-04-22)` section of `docs/design/README.md`. Summary:
+
+- Brand hue: restore legacy red/grey, both light and dark modes.
+- PWA: skip entirely (rebuild is not a PWA and there is no near-term plan to become one).
+- Display fonts: port both Bellefair and Roboto Slab (plus Roboto Mono for lyrics timestamps).
+- Lyrics highlight + scroll-sync: parked for dedicated research — see Phase 2.1c below.
+- Library IA: ship the simpler one-route model (keep `/library/tracks` + `/history`; do not restore legacy's anon landing or `/library/home` dashboard).
+- Search entry points: keep both (header `SearchBar` for jump intent, `/search` page for browse intent).
+- Contextual `AuthReason` copy: port via a `?reason=save|like|library|contribute` query param.
+- PlayerBar regressions: fix as a pre-2.2 side-quest — see Phase 2.1d below.
 
 ### Deferred to a follow-up visual verification pass (2.1b)
 
@@ -153,6 +162,32 @@ The README's "Verify before porting" section enumerates the full list of product
 - **Code-first audits via `gh api` are tractable at this legacy's scale.** Roughly 3 hours of execution time, no local clone, full provenance citations throughout. Worth repeating for future legacy-system audits rather than cloning + `grep`ping locally — the citation trail is more durable than a shell history.
 - **Discovery tasks should go first and stay uncommitted.** The liveness sweep + source-of-truth ladder in `.audit-notes.md` prevented every downstream task from re-discovering the same facts; committing it would have duplicated content in the final README without adding signal.
 - **Soft line caps on audit entries are aspirational.** The 30-line cap on per-page entries was exceeded for every entry (actual: 40–71 lines); trimming would have lost load-bearing structural deltas. Plan for ~50-line audit-entry reality on the next pass.
+
+### 2.1c Lyrics highlight + scroll-sync research (parked)
+
+**Status:** not started · blocks a launch-parity decision on the Track page.
+
+The legacy Track page has two features the rebuild does not: (a) the active lyrics line is highlighted in real time as the audio plays, driven by a `LyricsHighlighter` class bound to Vuex timing state, and (b) the active line auto-scrolls into view inside `<lyrics-overlay>` on the morphing AudioPlayer. Rebuild's `<LyricsDisplay>` has neither.
+
+Before committing to port these (which is nontrivial) or drop them (which materially changes the Track page UX), we need a code-first investigation of the rebuild:
+
+1. Does the rebuild's lyrics schema carry per-line timestamps today? (Check `packages/db/` migrations + `apps/web/src/server/routers/tracks.ts` / lyrics router.)
+2. If yes — is the data actually populated for the seeded catalogue, or only the schema?
+3. If no — what would it take to add timestamp persistence, and does the legacy data export carry them?
+4. Is there any existing scroll-sync or highlight scaffolding we overlooked in `<LyricsDisplay>` / `<MobilePlayerOverlay>`?
+
+Output: a short research note (`docs/superpowers/specs/YYYY-MM-DD-lyrics-sync-research.md`) with the findings and a go / no-go recommendation for launch parity. The decision feeds into Phase 2.3's Track-page redesign spec.
+
+### 2.1d PlayerBar regressions (pre-2.2 side-quest)
+
+**Status:** not started · code-fixable, no design decisions required.
+
+Two regressions Phase 2.1 surfaced, both shippable as a single small PR before Phase 2.2 proper:
+
+- **Body reservation.** `<main>` in the rebuild never gets `pb-20` when a track is loaded, so bottom-of-page content scrolls under the fixed `PlayerBar`. Fix: conditionally apply `pb-20` (≈ 80px, matching legacy's `.app--player-showing` reserve) on `<main>` keyed off `selectCurrentTrack !== null`.
+- **Shadow direction.** `PlayerBar` ships `shadow-lg`, which casts downward and is wasted against the viewport bottom. Legacy hand-rolls an upward shadow (`0 -2px 8px 4px rgba(0,0,0,0.16)` at `nawhas/nawhas:nuxt/components/audio-player/AudioPlayer.vue#L862`). Fix: replace `shadow-lg` with an upward-casting custom utility or inline style matching legacy's intent.
+
+No new tokens, no new primitives, no design review. Single PR, small blast radius.
 
 ### 2.2 Design-system foundation in `packages/ui`
 
