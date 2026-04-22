@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1d shipped (2026-04-22) · Phase 2.2 shipped (2026-04-22) · Phase 2.1e shipped (2026-04-22) · Phase 2.1c + 2.3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.1c + Phase 3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-22
@@ -255,20 +255,86 @@ Eight deliverables committed direct to `main`:
 
 Refs: `docs/superpowers/specs/2026-04-22-phase-2-1e-complete-frontend-audit-design.md` (spec + implementation plan).
 
-### 2.3 Page-by-page redesign
+### 2.3 Page-by-page redesign ✅ shipped 2026-04-22
 
-Redesign in descending order of user traffic. Each page ships behind the same bar:
+Shipped as 26 commits on `main` in descending-traffic order
+(Home → Reciter → Album → Track → Library+History → Search →
+Auth → Contribute+Mod). Per-page workstream ran the 5 steps
+(tokens → dark-mode → primitives → legacy-gap port → a11y)
+consuming Phase 2.1e audit output as the backlog.
 
-1. Home
-2. Reciter profile
-3. Album
-4. Track — the key surface (audio + lyrics + metadata)
-5. Library / History / Saved / Liked
-6. Search results
-7. Auth pages
-8. Contribute + Mod (lowest traffic)
+**Home** (4 commits): `55a0093` token+dark sweep → `148ee5c`
+<Card> + <SectionTitle> adoption → `f072d46` legacy hero
+restored (red-gradient + Bellefair 2.5rem slogan + hero-variant
+SearchBar), new Top Nawhas ordered-list, Saved strip gated on
+useSession. New tRPC procedures home.getTopTracks /
+home.getRecentSaved + TrackListItemDTO. Zero additional a11y
+findings — Tasks 1-3's implementations were already clean.
 
-Every page gets a Playwright visual-regression snapshot on its way in. After that phase the parity bar is objective: the snapshot matches or the PR is red.
+**Reciter** (2 commits): `3f24b81` sweep → `583f44c` Roboto
+Slab hero title + load-more album pagination via new
+<LoadMoreAlbums> client component + <SectionTitle> adoption.
+Dead placeholder buttons confirmed never ported (port gap, not
+regression). Zero additional a11y findings.
+
+**Album** (4 commits): `6d53314` sweep → `28045d0` Roboto Slab
++ primitives (play-all-button onto <Button>) → `9c6699e`
+precomputed vibrant-color hero backgrounds (new
+albums.vibrant_color column via migration 0009, one-shot
+compute-vibrant-colors.ts script using node-vibrant v4,
+AlbumDTO extended, render with text-contrast switch) → `488b1ad`
+a11y (row clickable via stretched-link ::before overlay, dot
+role="img").
+
+**Track** (3 commits): `fefd0b2` sweep → `06ea24f` <Tabs>
+adoption for MediaToggle + LyricsDisplay language switcher,
+Rules-of-Hooks fix in lyrics-display (early null-return moved
+after useState/useEffect), Roboto Slab hero title → `d54ee58`
+a11y (lang attr on lyrics lines, en-Latn for Romanized).
+Lyrics highlight+sync functionality deferred to Phase 2.1c per
+scope call.
+
+**Library + History** (2 commits): `426001a` combined sweep
+(token+dark+SectionTitle + <Button variant="destructive"/"link">
+on clear-history controls) → `c2fb1b3` a11y (removed duplicate
+<main> landmarks — PageLayout already wraps).
+
+**Search** (2 commits): `71a857f` <Tabs> adoption on 4-tab
+results strip (fixes Critical role="tab" without tabpanel/
+aria-controls audit finding) + token+dark sweep → `7cccf8a`
+a11y (misleading track link aria-label corrected, listbox
+section headers wrapped in role="group" with aria-labelledby).
+
+**Auth** (4 commits): `6a4d922` sweep (error-red → destructive
+tokens) → `160561b` <Card> + <Button> (7 card wraps + 5 button
+swaps across 4 form files + 2 page branches, Apple brand-black
+preserved) → `eaaf3ad` AuthReason query-param-driven
+contextual copy via new buildLoginHref helper + wired to
+SaveButton/LikeButton → `d0af993` a11y (aria-describedby/
+aria-invalid linkage, role="status" on async state changes,
+anchor-as-button → <Button asChild><Link/>>).
+
+**Contribute + Mod + Settings** (4 commits): `10b5aed` sweep
+(~205 class rewrites across 32 files; hot-spot record maps
+in mod/badges + submit buttons in mod/review-actions
+deliberately left for Task 24) → `15e1180` Badge/Button/Select/
+Dialog primitives (21 adoptions; delete-account modal rewritten
+with Radix Dialog — gains focus trap + Escape + inert
+background) → `37a601e` i18n port of contribute + mod
+hardcoded strings (~115 new translation keys) → `c70bea0`
+a11y (form-field required-asterisk → aria-required via
+cloneElement, aria-describedby error linkage, role="status"
+on async state, table captions).
+
+Verification: `./dev typecheck` + `./dev lint` green throughout;
+`pnpm --filter @nawhas/web test` grew from 444 to 449+ tests
+(new auth-reason + updated save/like tests); zero regressions.
+Phase 2.1e audit's 523 Tailwind-default call sites reduced
+substantially — most remaining ones live in intentional brand
+colors (error-red, success-green halos, provider brand buttons
+like Apple black, mod badge visual scanning).
+
+Refs: `docs/superpowers/specs/2026-04-22-phase-2-3-page-redesign-design.md`, `docs/superpowers/plans/2026-04-22-phase-2-3-page-redesign.md`.
 
 ## Phase 3 — Launch Prep
 
