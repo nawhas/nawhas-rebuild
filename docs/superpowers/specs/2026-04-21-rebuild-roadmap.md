@@ -1,9 +1,9 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · Phase 2.2 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
-**Last updated:** 2026-04-21
+**Last updated:** 2026-04-22
 
 ## Context
 
@@ -115,9 +115,44 @@ Phase 1 landed as 16 commits on `main` (`832c236..2ad0d9b`). All CI jobs green i
 
 **Unblocked:** Phase 1 is merged, staging is green on the upgraded stack, and the four post-upgrade follow-ups are closed. Tokens and primitives defined here will land against the stable Next 16 / TS 6 / Tailwind 4.2 baseline.
 
-### 2.1 Legacy visual audit
+### 2.1 Legacy visual audit ✅ shipped 2026-04-22
 
-Screenshot every live production page across desktop and mobile breakpoints. Extract design tokens — palette, typography scale, spacing grid, border radii, shadows, motion — and write them to `docs/design/tokens.md`. This becomes the source of truth for everything that follows.
+Scope (original plan): screenshot every live production page across desktop and mobile breakpoints; extract design tokens and write them to `docs/design/tokens.md`. In execution, the audit pivoted to a code-first pass against the legacy repo via `gh api` (no screenshots, no local clone) — the legacy source was the canonical record, screenshots would have added noise without adding fidelity.
+
+Three deliverables committed direct to `main` under `docs/design/`:
+
+| File | Purpose | Commit |
+|---|---|---|
+| [`docs/design/tokens.md`](../../design/tokens.md) | Six-family comparative token audit (palette, typography, spacing, radius, shadows, motion) — ~67 rows, every legacy value citation-backed. | `529c0f7` |
+| [`docs/design/layouts.md`](../../design/layouts.md) | Per-page skeletons for the 10 live production routes + shared chrome (header, footer, player bar, notifications), compared against rebuild equivalents. | `6cbc759` |
+| [`docs/design/README.md`](../../design/README.md) | Index: methodology, summary of findings, what-we-did-not-carry-over list, verify-before-porting list, deferred visual-verification agenda. | `b8ae1ab` |
+
+Also committed: the spec and implementation plan for this sub-project (`docs/superpowers/specs/2026-04-22-phase-2-1-legacy-audit-design.md` and `docs/superpowers/plans/2026-04-22-phase-2-1-legacy-audit.md`).
+
+### Findings surfaced for Phase 2.2 / 2.3
+
+The most impactful deltas the audit surfaced — each is a product/design decision that needs an answer before 2.2 can codify tokens or 2.3 can redesign pages:
+
+- Rebuild's brand palette is hue-flipped from legacy (green/amber vs red/grey) — pick one before tokens land.
+- Rebuild has no PWA manifest; legacy declares `theme_color #da0000` and installs as a standalone app.
+- Rebuild home has no hero; legacy has a red-gradient hero with inline search as the primary entry point.
+- Rebuild Track page lyrics are fully static; legacy has active-line highlight + scroll-sync driven by Vuex timing state.
+- Language switching (AR / UR / EN / romanized tabs on lyrics) exists only in the rebuild — legacy has no equivalent.
+- PlayerBar has two regressions vs legacy: no `pb-20` reservation on `body` (content scrolls under the bar) and a downward `shadow-lg` instead of legacy's upward cast.
+- Rebuild has drifted larger on radius across the board (cards 8px vs 4px, buttons/inputs 6px vs 4px, etc.) — either ratify the drift or revert.
+- Legacy uses three competing motion vocabularies (Vuetify, custom cubic-bezier, Material standard easing); Tailwind's `ease-in-out` is byte-identical to the Material standard curve, so rebuild can consolidate on Tailwind defaults without loss.
+
+The README's "Verify before porting" section enumerates the full list of product/design decisions that must resolve before 2.2 starts.
+
+### Deferred to a follow-up visual verification pass (2.1b)
+
+~12 items that a code-first audit can't settle without eyeballs: Vuetify elevation `rgba` stacks, dark-mode surface colours, lyrics scroll-sync interaction timings, elevation-lift animations on hover, and a handful of layout edge cases. Full list in `docs/design/README.md § Deferred: visual verification agenda`. Not a blocker for 2.2 — tokens can land against the code-audit findings and 2.1b can reconcile later.
+
+### Lessons worth carrying forward
+
+- **Code-first audits via `gh api` are tractable at this legacy's scale.** Roughly 3 hours of execution time, no local clone, full provenance citations throughout. Worth repeating for future legacy-system audits rather than cloning + `grep`ping locally — the citation trail is more durable than a shell history.
+- **Discovery tasks should go first and stay uncommitted.** The liveness sweep + source-of-truth ladder in `.audit-notes.md` prevented every downstream task from re-discovering the same facts; committing it would have duplicated content in the final README without adding signal.
+- **Soft line caps on audit entries are aspirational.** The 30-line cap on per-page entries was exceeded for every entry (actual: 40–71 lines); trimming would have lost load-bearing structural deltas. Plan for ~50-line audit-entry reality on the next pass.
 
 ### 2.2 Design-system foundation in `packages/ui`
 
