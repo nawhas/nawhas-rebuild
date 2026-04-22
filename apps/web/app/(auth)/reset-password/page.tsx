@@ -24,15 +24,15 @@ export default async function ResetPasswordPage({
 
   if (error === 'INVALID_TOKEN' || error === 'TOKEN_EXPIRED') {
     return (
-      <div className="rounded-lg bg-white px-8 py-10 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-900 dark:ring-gray-700">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+      <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="h-6 w-6 text-red-600"
+            className="h-6 w-6 text-destructive"
             aria-hidden="true"
           >
             <path
@@ -43,10 +43,10 @@ export default async function ResetPasswordPage({
           </svg>
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
+        <h1 className="mb-2 text-2xl font-semibold text-foreground">
           {error === 'TOKEN_EXPIRED' ? t('tokenExpiredHeading') : t('tokenInvalidHeading')}
         </h1>
-        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mb-6 text-sm text-muted-foreground">
           {error === 'TOKEN_EXPIRED'
             ? t('tokenExpiredDescription')
             : t('tokenInvalidDescription')}
@@ -54,13 +54,13 @@ export default async function ResetPasswordPage({
 
         <a
           href="/forgot-password"
-          className="inline-block w-full rounded-md bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          className="inline-block w-full rounded-md bg-foreground px-4 py-2 text-center text-sm font-medium text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {t('requestNewLinkButton')}
         </a>
 
-        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          <a href="/login" className="font-medium text-gray-900 underline hover:no-underline dark:text-white">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <a href="/login" className="font-medium text-foreground underline hover:no-underline">
             {t('backToSignIn')}
           </a>
         </p>

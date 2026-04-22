@@ -56,12 +56,12 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
   }
 
   return (
-    <div className="rounded-lg bg-white px-8 py-10 shadow-sm ring-1 ring-gray-900/5">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">{t('heading')}</h1>
+    <div className="rounded-lg bg-card px-8 py-10 shadow-sm ring-1 ring-border">
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">{t('heading')}</h1>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-4">
-          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-foreground">
             {t('nameLabel')}
           </label>
           <Input
@@ -77,7 +77,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
         </div>
 
         <div className="mb-4">
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
             {t('emailLabel')}
           </label>
           <Input
@@ -94,7 +94,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">
             {t('passwordLabel')}
           </label>
           <Input
@@ -113,7 +113,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           <p
             id="register-error"
             role="alert"
-            className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700"
+            className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
           >
             {error}
           </p>
@@ -126,9 +126,9 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
 
       <SocialButtons providers={enabledProviders} callbackUrl="/" />
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('haveAccount')}{' '}
-        <Link href="/login" className="font-medium text-gray-900 underline hover:no-underline">
+        <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
           {t('signIn')}
         </Link>
       </p>

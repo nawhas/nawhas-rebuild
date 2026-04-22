@@ -43,11 +43,11 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
 
   return (
     <Card className="px-8 py-10">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">{t('heading')}</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">{t('heading')}</h1>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-4">
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
             {t('emailLabel')}
           </label>
           <Input
@@ -65,12 +65,12 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
 
         <div className="mb-6">
           <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
               {t('passwordLabel')}
             </label>
             <Link
               href="/forgot-password"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               {t('forgotPassword')}
             </Link>
@@ -91,7 +91,7 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
           <p
             id="login-error"
             role="alert"
-            className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700"
+            className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
           >
             {error}
           </p>
@@ -104,9 +104,9 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
 
       <SocialButtons providers={enabledProviders} callbackUrl={callbackUrl} />
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('noAccount')}{' '}
-        <Link href="/register" className="font-medium text-gray-900 underline hover:no-underline">
+        <Link href="/register" className="font-medium text-foreground underline hover:no-underline">
           {t('register')}
         </Link>
       </p>
