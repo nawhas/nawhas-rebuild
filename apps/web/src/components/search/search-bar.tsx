@@ -48,9 +48,20 @@ export function Spinner() {
  * - Results grouped by Reciters / Albums / Tracks
  * - Full keyboard navigation: ArrowUp/Down, Enter, Escape, Tab
  * - WCAG 2.1 AA: combobox + listbox + option ARIA pattern
- * - Hidden on mobile (`hidden md:block`) — mobile search handled by MobileSearchOverlay
+ * - `variant`:
+ *   - `'default'` — compact header pill (h-9, md-only, fixed width)
+ *   - `'hero'`    — enlarged hero pill (h-14, full-width, rounded-full, shadow)
  */
-export function SearchBar() {
+export interface SearchBarProps {
+  /**
+   * Visual variant.
+   * - `'default'` (header): h-9, rounded-md, fixed 16rem width, hidden on mobile.
+   * - `'hero'` (home): h-14, rounded-full, shadow-lg, full-width.
+   */
+  variant?: 'default' | 'hero';
+}
+
+export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
   const t = useTranslations('search');
   const inputId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,12 +93,25 @@ export function SearchBar() {
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [closeDropdown]);
 
+  const isHero = variant === 'hero';
+  const containerClass = isHero ? 'relative w-full' : 'relative hidden md:block';
+  const iconWrapperClass = isHero
+    ? 'pointer-events-none absolute inset-y-0 left-5 flex items-center text-gray-500'
+    : 'pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400';
+  const iconSize = isHero ? 20 : 16;
+  const inputClass = isHero
+    ? 'h-14 w-full rounded-full border border-transparent bg-white pl-14 pr-6 text-base text-gray-900 placeholder-gray-500 shadow-lg focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2'
+    : 'h-9 w-64 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1';
+  const listboxClass = isHero
+    ? 'absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg'
+    : 'absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg';
+
   return (
-    <div ref={containerRef} className="relative hidden md:block">
+    <div ref={containerRef} className={containerClass}>
       <div className="relative">
         {/* Search icon */}
-        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+        <span className={iconWrapperClass} aria-hidden="true">
+          <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="currentColor">
             <path
               fillRule="evenodd"
               d="M9 3a6 6 0 100 12A6 6 0 009 3zM1 9a8 8 0 1114.32 4.906l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387A8 8 0 011 9z"
@@ -115,7 +139,7 @@ export function SearchBar() {
           onFocus={() => {
             if (query.trim()) setIsOpen(true);
           }}
-          className="h-9 w-64 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
+          className={inputClass}
         />
       </div>
 
@@ -125,7 +149,7 @@ export function SearchBar() {
           id={listboxId}
           role="listbox"
           aria-label={t('resultsLabel')}
-          className="absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg"
+          className={listboxClass}
         >
           {isPending ? (
             <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500" aria-live="polite">

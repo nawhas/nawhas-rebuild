@@ -15,6 +15,20 @@
     "profile": "Profile",
     "signOut": "Sign Out"
   },
+  "home": {
+    "hero": {
+      "ariaLabel": "Hero",
+      "slogan": "Discover the beauty of nawha recitation.",
+      "subtitle": "Browse reciters, albums, and tracks from the devotional tradition."
+    },
+    "sections": {
+      "recentlySaved": "Recently Saved",
+      "topNawhas": "Top Nawhas",
+      "topReciters": "Top Reciters",
+      "topAlbums": "Top Albums",
+      "popularTracks": "Popular Nawhas"
+    }
+  },
   "auth": {
     "login": {
       "heading": "Sign in",

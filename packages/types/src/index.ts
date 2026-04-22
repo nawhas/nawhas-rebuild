@@ -105,6 +105,20 @@ export interface TrackWithRelationsDTO extends TrackDTO {
   lyrics: LyricDTO[];
 }
 
+/**
+ * Track DTO enriched with reciter/album slugs + titles for list views
+ * that need to link to the canonical track route (`/reciters/:reciterSlug/
+ * albums/:albumSlug/tracks/:slug`) without an additional round-trip.
+ *
+ * Used by the home page Top Nawhas table and Saved strip.
+ */
+export interface TrackListItemDTO extends TrackDTO {
+  reciterSlug: string;
+  reciterName: string;
+  albumSlug: string;
+  albumTitle: string;
+}
+
 // ---------------------------------------------------------------------------
 // Auth / Users
 // ---------------------------------------------------------------------------

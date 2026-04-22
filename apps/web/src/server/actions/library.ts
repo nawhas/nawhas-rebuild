@@ -1,7 +1,12 @@
 'use server';
 
 import { headers } from 'next/headers';
-import type { PaginatedResult, SavedTrackDTO, TrackDTO } from '@nawhas/types';
+import type {
+  PaginatedResult,
+  SavedTrackDTO,
+  TrackDTO,
+  TrackListItemDTO,
+} from '@nawhas/types';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
@@ -65,4 +70,19 @@ export async function playAllLibraryTracks(): Promise<TrackDTO[]> {
   const caller = await getAuthenticatedCaller();
   if (!caller) return [];
   return caller.library.playAll();
+}
+
+/**
+ * Server action: fetch the N most recently saved tracks (enriched with
+ * reciter/album slugs) for the home page "Recently Saved" strip.
+ *
+ * Returns an empty array for unauthenticated users so the client component
+ * can render nothing without leaking auth state into UI chrome.
+ */
+export async function getRecentSavedTracks(
+  limit = 6,
+): Promise<TrackListItemDTO[]> {
+  const caller = await getAuthenticatedCaller();
+  if (!caller) return [];
+  return caller.home.getRecentSaved({ limit });
 }
