@@ -52,7 +52,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label={open ? t('closeMenu') : t('openMenu')}
-        className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+        className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -83,37 +83,37 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
           role="navigation"
           aria-label={t('mobileNavLabel')}
           onKeyDown={handleMenuKeyDown}
-          className="absolute inset-x-0 top-16 z-40 border-b border-gray-200 bg-white px-4 pb-4 pt-2 shadow-md dark:border-gray-700 dark:bg-gray-900"
+          className="absolute inset-x-0 top-16 z-40 border-b border-border bg-card text-card-foreground px-4 pb-4 pt-2 shadow-menu"
         >
           <NavLinks links={links} className="flex flex-col" onClick={close} />
 
-          <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+          <div className="mt-4 border-t border-border pt-4">
             <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">{t('theme')}</span>
+              <span className="text-sm text-muted-foreground">{t('theme')}</span>
               <ThemeToggle />
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+          <div className="border-t border-border pt-4">
             {user ? (
               <div className="space-y-1">
                 <div className="px-3 py-2">
                   {user.name && (
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
                   )}
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
                 <Link
                   href="/profile"
                   onClick={close}
-                  className="block rounded px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                  className="block rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
                 >
                   {t('profile')}
                 </Link>
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="block w-full rounded px-3 py-2 text-left text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                  className="block w-full rounded px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
                 >
                   {t('signOut')}
                 </button>
@@ -122,7 +122,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
               <Link
                 href="/login"
                 onClick={close}
-                className="block w-full rounded-md bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                className="block w-full rounded-md bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
               >
                 {t('signIn')}
               </Link>

@@ -101,11 +101,11 @@ export function LikeButton({ trackId, initialLiked, className = '' }: LikeButton
       aria-pressed={isLiked}
       disabled={isPending}
       className={[
-        'h-auto w-auto shrink-0 rounded p-1 transition-all focus:ring-2 focus:ring-inset focus:ring-gray-900',
+        'h-auto w-auto shrink-0 rounded p-1 transition-all focus:ring-2 focus:ring-inset focus:ring-ring',
         stateLoaded ? 'opacity-100' : 'opacity-0',
         isLiked
-          ? 'text-gray-900 hover:bg-transparent hover:text-gray-600 dark:text-white dark:hover:text-gray-300'
-          : 'text-gray-400 hover:bg-transparent hover:text-gray-700 dark:text-gray-600 dark:hover:text-gray-400',
+          ? 'text-foreground hover:bg-transparent hover:text-foreground/70'
+          : 'text-muted-foreground hover:bg-transparent hover:text-foreground',
         isPending ? 'pointer-events-none opacity-60' : '',
         className,
       ]

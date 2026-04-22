@@ -21,7 +21,7 @@ export function HighlightedText({ snippet, fallback }: { snippet?: string; fallb
 export function Spinner() {
   return (
     <svg
-      className="h-4 w-4 animate-spin text-gray-400"
+      className="h-4 w-4 animate-spin text-muted-foreground"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -96,15 +96,15 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
   const isHero = variant === 'hero';
   const containerClass = isHero ? 'relative w-full' : 'relative hidden md:block';
   const iconWrapperClass = isHero
-    ? 'pointer-events-none absolute inset-y-0 left-5 flex items-center text-gray-500'
-    : 'pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400';
+    ? 'pointer-events-none absolute inset-y-0 left-5 flex items-center text-muted-foreground'
+    : 'pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground';
   const iconSize = isHero ? 20 : 16;
   const inputClass = isHero
-    ? 'h-14 w-full rounded-full border border-transparent bg-white pl-14 pr-6 text-base text-gray-900 placeholder-gray-500 shadow-lg focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2'
-    : 'h-9 w-64 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1';
+    ? 'h-14 w-full rounded-full border border-transparent bg-card pl-14 pr-6 text-base text-foreground placeholder:text-muted-foreground shadow-lg focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background'
+    : 'h-9 w-64 rounded-md border border-input bg-card pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background';
   const listboxClass = isHero
-    ? 'absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg'
-    : 'absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg';
+    ? 'absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-menu'
+    : 'absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-menu';
 
   return (
     <div ref={containerRef} className={containerClass}>
@@ -152,12 +152,12 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
           className={listboxClass}
         >
           {isPending ? (
-            <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500" aria-live="polite">
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
               <Spinner />
               {t('searching')}
             </div>
           ) : !hasResults ? (
-            <div className="px-4 py-3 text-sm text-gray-500" aria-live="polite">
+            <div className="px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
               {t('noResults', { query })}
             </div>
           ) : (
@@ -168,7 +168,7 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
                 <div key={section.key} role="group" aria-labelledby={headerId}>
                   <div
                     id={headerId}
-                    className="bg-gray-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                    className="bg-muted px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                   >
                     {section.label}
                   </div>
@@ -182,18 +182,18 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
                       onClick={closeDropdown}
                       className={`flex flex-col px-4 py-2 text-sm outline-none transition-colors ${
                         activeIndex === globalIndex
-                          ? 'bg-gray-100 text-gray-900'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-foreground hover:bg-muted'
                       }`}
                     >
-                      <span className="font-medium [&_mark]:bg-yellow-100 [&_mark]:text-gray-900">
+                      <span className="font-medium [&_mark]:bg-warning-200 [&_mark]:text-warning-950 dark:[&_mark]:bg-warning-800 dark:[&_mark]:text-warning-50">
                         <HighlightedText
                           {...(item.highlightSnippet !== undefined ? { snippet: item.highlightSnippet } : {})}
                           fallback={item.primaryText}
                         />
                       </span>
                       {item.secondaryText && (
-                        <span className="text-xs text-gray-500">{item.secondaryText}</span>
+                        <span className="text-xs text-muted-foreground">{item.secondaryText}</span>
                       )}
                     </Link>
                   ))}
@@ -202,11 +202,11 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
               })}
 
               {/* Search all link */}
-              <div className="border-t border-gray-100">
+              <div className="border-t border-border">
                 <Link
                   href={`/search?q=${encodeURIComponent(query)}`}
                   onClick={closeDropdown}
-                  className="flex items-center gap-1 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                  className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
                 >
                   <span>{t('seeAllResults', { query })}</span>
                   <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

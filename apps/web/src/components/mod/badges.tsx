@@ -25,7 +25,7 @@ const ACTION_CLASSES: Record<SubmissionAction, string> = {
 };
 
 const STATUS_CLASSES: Record<SubmissionStatus, string> = {
-  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+  draft: 'bg-muted text-muted-foreground',
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
@@ -62,7 +62,7 @@ export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }):
 const ROLE_CLASSES: Record<string, string> = {
   moderator: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   contributor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  user: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+  user: 'bg-muted text-muted-foreground',
 };
 
 export function RoleBadge({ role }: { role: string }): React.JSX.Element {

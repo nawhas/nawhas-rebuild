@@ -28,16 +28,16 @@ export default async function NotFound(): Promise<React.JSX.Element> {
           {/* Visual indicator */}
           <div
             aria-hidden="true"
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-4xl font-bold text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-muted text-4xl font-bold text-muted-foreground"
           >
             404
           </div>
 
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-semibold text-foreground">
               {t('pageNotFound')}
             </h1>
-            <p className="text-base text-gray-600 dark:text-gray-300">
+            <p className="text-base text-muted-foreground">
               {t('pageNotFoundDescription')}
             </p>
           </div>
@@ -45,13 +45,13 @@ export default async function NotFound(): Promise<React.JSX.Element> {
           <nav aria-label={t('recoveryNavLabel')} className="flex flex-col gap-3 sm:flex-row">
             <Link
               href="/"
-              className="rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
             >
               {t('goToHome')}
             </Link>
             <Link
               href="/reciters"
-              className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="rounded-md border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
             >
               {t('browseReciters')}
             </Link>

@@ -33,12 +33,12 @@ async function SiteHeaderBase({
     <nav
       role="navigation"
       aria-label={t('mainNavLabel')}
-      className="relative sticky top-0 z-40 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
+      className="relative sticky top-0 z-40 border-b border-border bg-card text-card-foreground"
     >
       {/* Skip link for keyboard users — visible only on focus */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-gray-900 focus:ring-2 focus:ring-gray-900 dark:focus:bg-gray-900 dark:focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:ring-2 focus:ring-ring"
       >
         {t('skipToMainContent')}
       </a>
@@ -49,7 +49,7 @@ async function SiteHeaderBase({
           <Link
             href="/"
             aria-label={t('logoLabel')}
-            className="rounded text-lg font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:text-white"
+            className="rounded text-lg font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
           >
             {t('logoText')}
           </Link>
@@ -68,7 +68,7 @@ async function SiteHeaderBase({
             ) : (
               <Link
                 href="/login"
-                className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
               >
                 {t('signIn')}
               </Link>

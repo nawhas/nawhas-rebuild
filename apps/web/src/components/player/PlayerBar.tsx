@@ -202,7 +202,7 @@ export function PlayerBar(): React.JSX.Element {
       // affects page flow.
       className={[
         'fixed bottom-0 left-0 right-0 z-50',
-        'border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900',
+        'border-t border-border bg-card text-card-foreground',
         // Upward-casting shadow — Tailwind's shadow-lg casts downward (off-viewport),
         // so we use an explicit upward cast matching legacy nawhas.com's treatment
         // (legacy: 0 -2px 8px 4px rgba(0,0,0,0.16); dark-mode boost for contrast).
@@ -215,10 +215,10 @@ export function PlayerBar(): React.JSX.Element {
       aria-hidden={!isVisible}
     >
       {/* Seek bar — positioned at the very top of the player bar */}
-      <div className="group relative h-1 cursor-pointer bg-gray-200 hover:h-1.5 dark:bg-gray-700">
+      <div className="group relative h-1 cursor-pointer bg-muted hover:h-1.5">
         {/* Progress fill */}
         <div
-          className="h-full bg-gray-900 transition-all dark:bg-gray-100"
+          className="h-full bg-primary transition-all"
           style={{ width: `${progressPercent}%` }}
         />
         {/* Invisible range input overlaid on top for interaction */}
@@ -247,27 +247,27 @@ export function PlayerBar(): React.JSX.Element {
           onClick={openMobileOverlay}
           aria-label={currentTrack ? t('openFullPlayer', { trackTitle: currentTrack.title }) : t('openPlayer')}
           tabIndex={isVisible ? 0 : -1}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-900 md:cursor-default md:focus:ring-0"
+          className="flex min-w-0 flex-1 items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring md:cursor-default md:focus:ring-0"
         >
           {/* Album art placeholder — real art requires extending the store */}
           <div
             aria-hidden="true"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
           >
             <MusicNoteIcon />
           </div>
 
           {/* Title + expand hint on mobile */}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+            <p className="truncate text-sm font-medium text-foreground">
               {currentTrack?.title ?? ''}
             </p>
             {/* Reciter name not available in TrackDTO — placeholder for future */}
-            <p className="truncate text-xs text-gray-500 dark:text-gray-400" aria-hidden="true" />
+            <p className="truncate text-xs text-muted-foreground" aria-hidden="true" />
           </div>
 
           {/* Expand icon — shown only on mobile (hidden md+) */}
-          <span aria-hidden="true" className="shrink-0 text-gray-400 dark:text-gray-500 md:hidden">
+          <span aria-hidden="true" className="shrink-0 text-muted-foreground md:hidden">
             <ExpandIcon />
           </span>
         </button>
@@ -291,10 +291,10 @@ export function PlayerBar(): React.JSX.Element {
             aria-pressed={isShuffle}
             tabIndex={isVisible ? 0 : -1}
             className={[
-              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1',
+              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background',
               isShuffle
-                ? 'text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800'
-                : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300',
+                ? 'text-foreground hover:bg-muted'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             ].join(' ')}
           >
             <ShuffleIcon />
@@ -306,7 +306,7 @@ export function PlayerBar(): React.JSX.Element {
             onClick={previous}
             aria-label={t('previousTrack')}
             tabIndex={isVisible ? 0 : -1}
-            className="rounded p-1.5 text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded p-1.5 text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
           >
             <PreviousIcon />
           </button>
@@ -317,7 +317,7 @@ export function PlayerBar(): React.JSX.Element {
             onClick={isPlaying ? pause : resume}
             aria-label={isPlaying ? t('pause') : t('play')}
             tabIndex={isVisible ? 0 : -1}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -328,7 +328,7 @@ export function PlayerBar(): React.JSX.Element {
             onClick={next}
             aria-label={t('nextTrack')}
             tabIndex={isVisible ? 0 : -1}
-            className="rounded p-1.5 text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded p-1.5 text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
           >
             <NextIcon />
           </button>
@@ -337,7 +337,7 @@ export function PlayerBar(): React.JSX.Element {
         {/* Right-side: time + volume (volume hidden on mobile) */}
         <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
           {/* Elapsed / total time */}
-          <span className="shrink-0 tabular-nums text-xs text-gray-500 dark:text-gray-400" aria-live="off">
+          <span className="shrink-0 tabular-nums text-xs text-muted-foreground" aria-live="off">
             <span className="sr-only">{t('position')}</span>
             <span data-testid="player-position">{formatTime(position)}</span>
             <span aria-hidden="true"> / </span>
@@ -361,7 +361,7 @@ export function PlayerBar(): React.JSX.Element {
               aria-valuenow={Math.round(volume * 100) / 100}
               aria-valuetext={`${Math.round(volume * 100)}%`}
               tabIndex={isVisible ? 0 : -1}
-              className="w-20 cursor-pointer accent-gray-900 dark:accent-white"
+              className="w-20 cursor-pointer accent-primary"
             />
           </div>
 
@@ -373,10 +373,10 @@ export function PlayerBar(): React.JSX.Element {
             aria-pressed={isQueueOpen}
             tabIndex={isVisible ? 0 : -1}
             className={[
-              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1',
+              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background',
               isQueueOpen
-                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300',
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             ].join(' ')}
           >
             <QueueIcon />
