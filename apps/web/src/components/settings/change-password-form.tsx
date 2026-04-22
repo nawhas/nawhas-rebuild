@@ -85,7 +85,7 @@ export function ChangePasswordForm(): React.JSX.Element {
         )}
 
         {success && (
-          <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+          <p role="status" className="rounded-md bg-success-50 px-3 py-2 text-sm text-success-700 dark:bg-success-950 dark:text-success-300">
             {t('updatePasswordSuccess')}
           </p>
         )}

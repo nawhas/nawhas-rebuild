@@ -14,22 +14,22 @@ import { Badge } from '@nawhas/ui/components/badge';
 import type { SubmissionAction, SubmissionStatus, SubmissionType } from '@nawhas/types';
 
 const TYPE_CLASSES: Record<SubmissionType, string> = {
-  reciter: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  album: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  track: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  reciter: 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200',
+  album: 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200',
+  track: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
 };
 
 const ACTION_CLASSES: Record<SubmissionAction, string> = {
-  create: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
-  edit: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+  create: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
+  edit: 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200',
 };
 
 const STATUS_CLASSES: Record<SubmissionStatus, string> = {
   draft: 'bg-muted text-muted-foreground',
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  changes_requested: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  pending: 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200',
+  approved: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
+  rejected: 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200',
+  changes_requested: 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200',
 };
 
 export function SubmissionTypeBadge({ type }: { type: SubmissionType }): React.JSX.Element {
@@ -60,8 +60,8 @@ export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }):
 }
 
 const ROLE_CLASSES: Record<string, string> = {
-  moderator: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  contributor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  moderator: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
+  contributor: 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200',
   user: 'bg-muted text-muted-foreground',
 };
 

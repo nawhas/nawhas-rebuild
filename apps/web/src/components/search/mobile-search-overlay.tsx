@@ -262,7 +262,7 @@ export function MobileSearchOverlay(): React.JSX.Element {
                                 : 'text-foreground active:bg-muted'
                             }`}
                           >
-                            <span className="font-medium [&_mark]:bg-yellow-500/25 [&_mark]:text-foreground">
+                            <span className="font-medium [&_mark]:bg-warning-500/25 [&_mark]:text-foreground">
                               <HighlightedText
                                 {...(item.highlightSnippet !== undefined ? { snippet: item.highlightSnippet } : {})}
                                 fallback={item.primaryText}

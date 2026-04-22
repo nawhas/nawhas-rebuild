@@ -41,7 +41,7 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
         variant="secondary"
         role="status"
         aria-live="polite"
-        className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+        className="bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200"
       >
         {t('applied')}
       </Badge>

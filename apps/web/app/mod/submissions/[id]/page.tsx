@@ -108,12 +108,12 @@ export default async function SubmissionDetailPage({
       {submission.notes && (
         <section
           aria-label={t('submitterNotesLabel')}
-          className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950"
+          className="mb-6 rounded-lg border border-info-200 bg-info-50 px-4 py-3 dark:border-info-800 dark:bg-info-950"
         >
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-blue-500 dark:text-blue-400">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-info-500 dark:text-info-400">
             {t('submitterNotesHeading')}
           </p>
-          <p className="text-sm text-blue-900 dark:text-blue-100">{submission.notes}</p>
+          <p className="text-sm text-info-900 dark:text-info-100">{submission.notes}</p>
         </section>
       )}
 

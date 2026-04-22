@@ -42,11 +42,11 @@ export default async function ContributeLayout({
           <p className="mb-6 text-sm text-muted-foreground">
             {t('description')}
           </p>
-          <div className="rounded-lg border border-blue-200 bg-blue-50 px-5 py-4 text-left dark:border-blue-800 dark:bg-blue-950">
-            <p className="mb-2 text-sm font-medium text-blue-900 dark:text-blue-100">
+          <div className="rounded-lg border border-info-200 bg-info-50 px-5 py-4 text-left dark:border-info-800 dark:bg-info-950">
+            <p className="mb-2 text-sm font-medium text-info-900 dark:text-info-100">
               {t('howToHeading')}
             </p>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+            <p className="text-sm text-info-700 dark:text-info-300">
               {t('howToDescription')}
             </p>
           </div>

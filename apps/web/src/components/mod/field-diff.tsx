@@ -29,7 +29,7 @@ export function FieldDiff({ label, current, proposed }: FieldDiffProps): React.J
         <div className="grid grid-cols-2 gap-3">
           <div role="group" aria-label={`${label}: ${t('currentValueLabel')}`}>
             <p className="mb-1 text-xs text-muted-foreground">{t('current')}</p>
-            <p className="rounded bg-red-50 px-2 py-1 text-sm text-red-800 line-through dark:bg-red-950 dark:text-red-200">
+            <p className="rounded bg-error-50 px-2 py-1 text-sm text-error-800 line-through dark:bg-error-950 dark:text-error-200">
               {currentStr || <em>{t('empty')}</em>}
             </p>
           </div>
@@ -47,14 +47,14 @@ function InlineWordDiff({ current, proposed }: { current: string; proposed: stri
   const t = useTranslations('mod.diff');
   const parts = diffWords(current, proposed);
   return (
-    <p className="rounded bg-green-50 px-2 py-1 text-sm dark:bg-green-950">
+    <p className="rounded bg-success-50 px-2 py-1 text-sm dark:bg-success-950">
       {parts.map((part, i) => {
         if (part.added) {
           return (
             <ins
               key={i}
               aria-label={`${t('addedPrefix')} ${part.value}`}
-              className="bg-green-200 text-green-900 no-underline dark:bg-green-800 dark:text-green-100"
+              className="bg-success-200 text-success-900 no-underline dark:bg-success-800 dark:text-success-100"
             >
               {part.value}
             </ins>

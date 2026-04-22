@@ -70,8 +70,8 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">{t('form.resubmitHeading')}</p>
+    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
+      <p className="text-xs font-medium text-warning-700 dark:text-warning-300">{t('form.resubmitHeading')}</p>
       <FormField id="name" label={t('reciter.nameLabel')} required error={errors.name}>
         <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} error={errors.name} />
       </FormField>
@@ -143,8 +143,8 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">{t('form.resubmitHeading')}</p>
+    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
+      <p className="text-xs font-medium text-warning-700 dark:text-warning-300">{t('form.resubmitHeading')}</p>
       <FormField id={`ra-title-${submission.id}`} label={t('album.titleLabel')} required error={errors.title}>
         <Input id={`ra-title-${submission.id}`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending} error={errors.title} />
       </FormField>
@@ -223,8 +223,8 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-      <p className="text-xs font-medium text-orange-700 dark:text-orange-300">{t('form.resubmitHeading')}</p>
+    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
+      <p className="text-xs font-medium text-warning-700 dark:text-warning-300">{t('form.resubmitHeading')}</p>
       <FormField id={`rt-title-${submission.id}`} label={t('track.titleLabel')} required error={errors.title}>
         <Input id={`rt-title-${submission.id}`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending} error={errors.title} />
       </FormField>

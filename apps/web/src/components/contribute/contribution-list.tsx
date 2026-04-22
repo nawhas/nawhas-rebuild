@@ -93,9 +93,9 @@ function SubmissionCard({
         {expanded && (
           <div id={panelId} className="border-t border-border px-5 py-4">
             {submission.notes && (
-              <div className="mb-3 rounded bg-blue-50 px-3 py-2 dark:bg-blue-950">
-                <p className="mb-0.5 text-xs font-medium text-blue-600 dark:text-blue-400">{t('moderatorNotesHeading')}</p>
-                <p className="text-sm text-blue-900 dark:text-blue-100">{submission.notes}</p>
+              <div className="mb-3 rounded bg-info-50 px-3 py-2 dark:bg-info-950">
+                <p className="mb-0.5 text-xs font-medium text-info-600 dark:text-info-400">{t('moderatorNotesHeading')}</p>
+                <p className="text-sm text-info-900 dark:text-info-100">{submission.notes}</p>
               </div>
             )}
             <p className="text-xs text-muted-foreground">

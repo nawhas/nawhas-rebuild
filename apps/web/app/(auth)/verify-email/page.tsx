@@ -65,14 +65,14 @@ export default async function VerifyEmailPage({
 
   return (
     <Card className="px-8 py-10">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success-100 dark:bg-success-900/30">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="h-6 w-6 text-green-600 dark:text-green-400"
+          className="h-6 w-6 text-success-600 dark:text-success-400"
           aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
