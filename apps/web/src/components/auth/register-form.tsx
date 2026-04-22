@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
+import { Input } from '@nawhas/ui/components/input';
 import { signUp } from '@/lib/auth-client';
 import { SocialButtons } from './social-buttons';
 import type { EnabledSocialProvider } from '@/lib/social-providers';
@@ -63,14 +64,13 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-gray-700">
             {t('nameLabel')}
           </label>
-          <input
+          <Input
             id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             autoComplete="name"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
             placeholder={t('namePlaceholder')}
             disabled={loading}
           />
@@ -80,14 +80,13 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
             {t('emailLabel')}
           </label>
-          <input
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
             placeholder={t('emailPlaceholder')}
             disabled={loading}
             aria-describedby={error ? 'register-error' : undefined}
@@ -98,14 +97,13 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
             {t('passwordLabel')}
           </label>
-          <input
+          <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
             placeholder={t('passwordPlaceholder')}
             disabled={loading}
           />

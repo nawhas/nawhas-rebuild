@@ -2,6 +2,8 @@
  * Reusable form field primitives for submission forms.
  */
 
+import { Input as UiInput } from '@nawhas/ui/components/input';
+
 interface FormFieldProps {
   id: string;
   label: string;
@@ -47,16 +49,13 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function Input({ id, error, hint, className = '', ...rest }: InputProps): React.JSX.Element {
+  const errorClasses = error ? 'border-destructive focus-visible:ring-destructive' : '';
   return (
-    <input
+    <UiInput
       id={id}
       aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
       aria-invalid={error ? 'true' : undefined}
-      className={`block w-full rounded-md border px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
-        error
-          ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-          : 'border-gray-300 focus:border-gray-500 focus:ring-gray-500 dark:border-gray-600 dark:focus:border-gray-400'
-      } disabled:opacity-60 ${className}`}
+      className={`${errorClasses} ${className}`.trim()}
       {...rest}
     />
   );

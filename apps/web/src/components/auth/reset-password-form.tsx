@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
+import { Input } from '@nawhas/ui/components/input';
 import { resetPassword } from '@/lib/auth-client';
 
 interface ResetPasswordFormProps {
@@ -60,7 +61,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps): React.JSX.
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
             {t('newPasswordLabel')}
           </label>
-          <input
+          <Input
             id="password"
             type="password"
             value={password}
@@ -68,7 +69,6 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps): React.JSX.
             required
             autoComplete="new-password"
             minLength={8}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
             placeholder={t('newPasswordPlaceholder')}
             disabled={loading}
             aria-describedby={error ? 'reset-error' : undefined}
