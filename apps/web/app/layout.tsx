@@ -1,5 +1,13 @@
 import type { Metadata } from 'next';
-import { Inter, Noto_Naskh_Arabic, Noto_Nastaliq_Urdu } from 'next/font/google';
+import {
+  Inter,
+  Bellefair,
+  Roboto_Slab,
+  Roboto_Mono,
+  Noto_Naskh_Arabic,
+  Noto_Nastaliq_Urdu,
+} from 'next/font/google';
+import { Toaster } from 'sonner';
 import './globals.css';
 import { SiteHeaderDynamic } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
@@ -20,6 +28,30 @@ import { setDefaultRequestLocale } from '@/i18n/request-locale';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'optional',
+});
+
+// Load Bellefair for display/serif accents (--font-serif token).
+const bellefair = Bellefair({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-bellefair',
+  display: 'optional',
+});
+
+// Load Roboto Slab for body/slab typography (--font-slab token).
+const robotoSlab = Roboto_Slab({
+  subsets: ['latin'],
+  weight: ['100', '300', '400', '500', '700'],
+  variable: '--font-roboto-slab',
+  display: 'optional',
+});
+
+// Load Roboto Mono for monospace/metadata (--font-mono token).
+const robotoMono = Roboto_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-roboto-mono',
   display: 'optional',
 });
 
@@ -74,7 +106,11 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning className={`${inter.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      className={`${inter.variable} ${bellefair.variable} ${robotoSlab.variable} ${robotoMono.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}
+    >
       <body suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
@@ -86,6 +122,7 @@ export default async function RootLayout({
               <PlayerBarLazy />
             </AudioProvider>
           </ThemeProvider>
+          <Toaster richColors closeButton position="bottom-right" />
         </NextIntlClientProvider>
       </body>
     </html>
