@@ -4,3 +4,4 @@ export * from "./components/button.js";
 export * from "./components/card.js";
 export * from "./components/dialog.js";
 export * from "./components/tabs.js";
+export * from './components/dropdown-menu.js';
