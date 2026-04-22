@@ -63,6 +63,7 @@ jobs:
             pnpm install --frozen-lockfile &&
             pnpm --filter @nawhas/types build &&
             pnpm --filter @nawhas/db build &&
+            pnpm --filter @nawhas/ui build &&
             pnpm --filter @nawhas/db db:migrate &&
             pnpm --filter @nawhas/web build
           "
