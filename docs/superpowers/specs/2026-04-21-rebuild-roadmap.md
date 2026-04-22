@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1c/d + 2.2 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped (2026-04-22) · 2.1 decisions resolved (2026-04-22) · Phase 2.1d shipped (2026-04-22) · Phase 2.1c + 2.2 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-22
@@ -178,16 +178,14 @@ Before committing to port these (which is nontrivial) or drop them (which materi
 
 Output: a short research note (`docs/superpowers/specs/YYYY-MM-DD-lyrics-sync-research.md`) with the findings and a go / no-go recommendation for launch parity. The decision feeds into Phase 2.3's Track-page redesign spec.
 
-### 2.1d PlayerBar regressions (pre-2.2 side-quest)
+### 2.1d PlayerBar regressions ✅ shipped 2026-04-22
 
-**Status:** not started · code-fixable, no design decisions required.
+Two regressions Phase 2.1 surfaced, shipped as a single commit on branch `fix/player-bar-regressions` (`0bcb7fe`):
 
-Two regressions Phase 2.1 surfaced, both shippable as a single small PR before Phase 2.2 proper:
+- **Body reservation.** Introduced `<PlayerBarSpacer />` client component at `apps/web/src/components/player/PlayerBarSpacer.tsx` — reads `selectCurrentTrack` from the player store and renders an 80px (`h-20`) aria-hidden spacer inside `<main>` when a track is active. Matches legacy's `.app--player-showing .main-container { padding-bottom: 80px }` at `nawhas/nawhas:nuxt/assets/app.scss#L27-31`.
+- **Shadow direction.** Replaced `shadow-lg` with `shadow-[0_-2px_8px_4px_rgba(0,0,0,0.16)]` (+ `dark:shadow-[0_-2px_8px_4px_rgba(0,0,0,0.40)]`) on the `PlayerBar` outer div, mirroring legacy's hand-rolled upward cast at `nawhas/nawhas:nuxt/components/audio-player/AudioPlayer.vue#L862`. Regression guard added in `PlayerBar.test.tsx` prevents a revert to `shadow-lg`.
 
-- **Body reservation.** `<main>` in the rebuild never gets `pb-20` when a track is loaded, so bottom-of-page content scrolls under the fixed `PlayerBar`. Fix: conditionally apply `pb-20` (≈ 80px, matching legacy's `.app--player-showing` reserve) on `<main>` keyed off `selectCurrentTrack !== null`.
-- **Shadow direction.** `PlayerBar` ships `shadow-lg`, which casts downward and is wasted against the viewport bottom. Legacy hand-rolls an upward shadow (`0 -2px 8px 4px rgba(0,0,0,0.16)` at `nawhas/nawhas:nuxt/components/audio-player/AudioPlayer.vue#L862`). Fix: replace `shadow-lg` with an upward-casting custom utility or inline style matching legacy's intent.
-
-No new tokens, no new primitives, no design review. Single PR, small blast radius.
+Verification: 444 existing Vitest tests still pass; two new tests (`PlayerBarSpacer.test.tsx`) cover the spacer; one regression guard added to `PlayerBar.test.tsx`. Typecheck clean, lint clean (pre-existing warnings only).
 
 ### 2.2 Design-system foundation in `packages/ui`
 
