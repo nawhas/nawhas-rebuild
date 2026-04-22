@@ -80,7 +80,7 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={isPending}>
+        <Button type="submit" size="sm" disabled={isPending} aria-busy={isPending}>
           {isPending ? t('form.submitting') : t('form.submit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
@@ -162,7 +162,7 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={isPending}>
+        <Button type="submit" size="sm" disabled={isPending} aria-busy={isPending}>
           {isPending ? t('form.submitting') : t('form.resubmit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
@@ -248,7 +248,7 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
       </FormField>
       {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={isPending}>
+        <Button type="submit" size="sm" disabled={isPending} aria-busy={isPending}>
           {isPending ? t('form.submitting') : t('form.resubmit')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>

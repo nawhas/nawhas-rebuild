@@ -42,6 +42,7 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full table-fixed">
+          <caption className="sr-only">{t('tableCaption')}</caption>
           <thead>
             <tr className="border-b border-border bg-muted">
               <th

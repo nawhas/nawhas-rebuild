@@ -74,6 +74,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
               type="button"
               onClick={handleLoadMore}
               disabled={isPending}
+              aria-busy={isPending}
               className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
             >
               {isPending ? tQueue('loadingMore') : tQueue('loadMore')}

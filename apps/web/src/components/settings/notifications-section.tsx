@@ -18,7 +18,7 @@ export function NotificationsSection(): React.JSX.Element {
         {t('notificationsComingSoon')}
       </p>
 
-      <fieldset disabled className="mt-4 space-y-3 opacity-50" aria-label={t('notificationsEmailLabel')}>
+      <fieldset disabled className="mt-4 space-y-3 opacity-50">
         <legend className="sr-only">{t('notificationsEmailLabel')}</legend>
 
         <label className="flex cursor-not-allowed items-center gap-3">

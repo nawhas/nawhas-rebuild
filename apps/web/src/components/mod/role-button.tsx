@@ -69,7 +69,9 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
         )}
       </select>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
-      {isPending && <span className="text-xs text-muted-foreground">{t('saving')}</span>}
+      <span role="status" aria-live="polite" className="text-xs text-muted-foreground">
+        {isPending ? t('saving') : ''}
+      </span>
     </div>
   );
 }

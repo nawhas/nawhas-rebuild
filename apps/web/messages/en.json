@@ -387,6 +387,7 @@
     },
     "audit": {
       "heading": "Audit Log",
+      "tableCaption": "Audit log entries",
       "empty": "No audit log entries yet.",
       "columnAction": "Action",
       "columnTargetType": "Target type",
@@ -396,6 +397,7 @@
     },
     "users": {
       "heading": "User Management",
+      "tableCaption": "User list with role controls",
       "intro": "Promote users to contributor. Moderator promotion is ops-only.",
       "empty": "No users found.",
       "columnUser": "User",
@@ -447,7 +449,10 @@
     "diff": {
       "current": "Current",
       "proposed": "Proposed",
-      "empty": "empty"
+      "empty": "empty",
+      "currentValueLabel": "current value",
+      "proposedValueLabel": "proposed value with changes",
+      "addedPrefix": "added"
     },
     "status": {
       "draft": "Draft",

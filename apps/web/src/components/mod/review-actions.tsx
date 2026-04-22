@@ -59,10 +59,12 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
           onChange={(e) => setComment(e.target.value)}
           disabled={isPending}
           placeholder={t('commentPlaceholder')}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? 'review-comment-error' : undefined}
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
         />
         {error && (
-          <p role="alert" className="text-xs text-destructive">{error}</p>
+          <p id="review-comment-error" role="alert" className="text-xs text-destructive">{error}</p>
         )}
         <div className="flex gap-3">
           <Button

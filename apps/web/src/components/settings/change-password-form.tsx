@@ -48,8 +48,11 @@ export function ChangePasswordForm(): React.JSX.Element {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
+            aria-required="true"
             autoComplete="current-password"
             disabled={loading}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'change-password-error' : undefined}
             className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
           />
         </div>
@@ -64,16 +67,19 @@ export function ChangePasswordForm(): React.JSX.Element {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
+            aria-required="true"
             minLength={8}
             autoComplete="new-password"
             disabled={loading}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'new-password-hint change-password-error' : 'new-password-hint'}
             className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
           />
-          <p className="mt-1 text-xs text-muted-foreground">{t('passwordMinLength')}</p>
+          <p id="new-password-hint" className="mt-1 text-xs text-muted-foreground">{t('passwordMinLength')}</p>
         </div>
 
         {error && (
-          <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p id="change-password-error" role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </p>
         )}

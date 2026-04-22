@@ -54,15 +54,18 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailFormProps): React.J
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             required
+            aria-required="true"
             autoComplete="email"
             disabled={loading}
             placeholder={t('newEmailPlaceholder')}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'new-email-error' : undefined}
             className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
           />
         </div>
 
         {error && (
-          <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p id="new-email-error" role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </p>
         )}

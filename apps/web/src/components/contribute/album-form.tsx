@@ -192,7 +192,7 @@ export function AlbumForm({
         <p role="alert" className="text-sm text-destructive">{serverError}</p>
       )}
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending} aria-busy={isPending}>
         {isPending ? t('form.submitting') : t('form.submit')}
       </Button>
     </form>

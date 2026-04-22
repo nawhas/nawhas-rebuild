@@ -55,6 +55,7 @@ function SubmissionCard({
 
   const label = getLabel(submission, t);
   const canResubmit = submission.status === 'changes_requested';
+  const panelId = `submission-panel-${submission.id}`;
 
   return (
     <li>
@@ -63,6 +64,7 @@ function SubmissionCard({
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
+          aria-controls={panelId}
           className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
         >
           <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -89,7 +91,7 @@ function SubmissionCard({
         </button>
 
         {expanded && (
-          <div className="border-t border-border px-5 py-4">
+          <div id={panelId} className="border-t border-border px-5 py-4">
             {submission.notes && (
               <div className="mb-3 rounded bg-blue-50 px-3 py-2 dark:bg-blue-950">
                 <p className="mb-0.5 text-xs font-medium text-blue-600 dark:text-blue-400">{t('moderatorNotesHeading')}</p>
