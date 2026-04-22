@@ -59,6 +59,7 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
             autoComplete="email"
             placeholder={t('emailPlaceholder')}
             disabled={loading}
+            aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'login-error' : undefined}
           />
         </div>
@@ -84,6 +85,8 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
             autoComplete="current-password"
             placeholder={t('passwordPlaceholder')}
             disabled={loading}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'login-error' : undefined}
           />
         </div>
 

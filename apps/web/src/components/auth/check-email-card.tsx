@@ -64,6 +64,8 @@ export function CheckEmailCard({ email }: { email?: string }): React.JSX.Element
           variant="link"
           onClick={handleResend}
           disabled={resendStatus === 'sending' || resendStatus === 'sent'}
+          aria-busy={resendStatus === 'sending' ? true : undefined}
+          aria-live="polite"
           className="h-auto p-0 text-sm font-medium text-foreground underline hover:no-underline"
         >
           {resendStatus === 'sending'

@@ -128,6 +128,7 @@ export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): R
               variant={PROVIDER_VARIANT[provider]}
               onClick={() => handleSocialSignIn(provider)}
               disabled={loadingProvider !== null}
+              aria-busy={isLoading ? true : undefined}
               className={PROVIDER_CLASS[provider]}
               aria-label={label}
             >

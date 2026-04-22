@@ -72,6 +72,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps): React.JSX.
             minLength={8}
             placeholder={t('newPasswordPlaceholder')}
             disabled={loading}
+            aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'reset-error' : undefined}
           />
         </div>

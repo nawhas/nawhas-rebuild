@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -15,6 +15,8 @@ interface RegisterFormProps {
   enabledProviders?: EnabledSocialProvider[];
 }
 
+type InvalidField = 'name' | 'email' | 'password' | null;
+
 export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): React.JSX.Element {
   const t = useTranslations('auth.register');
   const router = useRouter();
@@ -22,24 +24,35 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [invalidField, setInvalidField] = useState<InvalidField>(null);
   const [loading, setLoading] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
+    setInvalidField(null);
 
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
     if (!trimmedName) {
       setError(t('nameRequired'));
+      setInvalidField('name');
+      nameRef.current?.focus();
       return;
     }
     if (!trimmedEmail) {
       setError(t('emailRequired'));
+      setInvalidField('email');
+      emailRef.current?.focus();
       return;
     }
     if (!password) {
       setError(t('passwordRequired'));
+      setInvalidField('password');
+      passwordRef.current?.focus();
       return;
     }
 
@@ -49,7 +62,9 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
 
     if (result.error) {
       setError(result.error.message ?? t('fallbackError'));
+      setInvalidField('email');
       setLoading(false);
+      emailRef.current?.focus();
       return;
     }
 
@@ -67,6 +82,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           </label>
           <Input
             id="name"
+            ref={nameRef}
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -74,6 +90,8 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
             autoComplete="name"
             placeholder={t('namePlaceholder')}
             disabled={loading}
+            aria-invalid={invalidField === 'name' ? true : undefined}
+            aria-describedby={error ? 'register-error' : undefined}
           />
         </div>
 
@@ -83,6 +101,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           </label>
           <Input
             id="email"
+            ref={emailRef}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -90,6 +109,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
             autoComplete="email"
             placeholder={t('emailPlaceholder')}
             disabled={loading}
+            aria-invalid={invalidField === 'email' ? true : undefined}
             aria-describedby={error ? 'register-error' : undefined}
           />
         </div>
@@ -100,6 +120,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           </label>
           <Input
             id="password"
+            ref={passwordRef}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -107,6 +128,8 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
             autoComplete="new-password"
             placeholder={t('passwordPlaceholder')}
             disabled={loading}
+            aria-invalid={invalidField === 'password' ? true : undefined}
+            aria-describedby={error ? 'register-error' : undefined}
           />
         </div>
 

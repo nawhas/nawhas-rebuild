@@ -28,7 +28,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
 
   if (submitted) {
     return (
-      <Card className="px-8 py-10">
+      <Card className="px-8 py-10" role="status" aria-live="polite">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
           <svg
             xmlns="http://www.w3.org/2000/svg"

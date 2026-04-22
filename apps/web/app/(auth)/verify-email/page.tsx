@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { Button } from '@nawhas/ui/components/button';
 import { Card } from '@nawhas/ui/components/card';
 
 // Dynamic rendering required for searchParams access
@@ -49,12 +50,9 @@ export default async function VerifyEmailPage({
             : t('errorInvalidDescription')}
         </p>
 
-        <Link
-          href="/check-email"
-          className="inline-block w-full rounded-md bg-foreground px-4 py-2 text-center text-sm font-medium text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          {t('resendButton')}
-        </Link>
+        <Button asChild className="w-full">
+          <Link href="/check-email">{t('resendButton')}</Link>
+        </Button>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
@@ -67,14 +65,14 @@ export default async function VerifyEmailPage({
 
   return (
     <Card className="px-8 py-10">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="h-6 w-6 text-green-600"
+          className="h-6 w-6 text-green-600 dark:text-green-400"
           aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -86,12 +84,9 @@ export default async function VerifyEmailPage({
         {t('successDescription')}
       </p>
 
-      <Link
-        href="/"
-        className="inline-block w-full rounded-md bg-foreground px-4 py-2 text-center text-sm font-medium text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      >
-        {t('goToNawhas')}
-      </Link>
+      <Button asChild className="w-full">
+        <Link href="/">{t('goToNawhas')}</Link>
+      </Button>
     </Card>
   );
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { Button } from '@nawhas/ui/components/button';
 import { Card } from '@nawhas/ui/components/card';
 import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 
@@ -53,17 +55,14 @@ export default async function ResetPasswordPage({
             : t('tokenInvalidDescription')}
         </p>
 
-        <a
-          href="/forgot-password"
-          className="inline-block w-full rounded-md bg-foreground px-4 py-2 text-center text-sm font-medium text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          {t('requestNewLinkButton')}
-        </a>
+        <Button asChild className="w-full">
+          <Link href="/forgot-password">{t('requestNewLinkButton')}</Link>
+        </Button>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          <a href="/login" className="font-medium text-foreground underline hover:no-underline">
+          <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
             {t('backToSignIn')}
-          </a>
+          </Link>
         </p>
       </Card>
     );
