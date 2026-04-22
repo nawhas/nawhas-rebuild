@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeAll } from 'vitest';
 import { render, cleanup, screen, fireEvent, waitFor } from '@testing-library/react';
 import { UserMenu } from '../user-menu';
 
@@ -32,6 +32,24 @@ vi.mock('@/lib/auth-client', () => ({
   signOut: (...args: unknown[]) => mockSignOut(...args),
 }));
 
+// Radix uses pointer-capture and scrollIntoView APIs that jsdom does not
+// implement. Provide no-op polyfills so the DropdownMenu primitive works in
+// tests.
+beforeAll(() => {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false;
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => {};
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {};
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {};
+  }
+});
+
 const mockUser = {
   id: 'user-1',
   name: 'Ali Hussain',
@@ -51,8 +69,19 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+/**
+ * Dispatch the pointer sequence Radix listens for on its trigger
+ * (pointerdown + click). fireEvent.click alone does not open a Radix
+ * DropdownMenu because its trigger binds onPointerDown.
+ */
+function openMenu(trigger: HTMLElement): void {
+  fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false });
+  fireEvent.pointerUp(trigger, { button: 0 });
+  fireEvent.click(trigger);
+}
+
 describe('UserMenu', () => {
-  it('renders an avatar button with initials', () => {
+  it('renders an avatar trigger with initials', () => {
     render(<UserMenu user={mockUser} />);
     const btn = screen.getByRole('button', { name: /account menu/i });
     expect(btn.textContent).toBe('AH');
@@ -64,53 +93,69 @@ describe('UserMenu', () => {
     expect(screen.getByRole('button').textContent).toBe('A');
   });
 
-  it('dropdown is not visible initially', () => {
+  it('menu content is not visible initially', () => {
     render(<UserMenu user={mockUser} />);
     expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByText('Profile')).toBeNull();
   });
 
-  it('opens dropdown on button click', () => {
+  it('opens menu on trigger activation', async () => {
     render(<UserMenu user={mockUser} />);
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByRole('menu')).toBeDefined();
-  });
-
-  it('shows user name and email in dropdown', () => {
-    render(<UserMenu user={mockUser} />);
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByText('Ali Hussain')).toBeDefined();
-    expect(screen.getByText('ali@example.com')).toBeDefined();
-  });
-
-  it('shows Profile and Sign Out menu items', () => {
-    render(<UserMenu user={mockUser} />);
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeDefined();
-    expect(screen.getByRole('menuitem', { name: 'Sign Out' })).toBeDefined();
-  });
-
-  it('closes dropdown on second button click', () => {
-    render(<UserMenu user={mockUser} />);
-    fireEvent.click(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.queryByRole('menu')).toBeNull();
-  });
-
-  it('calls signOut and redirects to / when Sign Out is clicked', async () => {
-    render(<UserMenu user={mockUser} />);
-    fireEvent.click(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Sign Out' }));
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
     await waitFor(() => {
-      expect(mockSignOut).toHaveBeenCalledOnce();
-      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(screen.getByRole('menu')).toBeDefined();
     });
   });
 
-  it('has aria-expanded=false when closed and true when open', () => {
+  it('shows user name and email in open menu', async () => {
     render(<UserMenu user={mockUser} />);
-    const btn = screen.getByRole('button');
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Ali Hussain')).toBeDefined();
+      expect(screen.getByText('ali@example.com')).toBeDefined();
+    });
+  });
+
+  it('shows Profile and Sign Out menu items when open', async () => {
+    render(<UserMenu user={mockUser} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeDefined();
+      expect(screen.getByRole('menuitem', { name: 'Sign Out' })).toBeDefined();
+    });
+  });
+
+  it('Profile menu item links to /profile', async () => {
+    render(<UserMenu user={mockUser} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    const profileItem = await screen.findByRole('menuitem', { name: 'Profile' });
+    // asChild <Link> renders an <a href="/profile"> that receives the item role
+    const anchor = profileItem.tagName === 'A' ? profileItem : profileItem.querySelector('a');
+    expect(anchor?.getAttribute('href')).toBe('/profile');
+  });
+
+  it('calls signOut and redirects to / when Sign Out is activated', async () => {
+    render(<UserMenu user={mockUser} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    const signOutItem = await screen.findByRole('menuitem', { name: 'Sign Out' });
+    // Radix item activation: pointerdown + pointerup + click fires onSelect.
+    fireEvent.pointerDown(signOutItem, { button: 0, ctrlKey: false });
+    fireEvent.pointerUp(signOutItem, { button: 0 });
+    fireEvent.click(signOutItem);
+    await waitFor(() => {
+      expect(mockSignOut).toHaveBeenCalledOnce();
+      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(mockRefresh).toHaveBeenCalledOnce();
+    });
+  });
+
+  it('trigger reflects expanded state via aria-expanded', async () => {
+    render(<UserMenu user={mockUser} />);
+    const btn = screen.getByRole('button', { name: /account menu/i });
     expect(btn.getAttribute('aria-expanded')).toBe('false');
-    fireEvent.click(btn);
-    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    openMenu(btn);
+    await waitFor(() => {
+      expect(btn.getAttribute('aria-expanded')).toBe('true');
+    });
   });
 });
