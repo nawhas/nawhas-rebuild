@@ -397,6 +397,11 @@ export const moderationRouter = router({
           },
         });
 
+        await tx
+          .update(submissions)
+          .set({ status: 'applied', updatedAt: new Date() })
+          .where(eq(submissions.id, input.submissionId));
+
         return eid;
       });
 

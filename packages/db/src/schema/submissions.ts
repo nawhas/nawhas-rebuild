@@ -21,7 +21,7 @@ export const submissions = pgTable(
     status: text('status')
       .notNull()
       .default('pending')
-      .$type<'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested' | 'withdrawn'>(),
+      .$type<'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested' | 'withdrawn' | 'applied'>(),
     submittedByUserId: text('submitted_by_user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'restrict' }),

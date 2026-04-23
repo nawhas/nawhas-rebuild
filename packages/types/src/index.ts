@@ -254,7 +254,14 @@ export interface AutocompleteDTO {
 // Community Contributions — Submissions & Moderation
 // ---------------------------------------------------------------------------
 
-export type SubmissionStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested' | 'withdrawn';
+export type SubmissionStatus =
+  | 'draft'
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'changes_requested'
+  | 'withdrawn'
+  | 'applied';
 export type SubmissionType = 'reciter' | 'album' | 'track';
 export type SubmissionAction = 'create' | 'edit';
 export type ReviewAction = 'approved' | 'rejected' | 'changes_requested';

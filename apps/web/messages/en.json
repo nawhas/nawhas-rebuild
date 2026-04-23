@@ -553,7 +553,8 @@
       "approved": "Approved",
       "rejected": "Rejected",
       "changes_requested": "Changes Requested",
-      "withdrawn": "Withdrawn"
+      "withdrawn": "Withdrawn",
+      "applied": "Applied"
     },
     "type": {
       "reciter": "Reciter",

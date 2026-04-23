@@ -421,6 +421,44 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       expect(rows.find((r) => r.language === 'en')?.text).toBe('English text');
     });
 
+    it('applyApproved rejects a second call on the same submission', async () => {
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const sub = await contribCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: `Double Apply ${SUFFIX}` },
+      });
+      seededSubmissionIds.push(sub.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({ submissionId: sub.id, action: 'approved' });
+      const first = await modCaller.applyApproved({ submissionId: sub.id });
+      seededReciterIds.push(first.entityId);
+
+      // Second call must fail — status is now 'applied', not 'approved'.
+      await expect(
+        modCaller.applyApproved({ submissionId: sub.id }),
+      ).rejects.toThrow(/Only approved submissions can be applied/);
+    });
+
+    it('submission status becomes applied after applyApproved', async () => {
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const sub = await contribCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: `Applied Status ${SUFFIX}` },
+      });
+      seededSubmissionIds.push(sub.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({ submissionId: sub.id, action: 'approved' });
+      const applied = await modCaller.applyApproved({ submissionId: sub.id });
+      seededReciterIds.push(applied.entityId);
+
+      const [row] = await db.select().from(submissions).where(eq(submissions.id, sub.id));
+      expect(row?.status).toBe('applied');
+    });
+
     it('apply deletes lyrics rows for languages cleared on edit', async () => {
       // Relies on the previous test having seeded ar + en lyrics for seededTrackIds[0].
       const trackId = seededTrackIds[0]!;

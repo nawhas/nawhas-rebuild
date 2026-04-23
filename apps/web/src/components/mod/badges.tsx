@@ -31,6 +31,7 @@ const STATUS_CLASSES: Record<SubmissionStatus, string> = {
   rejected: 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200',
   changes_requested: 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200',
   withdrawn: 'bg-muted text-muted-foreground',
+  applied: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
 };
 
 export function SubmissionTypeBadge({ type }: { type: SubmissionType }): React.JSX.Element {
