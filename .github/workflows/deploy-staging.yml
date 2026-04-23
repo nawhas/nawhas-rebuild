@@ -1,13 +1,17 @@
-# Deploy to staging via ArgoCD.
+# Build + deploy the web image to staging.
 #
-# Triggered after CI completes successfully on main (workflow_run), or
-# manually via workflow_dispatch to redeploy any ref without a new push.
+# Triggers directly on pushes to main (not via workflow_run from CI), so
+# flaky E2E or Lighthouse runs in ci.yml don't gate deploys — matching
+# the old job-level `needs: [docker-push]` semantics where only
+# quality + build + docker-build had to pass to deploy. Those jobs still
+# run in ci.yml in parallel with this workflow and surface their results
+# independently.
 #
 # CI owns sync: the ArgoCD application is created without an automated
 # sync policy, so deploys happen only when this workflow explicitly runs
-# `argocd app sync`. This eliminates races between the Argo controller
-# and CI that produced `FailedPrecondition: another operation is already
-# in progress` errors.
+# `argocd app sync`. Eliminates races between the Argo controller and
+# CI that produced `FailedPrecondition: another operation is already in
+# progress` errors.
 #
 # ArgoCD steps use continue-on-error because the cluster is private and
 # may not be reachable from GitHub Actions runners. With auto-sync off,
@@ -19,9 +23,7 @@
 name: Deploy Staging
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  push:
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -31,45 +33,61 @@ on:
         default: main
 
 jobs:
+  docker-push:
+    name: Docker Push (ghcr.io)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.tag.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      # Always tag the pushed image with the full commit SHA. For
+      # push:main github.sha matches, but workflow_dispatch with
+      # ref=main needs to resolve to the actual SHA that branch points
+      # to so downstream deploy has a valid ghcr.io tag.
+      - name: Resolve commit SHA
+        id: tag
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web image
+        uses: ./.github/actions/build-web-image
+        with:
+          push: "true"
+          tags: |
+            ghcr.io/nawhas/nawhas-web:${{ steps.tag.outputs.sha }}
+            ghcr.io/nawhas/nawhas-web:latest
+
   deploy:
     name: Deploy to Staging
+    needs: docker-push
     runs-on: ubuntu-latest
-    # For workflow_run, only deploy on successful CI runs.
-    # For workflow_dispatch, always run.
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     environment: staging
-    # Serialize deploys. Without this, two quick CI completions queue two
-    # `argocd app sync` calls against the same app, and the second one
-    # fails with "another operation is already in progress"
+    # Serialize deploys. Without this, two quick pushes to main queue
+    # two `argocd app sync` calls against the same app, and the second
+    # one fails with "another operation is already in progress"
     # (FailedPrecondition, exit 20). cancel-in-progress: false means
     # newer runs wait rather than kill an in-flight deploy mid-sync.
     concurrency:
       group: deploy-staging
       cancel-in-progress: false
     env:
-      # For workflow_run the triggering commit lives in event.workflow_run.head_sha;
-      # for workflow_dispatch use the user-supplied ref; fall back to the branch
-      # name for safety.
-      DEPLOY_REF: >-
-        ${{
-          inputs.ref
-          || github.event.workflow_run.head_sha
-          || github.ref_name
-        }}
+      IMAGE_TAG: ${{ needs.docker-push.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.DEPLOY_REF }}
-
-      # docker-push tags images with the full commit SHA, so we always
-      # resolve the deploy ref to a SHA for image.tag — otherwise a
-      # workflow_dispatch with ref=main would set image.tag=main, a tag
-      # ghcr.io doesn't know about.
-      - name: Resolve image tag
-        id: image
-        run: echo "tag=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Set up ArgoCD
         continue-on-error: true
@@ -93,7 +111,7 @@ jobs:
             --dest-namespace nawhas-staging \
             --values values.yaml \
             --values values-staging.yaml \
-            --helm-set image.tag=${{ steps.image.outputs.tag }} \
+            --helm-set image.tag=${{ env.IMAGE_TAG }} \
             --upsert
 
           # Defensive: explicitly strip any lingering automated sync
@@ -106,7 +124,7 @@ jobs:
         continue-on-error: true
         run: |
           argocd app set nawhas-staging \
-            --helm-set "image.tag=${{ steps.image.outputs.tag }}"
+            --helm-set "image.tag=${{ env.IMAGE_TAG }}"
 
           # Defensive: cancel any in-flight op from a stuck previous run,
           # a manual sync kicked off in the ArgoCD UI, or the one-time
