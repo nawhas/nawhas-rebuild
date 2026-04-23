@@ -10,9 +10,15 @@ interface SectionTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
 
 /**
  * Section heading used across Home / Reciter / Album pages for labels
- * like "Top Nawhas", "Recently Saved Nawhas", etc. Matches legacy's
- * `.section__title` (1.4rem + Vuetify h5 map + 12px margin-bottom)
- * documented in Phase 2.1 tokens audit.
+ * like "Top Nawhas", "Recently Saved Nawhas", etc.
+ *
+ * The size/weight here have drifted from Phase 2.1's `.section__title`
+ * reference (1.4rem / weight 400, matching legacy Vuetify h5). In the
+ * rebuild that renders as a thin label that loses the content-grouping
+ * affordance — the 2026-04-23 staging audit flagged it as competing
+ * poorly with the serif hero. Bumped to text-2xl + semibold so it reads
+ * unambiguously as a section heading while still sitting a step below
+ * the page h1.
  */
 export function SectionTitle({
   as: Tag = 'h2',
@@ -24,7 +30,7 @@ export function SectionTitle({
     <Tag
       {...rest}
       className={cn(
-        'text-[1.4rem] font-normal leading-8 tracking-normal mb-3 text-foreground',
+        'mb-4 text-2xl font-semibold tracking-tight text-foreground',
         className
       )}
     >

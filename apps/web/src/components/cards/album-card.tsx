@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Card } from '@nawhas/ui/components/card';
 import { AppImage } from '@/components/ui/image';
 import type { AlbumDTO } from '@nawhas/types';
+import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 interface AlbumCardProps {
   album: AlbumDTO;
@@ -23,7 +24,10 @@ export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JS
     >
       <Card className="flex flex-col gap-3 overflow-hidden transition-shadow group-hover:shadow-md">
         {/* Album artwork */}
-        <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <div
+          style={album.artworkUrl ? undefined : getPlaceholderStyle(album.slug)}
+          className={`relative aspect-square w-full overflow-hidden ${album.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
+        >
           {album.artworkUrl ? (
             <AppImage
               src={album.artworkUrl}
@@ -36,7 +40,7 @@ export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JS
           ) : (
             <div
               aria-hidden="true"
-              className="flex h-full w-full items-center justify-center text-muted-foreground"
+              className="flex h-full w-full items-center justify-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

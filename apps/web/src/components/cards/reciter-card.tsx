@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Card } from '@nawhas/ui/components/card';
 import type { ReciterDTO } from '@nawhas/types';
+import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 interface ReciterCardProps {
   reciter: ReciterDTO;
@@ -27,10 +28,11 @@ export function ReciterCard({ reciter }: ReciterCardProps): React.JSX.Element {
       aria-label={`View ${reciter.name}'s profile`}
     >
       <Card className="flex flex-col items-center gap-3 p-4 text-center transition-colors hover:bg-muted">
-        {/* Avatar — initials placeholder until avatar images are supported */}
+        {/* Avatar — deterministic tinted placeholder until avatar images are supported. */}
         <div
           aria-hidden="true"
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-semibold text-muted-foreground transition-colors group-hover:bg-border"
+          style={getPlaceholderStyle(reciter.slug)}
+          className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${PLACEHOLDER_CLASSES}`}
         >
           {initials}
         </div>

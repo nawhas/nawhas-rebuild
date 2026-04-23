@@ -18,20 +18,20 @@ describe('SectionTitle', () => {
     expect(screen.getByText('Sub').tagName).toBe('H3');
   });
 
-  it('applies the design-system size class (text-[1.4rem])', () => {
+  it('applies the design-system size class (text-2xl)', () => {
     render(<SectionTitle>x</SectionTitle>);
-    expect(screen.getByText('x').className).toMatch(/text-\[1\.4rem\]/);
+    expect(screen.getByText('x').className).toMatch(/text-2xl/);
   });
 
-  it('applies the bottom-margin class (mb-3)', () => {
+  it('applies the bottom-margin class (mb-4)', () => {
     render(<SectionTitle>x</SectionTitle>);
-    expect(screen.getByText('x').className).toMatch(/mb-3/);
+    expect(screen.getByText('x').className).toMatch(/mb-4/);
   });
 
   it('merges custom className without losing base classes', () => {
     render(<SectionTitle className="custom-xyz">x</SectionTitle>);
     const el = screen.getByText('x');
     expect(el.className).toMatch(/custom-xyz/);
-    expect(el.className).toMatch(/mb-3/);
+    expect(el.className).toMatch(/mb-4/);
   });
 });

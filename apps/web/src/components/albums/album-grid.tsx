@@ -6,6 +6,7 @@ import type { AlbumListItemDTO } from '@nawhas/types';
 import { AppImage } from '@/components/ui/image';
 import { LoadMore } from '@/components/pagination/load-more';
 import { fetchMoreAlbums } from '@/server/actions/albums';
+import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 interface AlbumListCardProps {
   album: AlbumListItemDTO;
@@ -25,7 +26,10 @@ function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
       aria-label={`View album: ${album.title} by ${album.reciterName}${album.year ? `, ${album.year}` : ''}`}
     >
       {/* Album artwork */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+      <div
+        style={album.artworkUrl ? undefined : getPlaceholderStyle(album.slug)}
+        className={`relative aspect-square w-full overflow-hidden rounded-lg ${album.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
+      >
         {album.artworkUrl ? (
           <AppImage
             src={album.artworkUrl}
@@ -37,7 +41,7 @@ function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center text-muted-foreground"
+            className="flex h-full w-full items-center justify-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

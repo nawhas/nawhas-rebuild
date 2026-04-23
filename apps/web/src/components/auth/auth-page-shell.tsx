@@ -27,7 +27,14 @@ export function AuthPageShell({
   const t = useTranslations('auth.login');
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+    // Sit the card near the top rather than perfectly centred. Items-center on
+    // min-h-screen (the previous layout) left ~300px of empty space above the
+    // card on a 900px viewport — the 2026-04-23 audit flagged it as a dead
+    // zone that made the page look unfinished. pt-[12vh] anchors the card
+    // ~12% from the top, so short forms still breathe but the void above is
+    // gone; pb-12 keeps the footer link off the fold when the virtual keyboard
+    // opens on mobile.
+    <div className="flex min-h-screen flex-col items-center bg-background px-4 pb-12 pt-[12vh]">
       <div className="w-full max-w-md">
         {reason ? (
           <div className="mb-6 text-center">

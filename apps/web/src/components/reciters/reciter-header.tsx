@@ -1,4 +1,5 @@
 import type { ReciterWithAlbumsDTO } from '@nawhas/types';
+import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 interface ReciterHeaderProps {
   reciter: ReciterWithAlbumsDTO;
@@ -21,10 +22,11 @@ export function ReciterHeader({ reciter }: ReciterHeaderProps): React.JSX.Elemen
 
   return (
     <div className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:items-start sm:text-left">
-      {/* Avatar — initials placeholder */}
+      {/* Avatar — deterministic tinted placeholder. */}
       <div
         aria-hidden="true"
-        className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-muted text-3xl font-semibold text-muted-foreground"
+        style={getPlaceholderStyle(reciter.slug)}
+        className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-full text-3xl font-semibold ${PLACEHOLDER_CLASSES}`}
       >
         {initials}
       </div>

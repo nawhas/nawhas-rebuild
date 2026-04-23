@@ -13,6 +13,7 @@ import type {
 } from '@nawhas/types';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@nawhas/ui/components/tabs';
 import { AppImage } from '@/components/ui/image';
+import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,7 +130,8 @@ function ReciterResult({
     >
       <div
         aria-hidden="true"
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-semibold text-muted-foreground transition-colors group-hover:bg-muted/80"
+        style={getPlaceholderStyle(item.slug)}
+        className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold transition-colors ${PLACEHOLDER_CLASSES}`}
       >
         {initials}
       </div>
@@ -156,7 +158,10 @@ function AlbumResult({
       className="group flex flex-col gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View album: ${item.title}${item.year ? `, ${item.year}` : ''}`}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+      <div
+        style={item.artworkUrl ? undefined : getPlaceholderStyle(item.slug)}
+        className={`relative aspect-square w-full overflow-hidden rounded-lg ${item.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
+      >
         {item.artworkUrl ? (
           <AppImage
             src={item.artworkUrl}
@@ -168,7 +173,7 @@ function AlbumResult({
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center text-muted-foreground"
+            className="flex h-full w-full items-center justify-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
