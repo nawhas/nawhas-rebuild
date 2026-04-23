@@ -55,7 +55,17 @@ function HighlightedText({
   lang?: string;
 }) {
   if (!snippet) return <span dir={dir} lang={lang}>{fallback}</span>;
-  return <span dir={dir} lang={lang} dangerouslySetInnerHTML={{ __html: snippet }} />;
+  return (
+    <span
+      dir={dir}
+      lang={lang}
+      // Token-backed highlight — matches mobile-search-overlay. Without these
+      // the browser's default <mark> yellow bleeds through and reads as a
+      // text selection, especially on the dark theme.
+      className="[&_mark]:rounded-sm [&_mark]:bg-warning-200 [&_mark]:px-0.5 [&_mark]:text-warning-950 dark:[&_mark]:bg-warning-800 dark:[&_mark]:text-warning-50"
+      dangerouslySetInnerHTML={{ __html: snippet }}
+    />
+  );
 }
 
 /**

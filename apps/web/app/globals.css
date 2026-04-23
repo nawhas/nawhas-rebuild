@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Scan the shared UI package so utilities used only inside shadcn primitives
+ * (e.g. bg-primary / bg-secondary / bg-border / bg-input / bg-ring in
+ * packages/ui/src/components/button.tsx) actually get emitted. Tailwind 4's
+ * default content scanner only sees apps/web/; without this, the Button
+ * default variant's `bg-primary` class has no CSS rule and renders invisible. */
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ----------------------------------------------------------------------
@@ -167,9 +174,16 @@
 
 /* ────────────────────────────────────────────────────────────────────
  * shadcn-compatible semantic tokens (light mode)
+ *
+ * Note: this block is intentionally NOT `@theme inline`. With `inline`,
+ * Tailwind bakes each value directly into the generated utility
+ * (e.g. `.bg-card { background-color: #fff }`), which makes the
+ * `.dark { --color-card: ... }` overrides below dead code. Using plain
+ * `@theme` emits `.bg-card { background-color: var(--color-card) }`,
+ * letting the cascade flip tokens when `<html>` has `class="dark"`.
  * ──────────────────────────────────────────────────────────────────── */
 
-@theme inline {
+@theme {
   --color-background:        var(--color-neutral-50);
   --color-foreground:        var(--color-neutral-950);
   --color-card:              #ffffff;

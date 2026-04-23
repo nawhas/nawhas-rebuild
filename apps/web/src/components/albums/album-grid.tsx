@@ -20,7 +20,7 @@ interface AlbumListCardProps {
 function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
   return (
     <Link
-      href={`/reciters/${album.reciterSlug}/albums/${album.slug}`}
+      href={`/albums/${album.slug}`}
       className="group flex flex-col gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View album: ${album.title} by ${album.reciterName}${album.year ? `, ${album.year}` : ''}`}
     >
