@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { inArray } from 'drizzle-orm';
-import { reciters, submissions, users } from '@nawhas/db';
+import { eq, inArray } from 'drizzle-orm';
+import { albums, reciters, submissions, users } from '@nawhas/db';
 import {
   createTestDb,
   isDbAvailable,
@@ -309,6 +309,97 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       await expect(
         caller.get({ id: '00000000-0000-0000-0000-000000000000' }),
       ).rejects.toThrow('Submission not found');
+    });
+  });
+
+  // ── rich-field schema tests ───────────────────────────────────────────────
+
+  it('accepts a reciter create with rich fields', async () => {
+    const caller = makeSubmissionCaller(db, contributorId);
+    const res = await caller.create({
+      type: 'reciter',
+      action: 'create',
+      data: {
+        name: 'Rich Reciter',
+        arabicName: 'ريتش',
+        country: 'IQ',
+        birthYear: 1970,
+        description: 'A short bio.',
+        avatarUrl: 'https://example.com/avatar.jpg',
+      },
+    });
+    seededSubmissionIds.push(res.id);
+    expect(res.data).toMatchObject({
+      name: 'Rich Reciter',
+      arabicName: 'ريتش',
+      country: 'IQ',
+      birthYear: 1970,
+      description: 'A short bio.',
+      avatarUrl: 'https://example.com/avatar.jpg',
+    });
+  });
+
+  it('rejects a reciter birthYear before 1800', async () => {
+    const caller = makeSubmissionCaller(db, contributorId);
+    await expect(
+      caller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Too Old', birthYear: 1500 },
+      }),
+    ).rejects.toThrow(/birthYear/);
+  });
+
+  it('rejects a reciter description over 500 chars', async () => {
+    const caller = makeSubmissionCaller(db, contributorId);
+    await expect(
+      caller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Too Long', description: 'x'.repeat(501) },
+      }),
+    ).rejects.toThrow(/description/);
+  });
+
+  it('accepts an album create with description (slug omitted)', async () => {
+    const caller = makeSubmissionCaller(db, contributorId);
+    const res = await caller.create({
+      type: 'album',
+      action: 'create',
+      data: {
+        title: 'Album With Description',
+        reciterId: seededReciterIds[0]!,
+        description: 'Album notes.',
+      },
+    });
+    seededSubmissionIds.push(res.id);
+    expect((res.data as { description?: string }).description).toBe('Album notes.');
+  });
+
+  it('accepts a track create with lyrics map', async () => {
+    const [album] = await db
+      .insert(albums)
+      .values({
+        title: `Lyrics Test Album ${SUFFIX}`,
+        slug: `lyrics-test-album-${SUFFIX}`,
+        reciterId: seededReciterIds[0]!,
+      })
+      .returning({ id: albums.id });
+    const caller = makeSubmissionCaller(db, contributorId);
+    const res = await caller.create({
+      type: 'track',
+      action: 'create',
+      data: {
+        title: 'Track With Lyrics',
+        albumId: album!.id,
+        lyrics: { ar: 'اللغة العربية', en: 'English text' },
+      },
+    });
+    seededSubmissionIds.push(res.id);
+    await db.delete(albums).where(eq(albums.id, album!.id));
+    expect((res.data as { lyrics?: Record<string, string> }).lyrics).toEqual({
+      ar: 'اللغة العربية',
+      en: 'English text',
     });
   });
 });

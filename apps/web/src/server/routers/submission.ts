@@ -15,26 +15,46 @@ const MAX_LIMIT = 100;
 // ---------------------------------------------------------------------------
 
 export const reciterDataSchema = z.object({
-  name: z.string().min(1).max(500),
-  slug: z.string().min(1).max(500).optional(),
+  name: z.string().min(1).max(200),
+  arabicName: z.string().max(200).optional(),
+  country: z.string().length(2).optional(),
+  birthYear: z
+    .number()
+    .int()
+    .min(1800, { message: 'birthYear must be 1800 or later' })
+    .max(new Date().getFullYear(), { message: 'birthYear cannot be in the future' })
+    .optional(),
+  description: z.string().max(500, { message: 'description must be 500 chars or fewer' }).optional(),
+  avatarUrl: z.url().optional(),
+  slug: z.string().min(1).max(200).optional(),
 });
 
 export const albumDataSchema = z.object({
-  title: z.string().min(1).max(500),
+  title: z.string().min(1).max(200),
   reciterId: z.uuid(),
-  slug: z.string().min(1).max(500).optional(),
-  year: z.number().int().optional(),
+  year: z.number().int().min(1900).max(new Date().getFullYear()).optional(),
+  description: z.string().max(1000, { message: 'description must be 1000 chars or fewer' }).optional(),
   artworkUrl: z.url().optional(),
+  slug: z.string().min(1).max(200).optional(),
 });
 
 export const trackDataSchema = z.object({
-  title: z.string().min(1).max(500),
+  title: z.string().min(1).max(200),
   albumId: z.uuid(),
-  slug: z.string().min(1).max(500).optional(),
-  trackNumber: z.number().int().optional(),
+  trackNumber: z.number().int().positive().optional(),
   audioUrl: z.url().optional(),
-  youtubeId: z.string().optional(),
-  duration: z.number().int().optional(),
+  youtubeId: z.string().max(11).optional(),
+  duration: z.number().int().positive().optional(),
+  slug: z.string().min(1).max(200).optional(),
+  lyrics: z
+    .object({
+      ar: z.string().max(20000).optional(),
+      ur: z.string().max(20000).optional(),
+      en: z.string().max(20000).optional(),
+      transliteration: z.string().max(20000).optional(),
+    })
+    .partial()
+    .optional(),
 });
 
 // ---------------------------------------------------------------------------
