@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq, inArray } from 'drizzle-orm';
-import { albums, auditLog, reciters, submissionReviews, submissions, tracks, users } from '@nawhas/db';
+import { albums, auditLog, lyrics, reciters, submissionReviews, submissions, tracks, users } from '@nawhas/db';
 import {
   createTestDb,
   isDbAvailable,
@@ -394,6 +394,56 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
         avatarUrl: 'https://example.com/a.jpg',
       });
       seededReciterIds.push(applied.entityId);
+    });
+
+    it('apply upserts track lyrics rows per language', async () => {
+      const albumId = seededAlbumIds[0]!;
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const sub = await contribCaller.create({
+        type: 'track',
+        action: 'create',
+        data: {
+          title: `Lyrics Track ${SUFFIX}`,
+          albumId,
+          lyrics: { ar: 'نص عربي', en: 'English text' },
+        },
+      });
+      seededSubmissionIds.push(sub.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({ submissionId: sub.id, action: 'approved' });
+      const applied = await modCaller.applyApproved({ submissionId: sub.id });
+      seededTrackIds.push(applied.entityId);
+
+      const rows = await db.select().from(lyrics).where(eq(lyrics.trackId, applied.entityId));
+      expect(rows).toHaveLength(2);
+      expect(rows.find((r) => r.language === 'ar')?.text).toBe('نص عربي');
+      expect(rows.find((r) => r.language === 'en')?.text).toBe('English text');
+    });
+
+    it('apply deletes lyrics rows for languages cleared on edit', async () => {
+      // Relies on the previous test having seeded ar + en lyrics for seededTrackIds[0].
+      const trackId = seededTrackIds[0]!;
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const sub = await contribCaller.create({
+        type: 'track',
+        action: 'edit',
+        targetId: trackId,
+        data: {
+          title: `Lyrics Track ${SUFFIX}`,
+          albumId: seededAlbumIds[0]!,
+          lyrics: { ar: 'نص عربي محدث', en: '', ur: 'اردو متن' },
+        },
+      });
+      seededSubmissionIds.push(sub.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({ submissionId: sub.id, action: 'approved' });
+      await modCaller.applyApproved({ submissionId: sub.id });
+
+      const rows = await db.select().from(lyrics).where(eq(lyrics.trackId, trackId));
+      expect(rows.map((r) => r.language).sort()).toEqual(['ar', 'ur']);
+      expect(rows.find((r) => r.language === 'ar')?.text).toBe('نص عربي محدث');
     });
   });
 

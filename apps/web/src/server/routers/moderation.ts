@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { and, asc, desc, eq, gt, ilike, inArray, lt, or } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { auditLog, reciters, albums, tracks, submissions, submissionReviews, users } from '@nawhas/db';
+import { auditLog, lyrics, reciters, albums, tracks, submissions, submissionReviews, users } from '@nawhas/db';
 import { router, moderatorProcedure } from '../trpc/trpc';
 import { sendSubmissionApproved, sendSubmissionFeedback } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
@@ -48,6 +48,24 @@ async function pickAlbumSlug(
       ),
     );
   return findFreeSlug(candidate, existing.map((a) => a.slug));
+}
+
+async function pickTrackSlug(
+  tx: DbTx,
+  albumId: string,
+  title: string,
+): Promise<string> {
+  const candidate = slugify(title);
+  const existing = await tx
+    .select({ slug: tracks.slug })
+    .from(tracks)
+    .where(
+      and(
+        eq(tracks.albumId, albumId),
+        or(eq(tracks.slug, candidate), ilike(tracks.slug, `${candidate}-%`)),
+      ),
+    );
+  return findFreeSlug(candidate, existing.map((t) => t.slug));
 }
 
 // ---------------------------------------------------------------------------
@@ -308,8 +326,9 @@ export const moderationRouter = router({
         } else {
           // track
           const data = trackDataSchema.parse(submission.data);
-          const slug = data.slug ?? slugify(data.title);
+          const slug = data.slug ?? (await pickTrackSlug(tx, data.albumId, data.title));
 
+          let trackId: string;
           if (submission.action === 'create') {
             const [inserted] = await tx
               .insert(tracks)
@@ -324,14 +343,14 @@ export const moderationRouter = router({
               })
               .returning({ id: tracks.id });
             if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-            eid = inserted.id;
+            trackId = inserted.id;
           } else {
             if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
             const [updated] = await tx
               .update(tracks)
               .set({
                 title: data.title,
-                slug,
+                // slug frozen on edits — URL stability
                 albumId: data.albumId,
                 trackNumber: data.trackNumber ?? null,
                 audioUrl: data.audioUrl ?? null,
@@ -342,8 +361,29 @@ export const moderationRouter = router({
               .where(eq(tracks.id, submission.targetId))
               .returning({ id: tracks.id });
             if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Track not found — it may have been deleted.' });
-            eid = submission.targetId;
+            trackId = submission.targetId;
           }
+
+          // Lyrics upsert: for each language key in data.lyrics, insert-or-update.
+          // Empty string means delete the row. Missing keys are left untouched.
+          if (data.lyrics) {
+            for (const [language, text] of Object.entries(data.lyrics)) {
+              if (text === undefined) continue;
+              if (text === '') {
+                await tx.delete(lyrics).where(and(eq(lyrics.trackId, trackId), eq(lyrics.language, language)));
+              } else {
+                await tx
+                  .insert(lyrics)
+                  .values({ trackId, language, text })
+                  .onConflictDoUpdate({
+                    target: [lyrics.trackId, lyrics.language],
+                    set: { text, updatedAt: new Date() },
+                  });
+              }
+            }
+          }
+
+          eid = trackId;
         }
 
         await tx.insert(auditLog).values({
