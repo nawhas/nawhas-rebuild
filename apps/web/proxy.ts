@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getSessionCookie } from 'better-auth/cookies';
 
 /**
  * Routes that require authentication.
@@ -59,10 +60,13 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
 
   if (isProtected) {
-    // Better Auth stores the session token in a cookie named 'better-auth.session_token'
-    const sessionToken = request.cookies.get('better-auth.session_token');
+    // Better Auth stores the session token in a cookie whose name depends on
+    // whether the response is served over HTTPS: 'better-auth.session_token'
+    // on HTTP (dev), '__Secure-better-auth.session_token' in production. Use
+    // the library helper so we honour both.
+    const sessionToken = getSessionCookie(request);
 
-    if (!sessionToken?.value) {
+    if (!sessionToken) {
       return redirectToLogin(request, pathname);
     }
 
