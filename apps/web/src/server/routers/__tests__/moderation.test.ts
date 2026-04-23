@@ -1,11 +1,12 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { albums, auditLog, reciters, submissionReviews, submissions, tracks, users } from '@nawhas/db';
 import {
   createTestDb,
   isDbAvailable,
   makeModerationCaller,
+  makeSubmissionCaller,
   type TestDb,
 } from './helpers';
 
@@ -324,6 +325,41 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
         .where(inArray(reciters.id, [result.entityId]));
       expect(rows[0]!.slug).toBeTruthy();
       expect(rows[0]!.slug).not.toContain(' ');
+    });
+
+    it('apply writes rich reciter fields to canonical table', async () => {
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const sub = await contribCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: {
+          name: `Rich Reciter ${SUFFIX}-a`,
+          arabicName: 'بسم الله',
+          country: 'PK',
+          birthYear: 1950,
+          description: 'Bio.',
+          avatarUrl: 'https://example.com/a.jpg',
+        },
+      });
+      seededSubmissionIds.push(sub.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({ submissionId: sub.id, action: 'approved' });
+      const applied = await modCaller.applyApproved({ submissionId: sub.id });
+
+      const [row] = await db
+        .select()
+        .from(reciters)
+        .where(eq(reciters.id, applied.entityId));
+      expect(row).toMatchObject({
+        name: `Rich Reciter ${SUFFIX}-a`,
+        arabicName: 'بسم الله',
+        country: 'PK',
+        birthYear: 1950,
+        description: 'Bio.',
+        avatarUrl: 'https://example.com/a.jpg',
+      });
+      seededReciterIds.push(applied.entityId);
     });
   });
 

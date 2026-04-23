@@ -5,12 +5,32 @@ import { auditLog, reciters, albums, tracks, submissions, submissionReviews, use
 import { router, moderatorProcedure } from '../trpc/trpc';
 import { sendSubmissionApproved, sendSubmissionFeedback } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
-import { slugify } from '../lib/slug';
+import { slugify, findFreeSlug } from '../lib/slug';
 import { reciterDataSchema, albumDataSchema, trackDataSchema } from './submission';
 import type { AuditLogDTO, PaginatedResult, SubmissionDTO } from '@nawhas/types';
+import type { Database } from '@nawhas/db';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+type DbTx = Parameters<Parameters<Database['transaction']>[0]>[0];
+
+/**
+ * Returns a collision-safe slug for a reciter name.
+ * If `candidate` is already taken, appends -2, -3, … until a free one is found.
+ */
+async function pickReciterSlug(tx: DbTx, name: string): Promise<string> {
+  const candidate = slugify(name);
+  const existing = await tx
+    .select({ slug: reciters.slug })
+    .from(reciters)
+    .where(or(eq(reciters.slug, candidate), ilike(reciters.slug, `${candidate}-%`)));
+  return findFreeSlug(candidate, existing.map((r) => r.slug));
+}
 
 // ---------------------------------------------------------------------------
 // Router
@@ -195,21 +215,37 @@ export const moderationRouter = router({
 
         if (submission.type === 'reciter') {
           const data = reciterDataSchema.parse(submission.data);
-          const slug = data.slug ?? slugify(data.name);
 
           if (submission.action === 'create') {
+            const slug = data.slug ?? (await pickReciterSlug(tx, data.name));
             const [inserted] = await tx
               .insert(reciters)
-              .values({ name: data.name, slug })
+              .values({
+                name: data.name,
+                slug,
+                arabicName: data.arabicName ?? null,
+                country: data.country ?? null,
+                birthYear: data.birthYear ?? null,
+                description: data.description ?? null,
+                avatarUrl: data.avatarUrl ?? null,
+              })
               .returning({ id: reciters.id });
             if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
             eid = inserted.id;
           } else {
-            // edit
+            // edit — slug is frozen for URL stability
             if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
             const [updated] = await tx
               .update(reciters)
-              .set({ name: data.name, slug, updatedAt: new Date() })
+              .set({
+                name: data.name,
+                arabicName: data.arabicName ?? null,
+                country: data.country ?? null,
+                birthYear: data.birthYear ?? null,
+                description: data.description ?? null,
+                avatarUrl: data.avatarUrl ?? null,
+                updatedAt: new Date(),
+              })
               .where(eq(reciters.id, submission.targetId))
               .returning({ id: reciters.id });
             if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reciter not found — it may have been deleted.' });
