@@ -1,9 +1,9 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.1c + Phase 3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.1c + 2.4 W2/W3 + Phase 3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
-**Last updated:** 2026-04-22
+**Last updated:** 2026-04-24
 
 ## Context
 
@@ -336,6 +336,113 @@ like Apple black, mod badge visual scanning).
 
 Refs: `docs/superpowers/specs/2026-04-22-phase-2-3-page-redesign-design.md`, `docs/superpowers/plans/2026-04-22-phase-2-3-page-redesign.md`.
 
+## Phase 2.4 — Contributor & Moderator Overhaul
+
+The M6 contribute + moderate loop shipped in Feb–Mar 2026 was architecturally
+complete but experientially thin: reciter submissions accepted only `name` +
+`slug`; album and track forms required contributors to paste raw UUIDs for
+the parent entity; artwork and audio were URL-only (no upload despite S3
+presigned infra already shipping for the avatar flow); lyrics could not be
+submitted at all; moderators who approved a submission but didn't click
+Apply in the same session effectively orphaned the record (it vanished
+from `/mod/queue`); there was no "apply to contribute" flow, no draft save,
+no withdrawal path, no revision thread, no internal moderator notes, no
+audit filters, no new-submission notifications.
+
+Three-workstream plan spec'd 2026-04-23 in
+[`docs/superpowers/specs/2026-04-23-contributor-moderator-overhaul-design.md`](./2026-04-23-contributor-moderator-overhaul-design.md):
+
+| # | Name | Status |
+|---|---|---|
+| W1 | Contribute forms (parent pickers, uploads, auto-slug, lyrics, drafts) | ✅ shipped 2026-04-23 |
+| W2 | Moderation flow (merge approve+apply, internal notes, thread, filters) | not started |
+| W3 | Contributor lifecycle (apply-for-access, withdraw, resubmit-diff, digests) | not started |
+
+### 2.4 W1 Contribute forms ✅ shipped 2026-04-23
+
+Shipped as 30 commits on `main` (`65504aa..112b3bf`) in the plan's six
+phases — schema first, server second, UI primitives third, forms fourth,
+integration fifth, post-review fixes last.
+
+**Schema** (migration `0010_unknown_zaran.sql`, 4 DDL commits +
+1 migration commit):
+- `reciters` +5 columns: `arabic_name`, `country`, `birth_year`, `description`, `avatar_url` (all nullable)
+- `albums` +1 column: `description`
+- `submissions` +1 column (`moderator_notes`) + status enum extended with `withdrawn` and later `applied`
+- New `access_requests` table (user_id, reason, status, reviewed_by, review_comment + partial unique index for one-pending-per-user) — landed now, consumed by W3
+
+**Types + Zod** (`3ed9b1d`, `21d6edc`):
+- `@nawhas/types` submission DTOs widened for all new optional fields + lyrics map
+- `reciterDataSchema` / `albumDataSchema` / `trackDataSchema` accept rich fields with proper validation (birthYear 1800–current, description caps, lyrics keyed by `'ar' | 'ur' | 'en' | 'transliteration'`)
+
+**Server + apply step** (`53d8fd9`, `a2edc0b`, `b0e4abe`, `4fb418f`,
+`874932a`, `ebf96f8`, `b401791`, `8f6af26`):
+- Extracted `slugify` + new `findFreeSlug` collision helper into `apps/web/src/server/lib/slug.ts`
+- `moderation.applyApproved` now writes rich reciter/album fields, upserts per-language lyrics rows on tracks, and uses per-entity collision-safe slug pickers (reciter global, album per-reciter, track per-album)
+- New `contribute` tRPC router with `searchReciters` + `searchAlbums` (contributor-gated typeahead backing the parent pickers)
+- Two new upload endpoints: `POST /api/uploads/image` (5 MB, jpeg/png/webp, S3 BUCKET_IMAGES) and `POST /api/uploads/audio` (50 MB, mpeg/mp4/wav/ogg, S3 BUCKET_AUDIO, duration auto-probed via `music-metadata`). Both role-gated to contributor+moderator, mirror the existing avatar-upload pattern.
+
+**UI primitives** (`de7a991`, `c59ba31`, `1a2b9ea`, `3b24f4d`, `a8c2c01`,
+`77e3c9f`, `125d344`):
+- `ImageUpload`, `AudioUpload`, `ParentPicker` (typeahead combobox with keyboard nav + grouped-by-reciter album results), `SlugPreview` (live read-only URL preview), `LyricsTabs` (4-language tabbed editor with RTL + char counters)
+- `useDraftAutosave` hook (localStorage, 7-day TTL, debounced), `useUnsavedChangesGuard` hook (beforeunload), `COUNTRY_OPTIONS` ISO list
+
+**Forms** (`5cc6f7a`, `69faed6`, `9e4e0d0`):
+- ReciterForm / AlbumForm / TrackForm fully rewritten. No slug field anywhere — auto-generated server-side with live preview. Parent pickers replace raw UUID paste. Upload widgets replace URL-only inputs. Lyrics tabs inside the track form. Draft restore banner on mount, unsaved-changes guard on dirty. Edit pages updated to fetch rich fields (and lyrics via the existing `TrackWithRelationsDTO`) and pass them as `initialValues`.
+
+**Integration** (`1370cfe`, `3dc0299`, `072aa8e`):
+- `apps/web/messages/en.json` extended with ~115 new i18n keys under `contribute.*` (country labels, upload copy, lyrics placeholders, draft restore prompt, slug preview template)
+- `/mod/submissions/[id]` field-diff extended to show all new reciter/album fields + per-language lyrics rows
+- E2E `apps/e2e/tests/contributor-submissions.spec.ts` updated for the new forms; new `describe` blocks for album (ParentPicker + happy-path) and track (album combobox + Arabic lyrics tab submission)
+
+**Post-review fixes** (`5780ba9`, `112b3bf`):
+- `applyApproved` now flips submission status to `'applied'` inside the same transaction as the canonical writes + audit log, preventing double-apply races under concurrent moderator clicks or post-refresh
+- `audio/mpeg` uploads now store with the `.mp3` extension via an explicit MIME→extension map (previously `.mpeg`, which broke playback on some CDNs)
+
+**Verification:** `./dev qa` green (typecheck + lint + 474 unit tests).
+Direct vitest run against the test DB overlay: 618 tests pass, 5 pre-existing
+Typesense-gated skips, 0 failures.
+
+**Deferred follow-ups** (not regressions, tracked in commit messages):
+- Manual browser smoke of the three form flows + moderator apply — pending user verification
+- Raw UUIDs for `reciterId` / `albumId` still render in the mod diff — fold into W2's moderation-flow polish
+- Pre-existing e2e package fixture type error (same pattern in 4 other spec files; not in the turbo typecheck pipeline)
+- `pg_trgm` index on `reciters.name` / `albums.title` for the typeahead search — fine at current scale
+- `moderator_notes` column landed but the edit UI is W2 scope
+- `access_requests` table landed but W3 wires the endpoints and UI
+
+Refs:
+[`docs/superpowers/specs/2026-04-23-contributor-moderator-overhaul-design.md`](./2026-04-23-contributor-moderator-overhaul-design.md),
+[`docs/superpowers/plans/2026-04-23-w1-contribute-forms-plan.md`](../plans/2026-04-23-w1-contribute-forms-plan.md).
+
+### 2.4 W2 Moderation flow (not started)
+
+Merge `moderation.review(approve)` + `applyApproved` into a single
+coherent action (approve-and-apply in one transaction by default; keep
+`applyApproved` only as a retry/backfill escape hatch). Surface
+approved-but-unapplied drift as a dashboard tab rather than an orphan
+state. Add internal moderator notes (`moderator_notes` column shipped
+in W1), render the full `submission_reviews` history as a chronological
+thread on the detail page, and add filter params (actor / action /
+targetType / date range) + expandable meta on `/mod/audit`. Extend the
+`/mod` dashboard with pending count, awaiting-apply count, 7-day
+throughput sparkline, and oldest-pending age.
+
+Own spec and plan will land before execution.
+
+### 2.4 W3 Contributor lifecycle (not started)
+
+Self-service "Apply to contribute" CTA on `/contribute` for role=user
+(backed by the `access_requests` table shipped in W1) with a new
+`/mod/access-requests` moderator queue. Allow contributors to withdraw
+their own pending submissions (new `withdrawn` status already reserved
+in W1). Show a diff panel on resubmit surfacing what changed since the
+prior rejection + the moderator's comment. Digest email to moderators
+(throttled to once per hour) + in-app pending-count badge on the
+Moderator Dashboard nav link.
+
+Own spec and plan will land before execution.
+
 ## Phase 3 — Launch Prep
 
 ### 3.1 Data strategy
@@ -384,12 +491,17 @@ Discord or Matrix server, a launch post when `nawhas.com` cuts over, reach out t
 ```
 Phase 1 (single batch)
       ↓
-Phase 2.1 → 2.2 → 2.3   (visual work)
-                  ↓
-            Phase 3   (launch prep)
-                  ↓
-            Phase 4   (can partly overlap with late 3)
+Phase 2.1 → 2.2 → 2.3 → 2.4 W1 → W2 → W3   (visual + contribute/moderate polish)
+                                ↓
+                          Phase 3   (launch prep; can start in parallel with 2.4 W2/W3)
+                                ↓
+                          Phase 4   (can partly overlap with late 3)
 ```
+
+Phase 2.4 W2 and W3 are not launch blockers — if Phase 3 data/SEO/cutover
+work is ready before 2.4 finishes, 2.4 can continue in parallel or
+defer until after cutover. W1 is shipped, so the contribute + moderate
+loop is already usable for the public beta.
 
 ## Risks
 
