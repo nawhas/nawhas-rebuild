@@ -29,7 +29,7 @@ async function getAuthenticatedCaller(actionName: string) {
 /** Create a new reciter submission. */
 export async function createReciterSubmission(
   action: 'create' | 'edit',
-  data: { name: string; slug?: string },
+  data: ReciterData,
   targetId?: string,
 ): Promise<SubmissionDTO> {
   const caller = await getAuthenticatedCaller('submission.createReciterSubmission');
@@ -44,7 +44,7 @@ export async function createReciterSubmission(
 /** Create a new album submission. */
 export async function createAlbumSubmission(
   action: 'create' | 'edit',
-  data: { title: string; reciterId: string; slug?: string; year?: number; artworkUrl?: string },
+  data: AlbumData,
   targetId?: string,
 ): Promise<SubmissionDTO> {
   const caller = await getAuthenticatedCaller('submission.createAlbumSubmission');
@@ -59,15 +59,7 @@ export async function createAlbumSubmission(
 /** Create a new track submission. */
 export async function createTrackSubmission(
   action: 'create' | 'edit',
-  data: {
-    title: string;
-    albumId: string;
-    slug?: string;
-    trackNumber?: number;
-    audioUrl?: string;
-    youtubeId?: string;
-    duration?: number;
-  },
+  data: TrackData,
   targetId?: string,
 ): Promise<SubmissionDTO> {
   const caller = await getAuthenticatedCaller('submission.createTrackSubmission');
