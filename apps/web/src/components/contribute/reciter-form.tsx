@@ -7,25 +7,40 @@ import { z } from 'zod';
 import { Button } from '@nawhas/ui/components/button';
 import { createReciterSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
+import { ImageUpload } from '@/components/contribute/image-upload';
+import { SlugPreview } from '@/components/contribute/slug-preview';
+import { COUNTRY_OPTIONS } from '@/components/contribute/country-options';
+import { useDraftAutosave } from '@/components/contribute/use-draft-autosave';
+import { useUnsavedChangesGuard } from '@/components/contribute/use-unsaved-changes-guard';
 
-type Errors = Partial<Record<'name' | 'slug', string>>;
+type FormValues = {
+  name: string;
+  arabicName: string;
+  country: string;
+  birthYear: string;
+  description: string;
+  avatarUrl: string | null;
+};
+
+type Errors = Partial<Record<keyof FormValues, string>>;
+
+const EMPTY: FormValues = {
+  name: '',
+  arabicName: '',
+  country: '',
+  birthYear: '',
+  description: '',
+  avatarUrl: null,
+};
 
 interface ReciterFormProps {
   /** For edit mode. */
   targetId?: string;
-  initialValues?: {
-    name: string;
-    slug?: string;
-  };
+  initialValues?: Partial<FormValues>;
   action: 'create' | 'edit';
-  /** If provided, used for resubmit (update) instead of create. */
-  submissionId?: string;
   onSuccess?: () => void;
 }
 
-/**
- * Submission form for reciter create/edit.
- */
 export function ReciterForm({
   targetId,
   initialValues,
@@ -34,48 +49,77 @@ export function ReciterForm({
 }: ReciterFormProps): React.JSX.Element {
   const t = useTranslations('contribute');
   const router = useRouter();
-  const [name, setName] = useState(initialValues?.name ?? '');
-  const [slug, setSlug] = useState(initialValues?.slug ?? '');
+
+  const startValues: FormValues = { ...EMPTY, ...initialValues };
+  const [values, setValues] = useState<FormValues>(startValues);
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const draftKey = `contribute:reciter:${action}:${targetId ?? 'new'}`;
+  const draft = useDraftAutosave<FormValues>(draftKey);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Persist on every change (hook debounces internally).
+  if (values !== startValues) draft.save(values);
+
+  const isDirty = JSON.stringify(values) !== JSON.stringify(startValues);
+  useUnsavedChangesGuard(isDirty);
+
   const schema = z.object({
     name: z.string().min(1, t('form.nameRequired')),
-    slug: z.string().min(1).optional().or(z.literal('')),
+    arabicName: z.string().max(200).optional().or(z.literal('')),
+    country: z.string().length(2).optional().or(z.literal('')),
+    birthYear: z
+      .string()
+      .optional()
+      .refine(
+        (v) =>
+          !v ||
+          (/^\d{4}$/.test(v) &&
+            parseInt(v) >= 1800 &&
+            parseInt(v) <= new Date().getFullYear()),
+        t('form.birthYearInvalid'),
+      ),
+    description: z
+      .string()
+      .max(500, t('form.descriptionTooLong'))
+      .optional()
+      .or(z.literal('')),
+    avatarUrl: z.string().url().nullable().optional(),
   });
 
-  function validate(): boolean {
-    const result = schema.safeParse({ name, slug: slug || undefined });
-    if (!result.success) {
-      const fieldErrors: Errors = {};
-      for (const issue of result.error.issues) {
-        const key = issue.path[0] as keyof Errors;
-        fieldErrors[key] = issue.message;
-      }
-      setErrors(fieldErrors);
-      return false;
-    }
-    setErrors({});
-    return true;
+  function set<K extends keyof FormValues>(key: K, value: FormValues[K]): void {
+    setValues((prev) => ({ ...prev, [key]: value }));
   }
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
-    if (!validate()) return;
+    const parse = schema.safeParse(values);
+    if (!parse.success) {
+      const fieldErrors: Errors = {};
+      for (const issue of parse.error.issues) {
+        fieldErrors[issue.path[0] as keyof Errors] = issue.message;
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
     setServerError(null);
+    const data = {
+      name: values.name,
+      ...(values.arabicName ? { arabicName: values.arabicName } : {}),
+      ...(values.country ? { country: values.country } : {}),
+      ...(values.birthYear ? { birthYear: parseInt(values.birthYear) } : {}),
+      ...(values.description ? { description: values.description } : {}),
+      ...(values.avatarUrl ? { avatarUrl: values.avatarUrl } : {}),
+    };
     startTransition(async () => {
       try {
-        await createReciterSubmission(
-          action,
-          { name, ...(slug ? { slug } : {}) },
-          targetId,
-        );
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push('/profile/contributions');
-        }
+        await createReciterSubmission(action, data, targetId);
+        draft.clear();
+        if (onSuccess) onSuccess();
+        else router.push('/profile/contributions');
       } catch (err) {
         setServerError(err instanceof Error ? err.message : t('form.genericFailure'));
       }
@@ -84,37 +128,149 @@ export function ReciterForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      {draft.draft && !draftRestored && (
+        <div
+          role="status"
+          className="rounded-md border border-info-200 bg-info-50 px-4 py-3 dark:border-info-800 dark:bg-info-950"
+        >
+          <p className="text-sm text-info-900 dark:text-info-100">
+            {t('draft.restorePrompt', {
+              days: Math.floor((draft.ageMs ?? 0) / 86_400_000),
+            })}
+          </p>
+          <div className="mt-2 flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                setValues(draft.draft!);
+                setDraftRestored(true);
+              }}
+            >
+              {t('draft.restore')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                draft.clear();
+                setDraftRestored(true);
+              }}
+            >
+              {t('draft.discard')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <FormField id="name" label={t('reciter.nameLabel')} required error={errors.name}>
         <Input
           id="name"
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={values.name}
+          onChange={(e) => set('name', e.target.value)}
           disabled={isPending}
           placeholder={t('reciter.namePlaceholder')}
           error={errors.name}
         />
+        {action === 'create' && (
+          <SlugPreview source={values.name} template="/reciters/{slug}" />
+        )}
       </FormField>
 
       <FormField
-        id="slug"
-        label={t('form.slugLabel')}
-        error={errors.slug}
-        hint={t('form.slugHintReciter')}
+        id="arabicName"
+        label={t('reciter.arabicNameLabel')}
+        error={errors.arabicName}
+        hint={t('reciter.arabicNameHint')}
       >
         <Input
-          id="slug"
+          id="arabicName"
           type="text"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
+          dir="rtl"
+          value={values.arabicName}
+          onChange={(e) => set('arabicName', e.target.value)}
           disabled={isPending}
-          placeholder={t('reciter.slugPlaceholder')}
-          error={errors.slug}
+          placeholder={t('reciter.arabicNamePlaceholder')}
+          error={errors.arabicName}
+        />
+      </FormField>
+
+      <FormField
+        id="country"
+        label={t('reciter.countryLabel')}
+        error={errors.country}
+        hint={t('reciter.countryHint')}
+      >
+        <select
+          id="country"
+          value={values.country}
+          onChange={(e) => set('country', e.target.value)}
+          disabled={isPending}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+        >
+          <option value="">{t('reciter.countryNone')}</option>
+          {COUNTRY_OPTIONS.map((c) => (
+            <option key={c.code} value={c.code}>
+              {t(`reciter.${c.labelKey}`)}
+            </option>
+          ))}
+        </select>
+      </FormField>
+
+      <FormField
+        id="birthYear"
+        label={t('reciter.birthYearLabel')}
+        error={errors.birthYear}
+      >
+        <Input
+          id="birthYear"
+          type="number"
+          value={values.birthYear}
+          onChange={(e) => set('birthYear', e.target.value)}
+          disabled={isPending}
+          placeholder={t('reciter.birthYearPlaceholder')}
+          min={1800}
+          max={new Date().getFullYear()}
+          error={errors.birthYear}
+        />
+      </FormField>
+
+      <FormField
+        id="description"
+        label={t('reciter.descriptionLabel')}
+        error={errors.description}
+        hint={t('reciter.descriptionHint')}
+      >
+        <textarea
+          id="description"
+          value={values.description}
+          onChange={(e) => set('description', e.target.value)}
+          disabled={isPending}
+          maxLength={500}
+          rows={4}
+          placeholder={t('reciter.descriptionPlaceholder')}
+          className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          {t('form.charCount', { count: values.description.length, max: 500 })}
+        </p>
+      </FormField>
+
+      <FormField id="avatarUrl" label={t('reciter.avatarLabel')} hint={t('reciter.avatarHint')}>
+        <ImageUpload
+          value={values.avatarUrl}
+          onChange={(url) => set('avatarUrl', url)}
+          disabled={isPending}
+          label={t('reciter.avatarUpload')}
         />
       </FormField>
 
       {serverError && (
-        <p role="alert" className="text-sm text-destructive">{serverError}</p>
+        <p role="alert" className="text-sm text-destructive">
+          {serverError}
+        </p>
       )}
 
       <Button type="submit" disabled={isPending} aria-busy={isPending}>

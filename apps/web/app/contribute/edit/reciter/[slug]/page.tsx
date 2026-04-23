@@ -47,7 +47,14 @@ export default async function EditReciterPage({
       <ReciterForm
         action="edit"
         targetId={reciter.id}
-        initialValues={{ name: reciter.name, slug: reciter.slug }}
+        initialValues={{
+          name: reciter.name,
+          ...(reciter.arabicName != null ? { arabicName: reciter.arabicName } : {}),
+          ...(reciter.country != null ? { country: reciter.country } : {}),
+          ...(reciter.birthYear != null ? { birthYear: String(reciter.birthYear) } : {}),
+          ...(reciter.description != null ? { description: reciter.description } : {}),
+          ...(reciter.avatarUrl !== undefined ? { avatarUrl: reciter.avatarUrl } : {}),
+        }}
       />
     </main>
   );

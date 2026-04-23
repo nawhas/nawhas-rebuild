@@ -36,6 +36,11 @@ export interface ReciterDTO {
   id: string;
   name: string;
   slug: string;
+  arabicName?: string | null;
+  country?: string | null;
+  birthYear?: number | null;
+  description?: string | null;
+  avatarUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
