@@ -327,6 +327,40 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       expect(rows[0]!.slug).not.toContain(' ');
     });
 
+    it('apply writes album description and picks free slug on collision', async () => {
+      const reciterId = seededReciterIds[0]!;
+
+      // Pre-seed a canonical album with slug 'album-collision' under the reciter.
+      const [pre] = await db.insert(albums).values({
+        title: 'Collision Pre',
+        slug: 'album-collision',
+        reciterId,
+      }).returning({ id: albums.id });
+      seededAlbumIds.push(pre!.id);
+
+      // Submit a new album with the same title → should auto-suffix to album-collision-2.
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const sub = await contribCaller.create({
+        type: 'album',
+        action: 'create',
+        data: {
+          title: 'Album Collision',
+          reciterId,
+          description: 'Second album with same title.',
+        },
+      });
+      seededSubmissionIds.push(sub.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({ submissionId: sub.id, action: 'approved' });
+      const applied = await modCaller.applyApproved({ submissionId: sub.id });
+
+      const [row] = await db.select().from(albums).where(eq(albums.id, applied.entityId));
+      expect(row?.slug).toBe('album-collision-2');
+      expect(row?.description).toBe('Second album with same title.');
+      seededAlbumIds.push(applied.entityId);
+    });
+
     it('apply writes rich reciter fields to canonical table', async () => {
       const contribCaller = makeSubmissionCaller(db, contributorId);
       const sub = await contribCaller.create({

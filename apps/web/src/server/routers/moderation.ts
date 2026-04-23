@@ -32,6 +32,24 @@ async function pickReciterSlug(tx: DbTx, name: string): Promise<string> {
   return findFreeSlug(candidate, existing.map((r) => r.slug));
 }
 
+async function pickAlbumSlug(
+  tx: DbTx,
+  reciterId: string,
+  title: string,
+): Promise<string> {
+  const candidate = slugify(title);
+  const existing = await tx
+    .select({ slug: albums.slug })
+    .from(albums)
+    .where(
+      and(
+        eq(albums.reciterId, reciterId),
+        or(eq(albums.slug, candidate), ilike(albums.slug, `${candidate}-%`)),
+      ),
+    );
+  return findFreeSlug(candidate, existing.map((a) => a.slug));
+}
+
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
@@ -253,9 +271,9 @@ export const moderationRouter = router({
           }
         } else if (submission.type === 'album') {
           const data = albumDataSchema.parse(submission.data);
-          const slug = data.slug ?? slugify(data.title);
 
           if (submission.action === 'create') {
+            const slug = data.slug ?? (await pickAlbumSlug(tx, data.reciterId, data.title));
             const [inserted] = await tx
               .insert(albums)
               .values({
@@ -263,6 +281,7 @@ export const moderationRouter = router({
                 slug,
                 reciterId: data.reciterId,
                 year: data.year ?? null,
+                description: data.description ?? null,
                 artworkUrl: data.artworkUrl ?? null,
               })
               .returning({ id: albums.id });
@@ -274,9 +293,10 @@ export const moderationRouter = router({
               .update(albums)
               .set({
                 title: data.title,
-                slug,
+                // slug frozen on edits — URL stability
                 reciterId: data.reciterId,
                 year: data.year ?? null,
+                description: data.description ?? null,
                 artworkUrl: data.artworkUrl ?? null,
                 updatedAt: new Date(),
               })
