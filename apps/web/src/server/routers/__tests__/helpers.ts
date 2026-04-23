@@ -20,6 +20,7 @@ import { historyRouter } from '../history';
 import { submissionRouter } from '../submission';
 import { moderationRouter } from '../moderation';
 import { searchRouter } from '../search';
+import { contributeRouter } from '../contribute';
 
 export type TestDb = PostgresJsDatabase<typeof schema>;
 
@@ -120,6 +121,14 @@ export function makeSubmissionCaller(db: TestDb, userId: string, role: 'user' | 
 
 export function makeModerationCaller(db: TestDb, userId: string) {
   return createCallerFactory(moderationRouter)(makeAuthCtx(db, userId, 'moderator'));
+}
+
+export function makeContributeCaller(
+  db: TestDb,
+  userId: string,
+  role: 'user' | 'contributor' | 'moderator' = 'contributor',
+) {
+  return createCallerFactory(contributeRouter)(makeAuthCtx(db, userId, role));
 }
 
 export function makeAuthCtx(
