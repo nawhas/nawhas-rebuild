@@ -21,12 +21,14 @@ export const submissions = pgTable(
     status: text('status')
       .notNull()
       .default('pending')
-      .$type<'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested'>(),
+      .$type<'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested' | 'withdrawn'>(),
     submittedByUserId: text('submitted_by_user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'restrict' }),
-    /** Optional moderator-facing notes. */
+    /** Optional submitter-facing notes. */
     notes: text('notes'),
+    /** Internal notes visible only to moderators on /mod/submissions/[id]. */
+    moderatorNotes: text('moderator_notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

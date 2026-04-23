@@ -461,7 +461,8 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected",
-      "changes_requested": "Changes Requested"
+      "changes_requested": "Changes Requested",
+      "withdrawn": "Withdrawn"
     },
     "type": {
       "reciter": "Reciter",
