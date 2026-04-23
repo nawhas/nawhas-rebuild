@@ -5,24 +5,12 @@ import { auditLog, reciters, albums, tracks, submissions, submissionReviews, use
 import { router, moderatorProcedure } from '../trpc/trpc';
 import { sendSubmissionApproved, sendSubmissionFeedback } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
+import { slugify } from '../lib/slug';
 import { reciterDataSchema, albumDataSchema, trackDataSchema } from './submission';
 import type { AuditLogDTO, PaginatedResult, SubmissionDTO } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
-
-// ---------------------------------------------------------------------------
-// Slugify helper — used when applyApproved must generate a slug from a name/title
-// ---------------------------------------------------------------------------
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 // ---------------------------------------------------------------------------
 // Router
