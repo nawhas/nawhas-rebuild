@@ -85,10 +85,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
-
       - name: Build web Docker image
-        run: docker buildx build -f apps/web/Dockerfile . --load -t nawhas-web:ci
+        uses: ./.github/actions/build-web-image
+        with:
+          tags: nawhas-web:ci
+          load: "true"
 
   e2e:
     name: E2E Tests
@@ -158,8 +159,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -168,78 +167,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push web image
-        uses: docker/build-push-action@v5
+        uses: ./.github/actions/build-web-image
         with:
-          context: .
-          file: apps/web/Dockerfile
-          push: true
+          push: "true"
           tags: |
             ghcr.io/nawhas/nawhas-web:${{ github.sha }}
             ghcr.io/nawhas/nawhas-web:latest
-          cache-from: type=gha,scope=nawhas-web
-          cache-to: type=gha,mode=max,scope=nawhas-web
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # Deploy to staging via ArgoCD after the image is pushed to ghcr.io.
-  # Secrets are decrypted by helm-secrets plugin at ArgoCD sync time — no
-  # kubectl secrets step needed here. ArgoCD steps use continue-on-error
-  # because the cluster is private and may not be reachable from GitHub Actions;
-  # ArgoCD automated sync will still trigger from the git push.
-  # Required GitHub secrets: ARGOCD_SERVER, ARGOCD_USERNAME, ARGOCD_PASSWORD
-  # ──────────────────────────────────────────────────────────────────────────
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [docker-push]
-    if: github.ref == 'refs/heads/main'
-    environment: staging
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install ArgoCD CLI
-        env:
-          # Pin to a specific release and verify SHA256 to prevent supply chain attacks.
-          # To upgrade: update ARGOCD_VERSION and ARGOCD_SHA256 together.
-          ARGOCD_VERSION: "v2.13.3"
-          ARGOCD_SHA256: "24699b29efe24ef7cce463b54fc0341f6496d97a7c54c9fccaa737e8eb99296f"
-        run: |
-          curl -sSL -o argocd \
-            "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
-          echo "${ARGOCD_SHA256}  argocd" | sha256sum -c -
-          chmod +x argocd
-          sudo mv argocd /usr/local/bin/
-
-      - name: Login to ArgoCD
-        continue-on-error: true
-        run: |
-          argocd login "${{ secrets.ARGOCD_SERVER }}" \
-            --username "${{ secrets.ARGOCD_USERNAME }}" \
-            --password "${{ secrets.ARGOCD_PASSWORD }}" \
-            --grpc-web \
-            --insecure
-
-      - name: Create or update ArgoCD application
-        continue-on-error: true
-        run: |
-          argocd app create nawhas-staging \
-            --repo https://github.com/nawhas/nawhas-rebuild.git \
-            --path deploy/helm/nawhas \
-            --dest-server https://kubernetes.default.svc \
-            --dest-namespace nawhas-staging \
-            --values values.yaml \
-            --values values-staging.yaml \
-            --helm-set image.tag=${{ github.sha }} \
-            --sync-policy automated \
-            --auto-prune \
-            --upsert
-
-      - name: Set image tag and sync
-        continue-on-error: true
-        run: |
-          argocd app set nawhas-staging \
-            --helm-set "image.tag=${{ github.sha }}"
-          argocd app sync nawhas-staging --timeout 300
-          argocd app wait nawhas-staging --health --timeout 300
+  # Staging deploys live in .github/workflows/deploy-staging.yml. That
+  # workflow triggers on workflow_run once this CI run completes (or on
+  # manual workflow_dispatch), so the image pushed above is deployed
+  # only after all CI jobs pass.
 
   lighthouse:
     name: Lighthouse CI

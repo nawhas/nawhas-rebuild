@@ -1,0 +1,56 @@
+name: Set up ArgoCD CLI
+description: >-
+  Download the ArgoCD CLI at a pinned version, verify its SHA256, install it
+  to /usr/local/bin, and log in to the ArgoCD server. Server/credentials are
+  passed as inputs so this composite stays self-contained.
+
+inputs:
+  version:
+    description: ArgoCD CLI release tag (e.g. v2.13.3).
+    required: false
+    default: v2.13.3
+  checksum:
+    description: SHA256 of the argocd-linux-amd64 binary for the pinned version.
+    required: false
+    default: 24699b29efe24ef7cce463b54fc0341f6496d97a7c54c9fccaa737e8eb99296f
+  server:
+    description: ArgoCD server hostname (no protocol).
+    required: true
+  username:
+    description: ArgoCD username.
+    required: true
+  password:
+    description: ArgoCD password.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install ArgoCD CLI
+      shell: bash
+      env:
+        ARGOCD_VERSION: ${{ inputs.version }}
+        ARGOCD_SHA256: ${{ inputs.checksum }}
+      run: |
+        set -euo pipefail
+        curl --retry 5 --retry-delay 5 --retry-connrefused -fsSL \
+          -o argocd \
+          "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64"
+        echo "${ARGOCD_SHA256}  argocd" | sha256sum -c -
+        chmod +x argocd
+        sudo mv argocd /usr/local/bin/
+        argocd version --client
+
+    - name: Log in to ArgoCD
+      shell: bash
+      env:
+        ARGOCD_SERVER: ${{ inputs.server }}
+        ARGOCD_USERNAME: ${{ inputs.username }}
+        ARGOCD_PASSWORD: ${{ inputs.password }}
+      run: |
+        set -euo pipefail
+        argocd login "$ARGOCD_SERVER" \
+          --username "$ARGOCD_USERNAME" \
+          --password "$ARGOCD_PASSWORD" \
+          --grpc-web \
+          --insecure

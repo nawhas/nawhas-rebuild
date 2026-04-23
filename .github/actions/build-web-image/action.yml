@@ -1,0 +1,38 @@
+name: Build web Docker image
+description: >-
+  Build the apps/web Dockerfile with buildx. Supports loading locally for
+  subsequent steps (CI sanity) or pushing to a registry (release builds).
+  Single source of truth for Dockerfile path, context, and GHA layer cache
+  scope.
+
+inputs:
+  tags:
+    description: Newline- or comma-separated list of image tags.
+    required: true
+  push:
+    description: Push the image to its registry after building.
+    required: false
+    default: "false"
+  load:
+    description: Load the image into the local Docker daemon.
+    required: false
+    default: "false"
+  cache-scope:
+    description: GHA layer cache scope key.
+    required: false
+    default: nawhas-web
+
+runs:
+  using: composite
+  steps:
+    - uses: docker/setup-buildx-action@v3
+
+    - uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: apps/web/Dockerfile
+        push: ${{ inputs.push }}
+        load: ${{ inputs.load }}
+        tags: ${{ inputs.tags }}
+        cache-from: type=gha,scope=${{ inputs.cache-scope }}
+        cache-to: type=gha,mode=max,scope=${{ inputs.cache-scope }}

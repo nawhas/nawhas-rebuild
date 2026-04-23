@@ -1,0 +1,131 @@
+# Deploy to staging via ArgoCD.
+#
+# Triggered after CI completes successfully on main (workflow_run), or
+# manually via workflow_dispatch to redeploy any ref without a new push.
+#
+# CI owns sync: the ArgoCD application is created without an automated
+# sync policy, so deploys happen only when this workflow explicitly runs
+# `argocd app sync`. This eliminates races between the Argo controller
+# and CI that produced `FailedPrecondition: another operation is already
+# in progress` errors.
+#
+# ArgoCD steps use continue-on-error because the cluster is private and
+# may not be reachable from GitHub Actions runners. With auto-sync off,
+# a skipped run means no deploy — surface failures by watching the
+# staging environment on the workflow page.
+#
+# Required GitHub secrets: ARGOCD_SERVER, ARGOCD_USERNAME, ARGOCD_PASSWORD
+
+name: Deploy Staging
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to deploy"
+        required: true
+        default: main
+
+jobs:
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    # For workflow_run, only deploy on successful CI runs.
+    # For workflow_dispatch, always run.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    environment: staging
+    # Serialize deploys. Without this, two quick CI completions queue two
+    # `argocd app sync` calls against the same app, and the second one
+    # fails with "another operation is already in progress"
+    # (FailedPrecondition, exit 20). cancel-in-progress: false means
+    # newer runs wait rather than kill an in-flight deploy mid-sync.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    env:
+      # For workflow_run the triggering commit lives in event.workflow_run.head_sha;
+      # for workflow_dispatch use the user-supplied ref; fall back to the branch
+      # name for safety.
+      DEPLOY_REF: >-
+        ${{
+          inputs.ref
+          || github.event.workflow_run.head_sha
+          || github.ref_name
+        }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_REF }}
+
+      # docker-push tags images with the full commit SHA, so we always
+      # resolve the deploy ref to a SHA for image.tag — otherwise a
+      # workflow_dispatch with ref=main would set image.tag=main, a tag
+      # ghcr.io doesn't know about.
+      - name: Resolve image tag
+        id: image
+        run: echo "tag=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up ArgoCD
+        continue-on-error: true
+        uses: ./.github/actions/argocd-setup
+        with:
+          server: ${{ secrets.ARGOCD_SERVER }}
+          username: ${{ secrets.ARGOCD_USERNAME }}
+          password: ${{ secrets.ARGOCD_PASSWORD }}
+
+      - name: Create or update ArgoCD application
+        continue-on-error: true
+        run: |
+          # --upsert replaces the full spec. Omitting --sync-policy here
+          # clears any previously-configured automated sync on the app,
+          # so the explicit `argocd app sync` step below is the only
+          # trigger.
+          argocd app create nawhas-staging \
+            --repo https://github.com/nawhas/nawhas-rebuild.git \
+            --path deploy/helm/nawhas \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace nawhas-staging \
+            --values values.yaml \
+            --values values-staging.yaml \
+            --helm-set image.tag=${{ steps.image.outputs.tag }} \
+            --upsert
+
+          # Defensive: explicitly strip any lingering automated sync
+          # settings that the first run of this workflow after the
+          # change may have inherited. Safe no-op once the spec is
+          # already manual.
+          argocd app unset nawhas-staging --sync-policy || true
+
+      - name: Set image tag and sync
+        continue-on-error: true
+        run: |
+          argocd app set nawhas-staging \
+            --helm-set "image.tag=${{ steps.image.outputs.tag }}"
+
+          # Defensive: cancel any in-flight op from a stuck previous run,
+          # a manual sync kicked off in the ArgoCD UI, or the one-time
+          # race while transitioning off automated sync. Safe no-op when
+          # nothing is running.
+          argocd app terminate-op nawhas-staging || true
+
+          for attempt in 1 2 3; do
+            if argocd app sync nawhas-staging --timeout 300; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "argocd app sync failed after 3 attempts"
+              exit 1
+            fi
+            delay=$((attempt * 10))
+            echo "sync attempt $attempt failed; retrying in ${delay}s"
+            sleep "$delay"
+            argocd app terminate-op nawhas-staging || true
+          done
+
+          argocd app wait nawhas-staging --health --timeout 300
