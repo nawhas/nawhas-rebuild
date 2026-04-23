@@ -48,7 +48,7 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Account menu for ${user.name ?? user.email}`}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
       >
         {initials}
       </DropdownMenuTrigger>

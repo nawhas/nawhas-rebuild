@@ -260,7 +260,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           <div className="mt-6 w-full">
             <div className="group relative h-1 cursor-pointer rounded-full bg-muted hover:h-1.5">
               <div
-                className="h-full rounded-full bg-primary transition-all"
+                className="h-full rounded-full bg-foreground transition-all"
                 style={{ width: `${progressPercent}%` }}
               />
               <input
@@ -328,7 +328,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               onClick={isPlaying ? pause : resume}
               aria-label={isPlaying ? t('pause') : t('play')}
               tabIndex={isVisible ? 0 : -1}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </button>

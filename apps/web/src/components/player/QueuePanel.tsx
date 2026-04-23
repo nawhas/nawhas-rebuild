@@ -258,7 +258,7 @@ export function QueuePanel(): React.JSX.Element {
                     'border-b border-border last:border-b-0',
                     'transition-colors',
                     isActive ? 'bg-muted' : 'hover:bg-muted',
-                    isDragTarget ? 'border-t-2 border-t-primary' : '',
+                    isDragTarget ? 'border-t-2 border-t-foreground' : '',
                   ].join(' ')}
                   aria-label={[
                     t('trackLabel', { number: index + 1, title: track.title }),

@@ -81,7 +81,7 @@ export function DisplayNameEdit({ initialName }: DisplayNameEditProps): React.JS
           type="submit"
           disabled={isPending || !draft.trim()}
           aria-label={t('saveNameLabel')}
-          className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary-700 dark:hover:bg-primary-400 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+          className="rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:bg-foreground/90 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
         >
           {t('save')}
         </button>

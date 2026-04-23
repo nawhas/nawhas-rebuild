@@ -60,7 +60,7 @@ export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }):
 }
 
 const ROLE_CLASSES: Record<string, string> = {
-  moderator: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
+  moderator: 'bg-foreground text-background',
   contributor: 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200',
   user: 'bg-muted text-muted-foreground',
 };

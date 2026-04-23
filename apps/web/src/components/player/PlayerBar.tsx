@@ -218,7 +218,7 @@ export function PlayerBar(): React.JSX.Element {
       <div className="group relative h-1 cursor-pointer bg-muted hover:h-1.5">
         {/* Progress fill */}
         <div
-          className="h-full bg-primary transition-all"
+          className="h-full bg-foreground transition-all"
           style={{ width: `${progressPercent}%` }}
         />
         {/* Invisible range input overlaid on top for interaction */}
@@ -317,7 +317,7 @@ export function PlayerBar(): React.JSX.Element {
             onClick={isPlaying ? pause : resume}
             aria-label={isPlaying ? t('pause') : t('play')}
             tabIndex={isVisible ? 0 : -1}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -361,7 +361,7 @@ export function PlayerBar(): React.JSX.Element {
               aria-valuenow={Math.round(volume * 100) / 100}
               aria-valuetext={`${Math.round(volume * 100)}%`}
               tabIndex={isVisible ? 0 : -1}
-              className="w-20 cursor-pointer accent-primary"
+              className="w-20 cursor-pointer accent-foreground"
             />
           </div>
 

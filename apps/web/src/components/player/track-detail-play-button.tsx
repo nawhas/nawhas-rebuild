@@ -83,7 +83,7 @@ export function TrackDetailPlayButton({ track, lyrics }: TrackDetailPlayButtonPr
       <button
         type="button"
         onClick={handleClick}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-700 dark:hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
         aria-label={label}
       >
         {isCurrentlyPlaying ? <PauseIcon /> : <PlayIcon />}
