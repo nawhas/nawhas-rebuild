@@ -64,6 +64,7 @@ describe('POST /api/uploads/audio', () => {
     const body = await res.json();
     expect(body.url).toMatch(/^http:\/\/localhost:9000\/test-audio\//);
     expect(body.key).toMatch(/^audio\/u\//);
+    expect(body.key).toMatch(/\.mp3$/);
     expect(body.duration).toBeGreaterThanOrEqual(4);
     expect(body.duration).toBeLessThanOrEqual(6);
   });

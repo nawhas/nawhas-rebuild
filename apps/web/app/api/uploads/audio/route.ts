@@ -8,6 +8,13 @@ import { probeAudioDuration } from '@/server/lib/audio';
 const MAX_BYTES = 50 * 1024 * 1024;
 const ALLOWED_MIME = new Set(['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg']);
 
+const MIME_EXT: Record<string, string> = {
+  'audio/mpeg': 'mp3',
+  'audio/mp4': 'm4a',
+  'audio/wav': 'wav',
+  'audio/ogg': 'ogg',
+};
+
 export async function POST(req: Request): Promise<Response> {
   const session = await auth.api.getSession({ headers: req.headers });
 
@@ -34,7 +41,7 @@ export async function POST(req: Request): Promise<Response> {
   const buffer = Buffer.from(await file.arrayBuffer());
   const duration = await probeAudioDuration(buffer, file.type);
 
-  const ext = file.type.split('/')[1] ?? 'bin';
+  const ext = MIME_EXT[file.type] ?? 'bin';
   const key = `audio/${session.user.id}/${randomUUID()}.${ext}`;
 
   await s3.send(
