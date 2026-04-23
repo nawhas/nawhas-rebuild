@@ -13,7 +13,9 @@
     "closeMenu": "Close navigation menu",
     "theme": "Theme",
     "profile": "Profile",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "contribute": "Contribute",
+    "moderatorDashboard": "Moderator Dashboard"
   },
   "home": {
     "hero": {

@@ -66,6 +66,17 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
         <DropdownMenuItem asChild>
           <Link href="/profile">{t('profile')}</Link>
         </DropdownMenuItem>
+        {(user.role === 'contributor' || user.role === 'moderator') && (
+          <DropdownMenuItem asChild>
+            <Link href="/contribute">{t('contribute')}</Link>
+          </DropdownMenuItem>
+        )}
+        {user.role === 'moderator' && (
+          <DropdownMenuItem asChild>
+            <Link href="/mod">{t('moderatorDashboard')}</Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(e) => {
             e.preventDefault();

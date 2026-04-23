@@ -139,4 +139,30 @@ describe('MobileNav', () => {
       screen.getByRole('button', { name: /close navigation menu/i }).getAttribute('aria-expanded'),
     ).toBe('true');
   });
+
+  it('hides Contribute and Moderator Dashboard for role=user', () => {
+    render(<MobileNav links={LINKS} user={mockUser} />);
+    fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+    expect(screen.queryByRole('link', { name: 'Contribute' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Moderator Dashboard' })).toBeNull();
+  });
+
+  it('shows Contribute for role=contributor but not Moderator Dashboard', () => {
+    const user = { ...mockUser, role: 'contributor' as const };
+    render(<MobileNav links={LINKS} user={user} />);
+    fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+    const contribute = screen.getByRole('link', { name: 'Contribute' });
+    expect(contribute.getAttribute('href')).toBe('/contribute');
+    expect(screen.queryByRole('link', { name: 'Moderator Dashboard' })).toBeNull();
+  });
+
+  it('shows both Contribute and Moderator Dashboard for role=moderator', () => {
+    const user = { ...mockUser, role: 'moderator' as const };
+    render(<MobileNav links={LINKS} user={user} />);
+    fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+    expect(screen.getByRole('link', { name: 'Contribute' }).getAttribute('href')).toBe('/contribute');
+    expect(screen.getByRole('link', { name: 'Moderator Dashboard' }).getAttribute('href')).toBe(
+      '/mod',
+    );
+  });
 });

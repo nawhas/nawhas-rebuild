@@ -110,6 +110,24 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                 >
                   {t('profile')}
                 </Link>
+                {(user.role === 'contributor' || user.role === 'moderator') && (
+                  <Link
+                    href="/contribute"
+                    onClick={close}
+                    className="block rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  >
+                    {t('contribute')}
+                  </Link>
+                )}
+                {user.role === 'moderator' && (
+                  <Link
+                    href="/mod"
+                    onClick={close}
+                    className="block rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  >
+                    {t('moderatorDashboard')}
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={handleSignOut}

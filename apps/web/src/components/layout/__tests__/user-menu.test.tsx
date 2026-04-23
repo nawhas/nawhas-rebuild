@@ -158,4 +158,37 @@ describe('UserMenu', () => {
       expect(btn.getAttribute('aria-expanded')).toBe('true');
     });
   });
+
+  it('hides Contribute and Moderator Dashboard for role=user', async () => {
+    render(<UserMenu user={mockUser} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeDefined();
+    });
+    expect(screen.queryByRole('menuitem', { name: 'Contribute' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Moderator Dashboard' })).toBeNull();
+  });
+
+  it('shows Contribute but not Moderator Dashboard for role=contributor', async () => {
+    const user = { ...mockUser, role: 'contributor' as const };
+    render(<UserMenu user={user} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    const contribute = await screen.findByRole('menuitem', { name: 'Contribute' });
+    const anchor = contribute.tagName === 'A' ? contribute : contribute.querySelector('a');
+    expect(anchor?.getAttribute('href')).toBe('/contribute');
+    expect(screen.queryByRole('menuitem', { name: 'Moderator Dashboard' })).toBeNull();
+  });
+
+  it('shows both Contribute and Moderator Dashboard for role=moderator', async () => {
+    const user = { ...mockUser, role: 'moderator' as const };
+    render(<UserMenu user={user} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    const modItem = await screen.findByRole('menuitem', { name: 'Moderator Dashboard' });
+    const modAnchor = modItem.tagName === 'A' ? modItem : modItem.querySelector('a');
+    expect(modAnchor?.getAttribute('href')).toBe('/mod');
+    const contributeItem = screen.getByRole('menuitem', { name: 'Contribute' });
+    const contributeAnchor =
+      contributeItem.tagName === 'A' ? contributeItem : contributeItem.querySelector('a');
+    expect(contributeAnchor?.getAttribute('href')).toBe('/contribute');
+  });
 });
