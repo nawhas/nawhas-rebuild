@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { TrackForm } from '@/components/contribute/track-form';
+import type { LyricsMap } from '@/components/contribute/lyrics-tabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,12 @@ export default async function EditTrackPage({
 
   const t = await getTranslations('contribute.pages');
 
+  // Build lyrics map from the fetched lyrics rows.
+  const lyricsMap: LyricsMap = {};
+  for (const row of track.lyrics) {
+    lyricsMap[row.language as keyof LyricsMap] = row.text;
+  }
+
   return (
     <main id="main-content" className="mx-auto max-w-xl py-10 px-4">
       <h1 className="mb-1 text-2xl font-bold text-foreground">
@@ -47,14 +54,14 @@ export default async function EditTrackPage({
       <TrackForm
         action="edit"
         targetId={track.id}
+        defaultAlbum={{ id: track.album.id, label: track.album.title }}
         initialValues={{
           title: track.title,
-          albumId: track.albumId,
-          slug: track.slug,
-          ...(track.trackNumber !== null ? { trackNumber: track.trackNumber } : {}),
-          ...(track.audioUrl !== null ? { audioUrl: track.audioUrl } : {}),
-          ...(track.youtubeId !== null ? { youtubeId: track.youtubeId } : {}),
-          ...(track.duration !== null ? { duration: track.duration } : {}),
+          trackNumber: track.trackNumber !== null ? String(track.trackNumber) : '',
+          audioUrl: track.audioUrl ?? null,
+          youtubeId: track.youtubeId ?? '',
+          duration: track.duration !== null ? String(track.duration) : '',
+          lyrics: lyricsMap,
         }}
       />
     </main>

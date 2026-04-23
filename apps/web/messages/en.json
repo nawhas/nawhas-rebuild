@@ -291,6 +291,11 @@
       "editTrackTitle": "Edit Track: {title}",
       "editTrackSubtitle": "Suggest changes to this track's details. Your edit will be reviewed before going live."
     },
+    "draft": {
+      "restorePrompt": "You have a saved draft from {days} day(s) ago. Would you like to restore it?",
+      "restore": "Restore draft",
+      "discard": "Discard"
+    },
     "form": {
       "submit": "Submit for review",
       "submitting": "Submitting…",
@@ -310,7 +315,37 @@
       "urlInvalid": "Must be a valid URL",
       "trackNumberInvalid": "Must be a positive integer",
       "durationInvalidSeconds": "Must be a positive number of seconds",
-      "durationInvalid": "Must be a positive number"
+      "durationInvalid": "Must be a positive number",
+      "charCount": "{count} / {max} characters",
+      "descriptionTooLong": "Description must be 1000 characters or fewer"
+    },
+    "parentPicker": {
+      "placeholderReciter": "Search for a reciter…",
+      "placeholderAlbum": "Search for an album…",
+      "noMatches": "No matches found."
+    },
+    "slug": {
+      "preview": "URL preview: {url}",
+      "collisionNote": "(final URL may have a suffix if already taken)"
+    },
+    "upload": {
+      "uploading": "Uploading…",
+      "replaceAudio": "Replace audio",
+      "replaceImage": "Replace image",
+      "remove": "Remove",
+      "genericFailure": "Upload failed. Please try again."
+    },
+    "lyrics": {
+      "tablistLabel": "Lyrics languages",
+      "lang_en": "English",
+      "lang_ar": "Arabic",
+      "lang_ur": "Urdu",
+      "lang_transliteration": "Transliteration",
+      "placeholder_en": "Enter English lyrics…",
+      "placeholder_ar": "أدخل الكلمات بالعربية…",
+      "placeholder_ur": "اردو بول درج کریں…",
+      "placeholder_transliteration": "Enter transliteration…",
+      "charCount": "{count} / {max}"
     },
     "reciter": {
       "nameLabel": "Name",
@@ -320,32 +355,50 @@
     "album": {
       "titleLabel": "Title",
       "titlePlaceholder": "e.g. Shajar-e-Tooba",
+      "reciterLabel": "Reciter",
+      "reciterHint": "Search for the reciter this album belongs to.",
+      "reciterRequired": "Please select a reciter.",
       "reciterIdLabel": "Reciter ID",
       "reciterIdHint": "The UUID of the reciter this album belongs to.",
       "reciterIdPlaceholder": "e.g. 550e8400-e29b-41d4-a716-446655440000",
       "slugPlaceholder": "e.g. shajar-e-tooba",
       "yearLabel": "Year",
       "yearPlaceholder": "e.g. 2010",
+      "descriptionLabel": "Description",
+      "descriptionHint": "A short description of the album (optional).",
+      "descriptionPlaceholder": "Describe the album…",
+      "artworkLabel": "Artwork",
+      "artworkHint": "Upload album artwork (optional).",
+      "artworkUpload": "Upload artwork",
       "artworkUrlLabel": "Artwork URL",
       "artworkUrlPlaceholder": "https://..."
     },
     "track": {
       "titleLabel": "Title",
       "titlePlaceholder": "e.g. Ya Hussain",
+      "albumLabel": "Album",
+      "albumHint": "Search for the album this track belongs to.",
+      "albumRequired": "Please select an album.",
       "albumIdLabel": "Album ID",
       "albumIdHint": "The UUID of the album this track belongs to.",
       "albumIdPlaceholder": "e.g. 550e8400-e29b-41d4-a716-446655440000",
       "slugPlaceholder": "e.g. ya-hussain",
       "trackNumberLabel": "Track number",
       "trackNumberPlaceholder": "e.g. 1",
+      "audioLabel": "Audio file",
+      "audioHint": "Upload an MP3, MP4, WAV, or OGG audio file (optional).",
+      "audioUpload": "Upload audio",
       "audioUrlLabel": "Audio URL",
       "audioUrlPlaceholder": "https://...",
       "youtubeIdLabel": "YouTube ID",
       "youtubeIdHint": "The 11-character video ID from the YouTube URL.",
       "youtubeIdPlaceholder": "e.g. dQw4w9WgXcQ",
       "durationLabel": "Duration (seconds)",
+      "durationHint": "Duration in whole seconds. Auto-filled when you upload audio.",
       "durationShortLabel": "Duration (s)",
-      "durationPlaceholder": "e.g. 240"
+      "durationPlaceholder": "e.g. 240",
+      "lyricsLabel": "Lyrics",
+      "lyricsHint": "Add lyrics in one or more languages (optional)."
     },
     "history": {
       "pageTitle": "My Contributions",

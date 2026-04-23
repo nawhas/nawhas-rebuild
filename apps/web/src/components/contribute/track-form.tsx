@@ -7,120 +7,143 @@ import { z } from 'zod';
 import { Button } from '@nawhas/ui/components/button';
 import { createTrackSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
+import { AudioUpload } from '@/components/contribute/audio-upload';
+import { ParentPicker, type ParentOption } from '@/components/contribute/parent-picker';
+import { SlugPreview } from '@/components/contribute/slug-preview';
+import { LyricsTabs, type LyricsMap } from '@/components/contribute/lyrics-tabs';
+import { useDraftAutosave } from '@/components/contribute/use-draft-autosave';
+import { useUnsavedChangesGuard } from '@/components/contribute/use-unsaved-changes-guard';
 
 type FormValues = {
   title: string;
-  albumId: string;
-  slug?: string | undefined;
-  trackNumber?: string | undefined;
-  audioUrl?: string | undefined;
-  youtubeId?: string | undefined;
-  duration?: string | undefined;
+  album: ParentOption | null;
+  trackNumber: string;
+  audioUrl: string | null;
+  youtubeId: string;
+  duration: string;
+  lyrics: LyricsMap;
 };
+
 type Errors = Partial<Record<keyof FormValues, string>>;
+
+const EMPTY: FormValues = {
+  title: '',
+  album: null,
+  trackNumber: '',
+  audioUrl: null,
+  youtubeId: '',
+  duration: '',
+  lyrics: {},
+};
 
 interface TrackFormProps {
   targetId?: string;
-  initialValues?: {
-    title: string;
-    albumId: string;
-    slug?: string;
-    trackNumber?: number;
-    audioUrl?: string;
-    youtubeId?: string;
-    duration?: number;
-  };
+  initialValues?: Partial<FormValues>;
   action: 'create' | 'edit';
-  defaultAlbumId?: string;
+  defaultAlbum?: ParentOption;
   onSuccess?: () => void;
 }
 
-/**
- * Submission form for track create/edit.
- */
 export function TrackForm({
   targetId,
   initialValues,
   action,
-  defaultAlbumId,
+  defaultAlbum,
   onSuccess,
 }: TrackFormProps): React.JSX.Element {
   const t = useTranslations('contribute');
   const router = useRouter();
-  const [title, setTitle] = useState(initialValues?.title ?? '');
-  const [albumId, setAlbumId] = useState(initialValues?.albumId ?? defaultAlbumId ?? '');
-  const [slug, setSlug] = useState(initialValues?.slug ?? '');
-  const [trackNumber, setTrackNumber] = useState(initialValues?.trackNumber?.toString() ?? '');
-  const [audioUrl, setAudioUrl] = useState(initialValues?.audioUrl ?? '');
-  const [youtubeId, setYoutubeId] = useState(initialValues?.youtubeId ?? '');
-  const [duration, setDuration] = useState(initialValues?.duration?.toString() ?? '');
+
+  const startValues: FormValues = {
+    ...EMPTY,
+    ...(defaultAlbum ? { album: defaultAlbum } : {}),
+    ...initialValues,
+  };
+
+  const [values, setValues] = useState<FormValues>(startValues);
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const draftKey = `contribute:track:${action}:${targetId ?? 'new'}`;
+  const draft = useDraftAutosave<FormValues>(draftKey);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  if (values !== startValues) draft.save(values);
+
+  const isDirty = JSON.stringify(values) !== JSON.stringify(startValues);
+  useUnsavedChangesGuard(isDirty);
+
   const schema = z.object({
     title: z.string().min(1, t('form.titleRequired')),
-    albumId: z.uuid(t('form.albumUuidInvalid')),
-    slug: z.string().min(1).optional().or(z.literal('')),
+    album: z
+      .object({ id: z.string().uuid(), label: z.string() })
+      .nullable()
+      .refine((v) => v !== null, t('track.albumRequired')),
     trackNumber: z
       .string()
       .optional()
-      .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), t('form.trackNumberInvalid')),
-    audioUrl: z.url(t('form.urlInvalid')).optional().or(z.literal('')),
-    youtubeId: z.string().optional().or(z.literal('')),
+      .refine(
+        (v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0),
+        t('form.trackNumberInvalid'),
+      ),
+    audioUrl: z.string().url().nullable().optional(),
+    youtubeId: z.string().max(11).optional().or(z.literal('')),
     duration: z
       .string()
       .optional()
-      .refine((v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0), t('form.durationInvalidSeconds')),
+      .refine(
+        (v) => !v || (/^\d+$/.test(v) && parseInt(v) > 0),
+        t('form.durationInvalidSeconds'),
+      ),
+    lyrics: z.record(z.string(), z.string()).optional(),
   });
 
-  function validate(): boolean {
-    const result = schema.safeParse({
-      title,
-      albumId,
-      slug: slug || undefined,
-      trackNumber: trackNumber || undefined,
-      audioUrl: audioUrl || undefined,
-      youtubeId: youtubeId || undefined,
-      duration: duration || undefined,
-    });
-    if (!result.success) {
-      const fieldErrors: Errors = {};
-      for (const issue of result.error.issues) {
-        const key = issue.path[0] as keyof Errors;
-        fieldErrors[key] = issue.message;
-      }
-      setErrors(fieldErrors);
-      return false;
-    }
-    setErrors({});
-    return true;
+  function set<K extends keyof FormValues>(key: K, value: FormValues[K]): void {
+    setValues((prev) => ({ ...prev, [key]: value }));
   }
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
-    if (!validate()) return;
+    const parse = schema.safeParse(values);
+    if (!parse.success) {
+      const fieldErrors: Errors = {};
+      for (const issue of parse.error.issues) {
+        fieldErrors[issue.path[0] as keyof Errors] = issue.message;
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
     setServerError(null);
+
+    // Only include languages with non-empty content on CREATE.
+    // On EDIT, keep empty strings — they signal "delete this language" on apply.
+    const cleanLyrics: LyricsMap = {};
+    for (const [k, v] of Object.entries(values.lyrics)) {
+      if (typeof v === 'string') {
+        const trimmed = v.trim();
+        if (trimmed.length > 0 || action === 'edit') {
+          cleanLyrics[k as keyof LyricsMap] = v;
+        }
+      }
+    }
+
+    const data = {
+      title: values.title,
+      albumId: values.album!.id,
+      ...(values.trackNumber ? { trackNumber: parseInt(values.trackNumber) } : {}),
+      ...(values.audioUrl ? { audioUrl: values.audioUrl } : {}),
+      ...(values.youtubeId ? { youtubeId: values.youtubeId } : {}),
+      ...(values.duration ? { duration: parseInt(values.duration) } : {}),
+      ...(Object.keys(cleanLyrics).length > 0 ? { lyrics: cleanLyrics } : {}),
+    };
     startTransition(async () => {
       try {
-        await createTrackSubmission(
-          action,
-          {
-            title,
-            albumId,
-            ...(slug ? { slug } : {}),
-            ...(trackNumber ? { trackNumber: parseInt(trackNumber) } : {}),
-            ...(audioUrl ? { audioUrl } : {}),
-            ...(youtubeId ? { youtubeId } : {}),
-            ...(duration ? { duration: parseInt(duration) } : {}),
-          },
-          targetId,
-        );
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push('/profile/contributions');
-        }
+        await createTrackSubmission(action, data, targetId);
+        draft.clear();
+        if (onSuccess) onSuccess();
+        else router.push('/profile/contributions');
       } catch (err) {
         setServerError(err instanceof Error ? err.message : t('form.genericFailure'));
       }
@@ -129,54 +152,84 @@ export function TrackForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      {draft.draft && !draftRestored && (
+        <div
+          role="status"
+          className="rounded-md border border-info-200 bg-info-50 px-4 py-3 dark:border-info-800 dark:bg-info-950"
+        >
+          <p className="text-sm text-info-900 dark:text-info-100">
+            {t('draft.restorePrompt', {
+              days: Math.floor((draft.ageMs ?? 0) / 86_400_000),
+            })}
+          </p>
+          <div className="mt-2 flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                setValues(draft.draft!);
+                setDraftRestored(true);
+              }}
+            >
+              {t('draft.restore')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                draft.clear();
+                setDraftRestored(true);
+              }}
+            >
+              {t('draft.discard')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <FormField
+        id="album"
+        label={t('track.albumLabel')}
+        required
+        error={errors.album}
+        hint={t('track.albumHint')}
+      >
+        <ParentPicker
+          id="album"
+          kind="album"
+          value={values.album}
+          onChange={(opt) => set('album', opt)}
+          disabled={isPending}
+          {...(errors.album ? { error: errors.album } : {})}
+        />
+      </FormField>
+
       <FormField id="title" label={t('track.titleLabel')} required error={errors.title}>
         <Input
           id="title"
           type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={values.title}
+          onChange={(e) => set('title', e.target.value)}
           disabled={isPending}
           placeholder={t('track.titlePlaceholder')}
           error={errors.title}
         />
+        {action === 'create' && values.album && (
+          <SlugPreview source={values.title} template="/tracks/{slug}" />
+        )}
       </FormField>
 
       <FormField
-        id="albumId"
-        label={t('track.albumIdLabel')}
-        required
-        error={errors.albumId}
-        hint={t('track.albumIdHint')}
+        id="trackNumber"
+        label={t('track.trackNumberLabel')}
+        error={errors.trackNumber}
       >
-        <Input
-          id="albumId"
-          type="text"
-          value={albumId}
-          onChange={(e) => setAlbumId(e.target.value)}
-          disabled={isPending}
-          placeholder={t('track.albumIdPlaceholder')}
-          error={errors.albumId}
-        />
-      </FormField>
-
-      <FormField id="slug" label={t('form.slugLabel')} error={errors.slug} hint={t('form.slugHintBlankAutogen')}>
-        <Input
-          id="slug"
-          type="text"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          disabled={isPending}
-          placeholder={t('track.slugPlaceholder')}
-          error={errors.slug}
-        />
-      </FormField>
-
-      <FormField id="trackNumber" label={t('track.trackNumberLabel')} error={errors.trackNumber}>
         <Input
           id="trackNumber"
           type="number"
-          value={trackNumber}
-          onChange={(e) => setTrackNumber(e.target.value)}
+          value={values.trackNumber}
+          onChange={(e) => set('trackNumber', e.target.value)}
           disabled={isPending}
           placeholder={t('track.trackNumberPlaceholder')}
           min={1}
@@ -184,24 +237,31 @@ export function TrackForm({
         />
       </FormField>
 
-      <FormField id="audioUrl" label={t('track.audioUrlLabel')} error={errors.audioUrl}>
-        <Input
-          id="audioUrl"
-          type="url"
-          value={audioUrl}
-          onChange={(e) => setAudioUrl(e.target.value)}
+      <FormField id="audioUrl" label={t('track.audioLabel')} hint={t('track.audioHint')}>
+        <AudioUpload
+          value={values.audioUrl}
+          onChange={({ url, duration }) => {
+            set('audioUrl', url);
+            if (duration !== null && !values.duration) {
+              set('duration', String(duration));
+            }
+          }}
           disabled={isPending}
-          placeholder={t('track.audioUrlPlaceholder')}
-          error={errors.audioUrl}
+          label={t('track.audioUpload')}
         />
       </FormField>
 
-      <FormField id="youtubeId" label={t('track.youtubeIdLabel')} error={errors.youtubeId} hint={t('track.youtubeIdHint')}>
+      <FormField
+        id="youtubeId"
+        label={t('track.youtubeIdLabel')}
+        error={errors.youtubeId}
+        hint={t('track.youtubeIdHint')}
+      >
         <Input
           id="youtubeId"
           type="text"
-          value={youtubeId}
-          onChange={(e) => setYoutubeId(e.target.value)}
+          value={values.youtubeId}
+          onChange={(e) => set('youtubeId', e.target.value)}
           disabled={isPending}
           placeholder={t('track.youtubeIdPlaceholder')}
           maxLength={11}
@@ -209,12 +269,17 @@ export function TrackForm({
         />
       </FormField>
 
-      <FormField id="duration" label={t('track.durationLabel')} error={errors.duration}>
+      <FormField
+        id="duration"
+        label={t('track.durationLabel')}
+        error={errors.duration}
+        hint={t('track.durationHint')}
+      >
         <Input
           id="duration"
           type="number"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
+          value={values.duration}
+          onChange={(e) => set('duration', e.target.value)}
           disabled={isPending}
           placeholder={t('track.durationPlaceholder')}
           min={1}
@@ -222,8 +287,18 @@ export function TrackForm({
         />
       </FormField>
 
+      <FormField id="lyrics" label={t('track.lyricsLabel')} hint={t('track.lyricsHint')}>
+        <LyricsTabs
+          value={values.lyrics}
+          onChange={(next) => set('lyrics', next)}
+          disabled={isPending}
+        />
+      </FormField>
+
       {serverError && (
-        <p role="alert" className="text-sm text-destructive">{serverError}</p>
+        <p role="alert" className="text-sm text-destructive">
+          {serverError}
+        </p>
       )}
 
       <Button type="submit" disabled={isPending} aria-busy={isPending}>
