@@ -59,6 +59,7 @@ export interface AlbumDTO {
   slug: string;
   reciterId: string;
   year: number | null;
+  description?: string | null;
   artworkUrl: string | null;
   /**
    * Precomputed dominant-muted hex color extracted from the album artwork

@@ -30,8 +30,12 @@ export default async function EditAlbumPage({
     user: sessionData?.user ?? null,
   });
 
-  const album = await caller.album.getBySlug({ reciterSlug, albumSlug }).catch(() => null);
-  if (!album) notFound();
+  const [album, reciter] = await Promise.all([
+    caller.album.getBySlug({ reciterSlug, albumSlug }).catch(() => null),
+    caller.reciter.getBySlug({ slug: reciterSlug }).catch(() => null),
+  ]);
+
+  if (!album || !reciter) notFound();
 
   const t = await getTranslations('contribute.pages');
 
@@ -48,10 +52,10 @@ export default async function EditAlbumPage({
         targetId={album.id}
         initialValues={{
           title: album.title,
-          reciterId: album.reciterId,
-          slug: album.slug,
-          ...(album.year !== null ? { year: album.year } : {}),
-          ...(album.artworkUrl !== null ? { artworkUrl: album.artworkUrl } : {}),
+          reciter: { id: album.reciterId, label: reciter.name },
+          year: album.year !== null ? String(album.year) : '',
+          description: album.description ?? '',
+          artworkUrl: album.artworkUrl ?? null,
         }}
       />
     </main>
