@@ -515,7 +515,13 @@
       "fieldTrackNumberLabel": "Track Number",
       "fieldAudioUrlLabel": "Audio URL",
       "fieldYouTubeIdLabel": "YouTube ID",
-      "fieldDurationLabel": "Duration (s)"
+      "fieldDurationLabel": "Duration (s)",
+      "fieldArabicNameLabel": "Arabic name",
+      "fieldCountryLabel": "Country",
+      "fieldBirthYearLabel": "Birth year",
+      "fieldDescriptionLabel": "Description",
+      "fieldAvatarUrlLabel": "Avatar",
+      "fieldLyricsLabel": "Lyrics"
     },
     "reviewActions": {
       "commentLabel": "Comment (optional)",
