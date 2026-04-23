@@ -256,6 +256,15 @@ export type ReviewAction = 'approved' | 'rejected' | 'changes_requested';
 /** Reciter fields submitted for creation or edit. */
 export interface ReciterSubmissionData {
   name: string;
+  arabicName?: string;
+  country?: string;
+  birthYear?: number;
+  description?: string;
+  avatarUrl?: string;
+  /**
+   * Legacy submissions may carry a slug. New submissions omit — the server
+   * auto-generates on apply (see moderation.applyApproved).
+   */
   slug?: string;
 }
 
@@ -263,20 +272,28 @@ export interface ReciterSubmissionData {
 export interface AlbumSubmissionData {
   title: string;
   reciterId: string;
-  slug?: string;
   year?: number;
+  description?: string;
   artworkUrl?: string;
+  slug?: string;
 }
 
 /** Track fields submitted for creation or edit. */
 export interface TrackSubmissionData {
   title: string;
   albumId: string;
-  slug?: string;
   trackNumber?: number;
   audioUrl?: string;
   youtubeId?: string;
   duration?: number;
+  slug?: string;
+  /**
+   * Map of language code to lyric text. Language codes follow ISO 639-1
+   * ('ar', 'ur', 'en') plus the convention 'transliteration'.
+   * Empty strings on an edit submission delete the corresponding row on apply;
+   * missing keys leave existing rows untouched.
+   */
+  lyrics?: Partial<Record<'ar' | 'ur' | 'en' | 'transliteration', string>>;
 }
 
 export type SubmissionData = ReciterSubmissionData | AlbumSubmissionData | TrackSubmissionData;
