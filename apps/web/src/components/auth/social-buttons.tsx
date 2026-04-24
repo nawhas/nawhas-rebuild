@@ -83,10 +83,10 @@ const PROVIDER_VARIANT: Record<EnabledSocialProvider, 'outline'> = {
 };
 
 const PROVIDER_CLASS: Record<EnabledSocialProvider, string> = {
-  google: 'w-full gap-3',
+  google: 'w-full gap-3 border-[var(--border)] hover:bg-[var(--surface-2)]',
   apple: 'w-full gap-3 border-black bg-black text-white hover:bg-black/90 hover:text-white',
-  facebook: 'w-full gap-3',
-  microsoft: 'w-full gap-3',
+  facebook: 'w-full gap-3 border-[var(--border)] hover:bg-[var(--surface-2)]',
+  microsoft: 'w-full gap-3 border-[var(--border)] hover:bg-[var(--surface-2)]',
 };
 
 export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): React.JSX.Element | null {
@@ -109,10 +109,10 @@ export function SocialButtons({ providers, callbackUrl }: SocialButtonsProps): R
     <div className="mt-6">
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-border" />
+          <div className="w-full border-t border-[var(--border)]" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-card px-3 text-muted-foreground">{t('orContinueWith')}</span>
+          <span className="bg-[var(--card-bg)] px-3 text-[var(--text-dim)]">{t('orContinueWith')}</span>
         </div>
       </div>
 

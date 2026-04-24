@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
-import { Card } from '@nawhas/ui/components/card';
 import { Input } from '@nawhas/ui/components/input';
 import { signUp } from '@/lib/auth-client';
 import { SocialButtons } from './social-buttons';
@@ -72,12 +71,12 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
   }
 
   return (
-    <Card className="px-8 py-10">
-      <h1 className="mb-6 text-2xl font-semibold text-foreground">{t('heading')}</h1>
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] px-8 py-10">
+      <h1 className="mb-6 font-serif text-[1.75rem] font-medium text-[var(--text)]">{t('heading')}</h1>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-4">
-          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-foreground">
+          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
             {t('nameLabel')}
           </label>
           <Input
@@ -96,7 +95,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
         </div>
 
         <div className="mb-4">
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
             {t('emailLabel')}
           </label>
           <Input
@@ -115,7 +114,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
         </div>
 
         <div className="mb-6">
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
             {t('passwordLabel')}
           </label>
           <Input
@@ -137,7 +136,7 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
           <p
             id="register-error"
             role="alert"
-            className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            className="mb-4 rounded-md bg-[var(--color-error-500)]/10 px-3 py-2 text-sm text-[var(--color-error-500)]"
           >
             {error}
           </p>
@@ -150,12 +149,12 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
 
       <SocialButtons providers={enabledProviders} callbackUrl="/" />
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm text-[var(--text-dim)]">
         {t('haveAccount')}{' '}
-        <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
+        <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
           {t('signIn')}
         </Link>
       </p>
-    </Card>
+    </div>
   );
 }

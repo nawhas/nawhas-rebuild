@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
-import { Card } from '@nawhas/ui/components/card';
 import { Input } from '@nawhas/ui/components/input';
 import { signIn } from '@/lib/auth-client';
 import { SocialButtons } from './social-buttons';
@@ -42,12 +41,12 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
   }
 
   return (
-    <Card className="px-8 py-10">
-      <h1 className="mb-6 text-2xl font-semibold text-foreground">{t('heading')}</h1>
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] px-8 py-10">
+      <h1 className="mb-6 font-serif text-[1.75rem] font-medium text-[var(--text)]">{t('heading')}</h1>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-4">
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
             {t('emailLabel')}
           </label>
           <Input
@@ -66,12 +65,12 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
 
         <div className="mb-6">
           <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
+            <label htmlFor="password" className="block text-sm font-medium text-[var(--text)]">
               {t('passwordLabel')}
             </label>
             <Link
               href="/forgot-password"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="text-sm font-medium text-[var(--text-dim)] hover:text-[var(--accent)]"
             >
               {t('forgotPassword')}
             </Link>
@@ -94,7 +93,7 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
           <p
             id="login-error"
             role="alert"
-            className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            className="mb-4 rounded-md bg-[var(--color-error-500)]/10 px-3 py-2 text-sm text-[var(--color-error-500)]"
           >
             {error}
           </p>
@@ -107,12 +106,12 @@ export function LoginForm({ callbackUrl, enabledProviders = [] }: LoginFormProps
 
       <SocialButtons providers={enabledProviders} callbackUrl={callbackUrl} />
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm text-[var(--text-dim)]">
         {t('noAccount')}{' '}
-        <Link href="/register" className="font-medium text-foreground underline hover:no-underline">
+        <Link href="/register" className="font-medium text-[var(--accent)] hover:underline">
           {t('register')}
         </Link>
       </p>
-    </Card>
+    </div>
   );
 }
