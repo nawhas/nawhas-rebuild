@@ -5,7 +5,11 @@ interface PageLayoutProps {
   header: React.ReactNode;
   /** Page-specific main content. */
   children: React.ReactNode;
-  /** Site footer. */
+  /**
+   * Site footer content. Rendered inside `<footer role="contentinfo">`,
+   * so the passed node should NOT itself be a <footer> element (avoids
+   * nested landmarks).
+   */
   footer: React.ReactNode;
 }
 
