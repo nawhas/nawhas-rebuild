@@ -367,7 +367,7 @@ export function PlayerBar(): React.JSX.Element {
               aria-valuenow={Math.round(volume * 100) / 100}
               aria-valuetext={`${Math.round(volume * 100)}%`}
               tabIndex={isVisible ? 0 : -1}
-              className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-[var(--border)] accent-[var(--accent)]"
+              className="w-20 cursor-pointer accent-[var(--accent)]"
             />
           </div>
 
