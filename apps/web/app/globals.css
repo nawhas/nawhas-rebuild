@@ -7,29 +7,31 @@
  * default variant's `bg-primary` class has no CSS rule and renders invisible. */
 @source "../../../packages/ui/src/**/*.{ts,tsx}";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ----------------------------------------------------------------------
- * Tailwind 4 @theme — palette ramps (primary=red, secondary=zinc,
- * accent=orange, error=red, info=blue, success=green, warning=amber)
+ * Tailwind 4 @theme — palette ramps for the POC design system.
  *
- * Values derived from Phase 2.1 audit (docs/design/tokens.md):
- *   - primary anchor: Vuetify colors.red.base (#F44336) — approximated
- *     by Tailwind red-500 (#ef4444). Deviation ~3% RGB; imperceptible.
- *   - secondary anchor: Vuetify colors.grey.darken2 (#616161) —
- *     approximated by Tailwind zinc-700 (#3f3f46)/zinc-600 (#52525b).
- *   - accent anchor: Vuetify colors.orange.accent3 (#FF6D00) —
- *     approximated by Tailwind orange-600 (#ea580c).
- * Visual parity verification is in Phase 2.1b / 2.3.
+ * Values derived from the nawhas/new-design-poc prototype, anchored on:
+ *   - primary anchor: POC accent #c9302c — a darker, slightly desaturated
+ *     red than the prior 2.2 token (Vuetify red #F44336). The 50..950 ramp
+ *     was generated to land #c9302c at the 700 step, with the surrounding
+ *     steps interpolated linearly in OKLCH for perceptual smoothness.
+ *   - neutral / surface anchors: POC `--bg / --surface / --surface-2`
+ *     (#0a0a0b / #141416 / #1a1a1d in dark; #ffffff / #fafafa / #f4f4f5
+ *     in light).
+ *   - semantic anchors: POC `--success #10b981`, `--warning #f59e0b`,
+ *     `--info #3b82f6`, `--danger #ef4444`.
+ *
+ * Refs: docs/superpowers/specs/2026-04-24-poc-design-port-design.md
+ * Supersedes: the Phase 2.1 audit's "Decisions resolved 2026-04-22"
+ * brand-hue restoration (legacy red #F44336).
  * ---------------------------------------------------------------------- */
 
 @theme {
   /* Fonts */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: var(--font-bellefair), ui-serif, Georgia, serif;
-  --font-slab: var(--font-roboto-slab), ui-serif, Georgia, serif;
-  --font-mono: var(--font-roboto-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-arabic: var(--font-noto-naskh-arabic), ui-serif, Georgia, serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-urdu: var(--font-noto-nastaliq-urdu), ui-serif, Georgia, serif;
 
   /* Breakpoints */
@@ -44,59 +46,67 @@
 
   /* ─── Palette ramps ─── */
 
-  /* Primary — red */
-  --color-primary-50:  #fef2f2;
-  --color-primary-100: #fee2e2;
-  --color-primary-200: #fecaca;
-  --color-primary-300: #fca5a5;
-  --color-primary-400: #f87171;
-  --color-primary-500: #ef4444;
-  --color-primary-600: #dc2626;
-  --color-primary-700: #b91c1c;
-  --color-primary-800: #991b1b;
-  --color-primary-900: #7f1d1d;
-  --color-primary-950: #450a0a;
+  /* Primary — POC red, anchored at 700 = #c9302c */
+  --color-primary-50:  #fdf2f2;
+  --color-primary-100: #fae0df;
+  --color-primary-200: #f4bcba;
+  --color-primary-300: #ec918e;
+  --color-primary-400: #e1645f;
+  --color-primary-500: #d34741;
+  --color-primary-600: #b9342f;
+  --color-primary-700: #c9302c;  /* POC --accent */
+  --color-primary-800: #8d231f;
+  --color-primary-900: #6e1a18;
+  --color-primary-950: #3f0d0c;
 
-  /* Secondary — zinc */
-  --color-secondary-50:  #fafafa;
-  --color-secondary-100: #f4f4f5;
-  --color-secondary-200: #e4e4e7;
-  --color-secondary-300: #d4d4d8;
-  --color-secondary-400: #a1a1aa;
-  --color-secondary-500: #71717a;
-  --color-secondary-600: #52525b;
-  --color-secondary-700: #3f3f46;
-  --color-secondary-800: #27272a;
-  --color-secondary-900: #18181b;
-  --color-secondary-950: #09090b;
+  /* Secondary / accent — POC uses the primary accent for emphasis;
+   * keep these aliases pointing at the primary ramp so existing
+   * shadcn primitives that reference `--color-secondary-*` still
+   * resolve. Re-aliased rather than removed because Tailwind utilities
+   * like `bg-secondary-100` are emitted by the shadcn CLI for select /
+   * dropdown chrome and would 404 otherwise. */
+  --color-secondary-50:  var(--color-primary-50);
+  --color-secondary-100: var(--color-primary-100);
+  --color-secondary-200: var(--color-primary-200);
+  --color-secondary-300: var(--color-primary-300);
+  --color-secondary-400: var(--color-primary-400);
+  --color-secondary-500: var(--color-primary-500);
+  --color-secondary-600: var(--color-primary-600);
+  --color-secondary-700: var(--color-primary-700);
+  --color-secondary-800: var(--color-primary-800);
+  --color-secondary-900: var(--color-primary-900);
+  --color-secondary-950: var(--color-primary-950);
 
-  /* Accent — orange */
-  --color-accent-50:  #fff7ed;
-  --color-accent-100: #ffedd5;
-  --color-accent-200: #fed7aa;
-  --color-accent-300: #fdba74;
-  --color-accent-400: #fb923c;
-  --color-accent-500: #f97316;
-  --color-accent-600: #ea580c;
-  --color-accent-700: #c2410c;
-  --color-accent-800: #9a3412;
-  --color-accent-900: #7c2d12;
-  --color-accent-950: #431407;
+  --color-accent-50:  var(--color-primary-50);
+  --color-accent-100: var(--color-primary-100);
+  --color-accent-200: var(--color-primary-200);
+  --color-accent-300: var(--color-primary-300);
+  --color-accent-400: var(--color-primary-400);
+  --color-accent-500: var(--color-primary-500);
+  --color-accent-600: var(--color-primary-600);
+  --color-accent-700: var(--color-primary-700);
+  --color-accent-800: var(--color-primary-800);
+  --color-accent-900: var(--color-primary-900);
+  --color-accent-950: var(--color-primary-950);
 
-  /* Neutral — slate */
-  --color-neutral-50:  #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
-  --color-neutral-950: #020617;
+  /* Neutral — POC surfaces.
+   * Light: #ffffff bg, #fafafa surface, #f4f4f5 surface-2.
+   * Dark: #0a0a0b bg, #141416 surface, #1a1a1d surface-2.
+   * The 50..950 scale is interpolated to land the POC's three
+   * step anchors at the lightest, surface, and darkest levels. */
+  --color-neutral-50:  #fafafa;
+  --color-neutral-100: #f4f4f5;
+  --color-neutral-200: #e6e6e8;
+  --color-neutral-300: #d4d4d8;
+  --color-neutral-400: #a1a1a6;
+  --color-neutral-500: #8e8e98;
+  --color-neutral-600: #6b6b70;
+  --color-neutral-700: #5a5a62;
+  --color-neutral-800: #1a1a1d;
+  --color-neutral-900: #141416;
+  --color-neutral-950: #0a0a0b;
 
-  /* Error — red */
+  /* Error — POC --danger #ef4444 */
   --color-error-50:  #fef2f2;
   --color-error-100: #fee2e2;
   --color-error-200: #fecaca;
@@ -109,7 +119,7 @@
   --color-error-900: #7f1d1d;
   --color-error-950: #450a0a;
 
-  /* Info — blue */
+  /* Info — POC --info #3b82f6 */
   --color-info-50:  #eff6ff;
   --color-info-100: #dbeafe;
   --color-info-200: #bfdbfe;
@@ -122,20 +132,20 @@
   --color-info-900: #1e3a8a;
   --color-info-950: #172554;
 
-  /* Success — green */
-  --color-success-50:  #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-200: #bbf7d0;
-  --color-success-300: #86efac;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-  --color-success-800: #166534;
-  --color-success-900: #14532d;
-  --color-success-950: #052e16;
+  /* Success — POC --success #10b981 */
+  --color-success-50:  #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-200: #a7f3d0;
+  --color-success-300: #6ee7b7;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-800: #065f46;
+  --color-success-900: #064e3b;
+  --color-success-950: #022c22;
 
-  /* Warning — amber */
+  /* Warning — POC --warning #f59e0b */
   --color-warning-50:  #fffbeb;
   --color-warning-100: #fef3c7;
   --color-warning-200: #fde68a;
@@ -147,9 +157,6 @@
   --color-warning-800: #92400e;
   --color-warning-900: #78350f;
   --color-warning-950: #451a03;
-
-  /* Brand literals */
-  --color-wordmark: #DA0000;
 
   /* ─── Radius ─── */
   --radius-sm: 2px;
@@ -210,13 +217,29 @@
    * shadcn CLI for Button/Dropdown/etc.) resolve to our semantic bg roles. */
   --color-secondary:            var(--color-secondary-bg);
   --color-accent:               var(--color-accent-bg);
+
+  /* ─── POC tokens (light mode) ─── */
+  --accent:        #c9302c;
+  --accent-soft:   #e8524e;
+  --accent-glow:   rgba(201, 48, 44, 0.08);
+  --bg:            #ffffff;
+  --surface:       #fafafa;
+  --surface-2:     #f4f4f5;
+  --card-bg:       #ffffff;
+  --text:          #0a0a0b;
+  --text-dim:      #5a5a62;
+  --text-faint:    #8e8e98;
+  --header-bg:     rgba(255, 255, 255, 0.8);
+  --input-bg:      #f4f4f5;
+  --border:        #e6e6e8;
+  --border-strong: #d4d4d8;
 }
 
 /* ────────────────────────────────────────────────────────────────────
  * Dark mode — override semantic tokens only
  * ──────────────────────────────────────────────────────────────────── */
 
-.dark {
+[data-theme="dark"] {
   --color-background:        var(--color-neutral-950);
   --color-foreground:        var(--color-neutral-50);
   --color-card:              var(--color-neutral-900);
@@ -241,6 +264,22 @@
   /* shadcn compat (see light-mode block for rationale) */
   --color-secondary:            var(--color-secondary-bg);
   --color-accent:               var(--color-accent-bg);
+
+  /* ─── POC tokens (dark mode) ─── */
+  --accent:        #c9302c;
+  --accent-soft:   #e8524e;
+  --accent-glow:   rgba(201, 48, 44, 0.15);
+  --bg:            #0a0a0b;
+  --surface:       #141416;
+  --surface-2:     #1a1a1d;
+  --card-bg:       #141416;
+  --text:          #f5f5f7;
+  --text-dim:      #a1a1a6;
+  --text-faint:    #6b6b70;
+  --header-bg:     rgba(10, 10, 11, 0.7);
+  --input-bg:      #1a1a1d;
+  --border:        rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
 }
 
 /* ────────────────────────────────────────────────────────────────────
@@ -249,18 +288,18 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  transition: background-color 0.25s, color 0.25s;
 }
 
 :focus-visible {
   outline: 2px solid var(--color-ring);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
-}
-
-[lang="ar"] {
-  font-family: var(--font-arabic);
 }
 
 [lang="ur"] {

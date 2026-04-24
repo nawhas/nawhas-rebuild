@@ -3,7 +3,7 @@ import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { ThemeToggle } from '../ThemeToggle';
 
 const mockSetTheme = vi.fn();
-let mockTheme = 'system';
+let mockTheme = 'dark';
 
 vi.mock('next-themes', () => ({
   useTheme: () => ({ theme: mockTheme, setTheme: mockSetTheme }),
@@ -13,7 +13,6 @@ const translations: Record<string, string> = {
   toggleThemeLabel: 'Toggle theme',
   switchToLight: 'Switch to light mode',
   switchToDark: 'Switch to dark mode',
-  switchToSystem: 'Switch to system mode',
 };
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => translations[key] ?? key,
@@ -22,28 +21,20 @@ vi.mock('next-intl', () => ({
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  mockTheme = 'system';
+  mockTheme = 'dark';
 });
 
-// In jsdom, useEffect runs synchronously so the component is always "mounted" in tests.
-// The placeholder path is only exercised in a real SSR/hydration scenario.
-describe('ThemeToggle', () => {
-  it('has aria-label "Switch to light mode" in system mode', () => {
-    mockTheme = 'system';
-    render(<ThemeToggle />);
-    expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeDefined();
-  });
-
+describe('ThemeToggle (2-way cycle)', () => {
   it('has aria-label "Switch to dark mode" in light mode', () => {
     mockTheme = 'light';
     render(<ThemeToggle />);
     expect(screen.getByRole('button', { name: 'Switch to dark mode' })).toBeDefined();
   });
 
-  it('has aria-label "Switch to system mode" in dark mode', () => {
+  it('has aria-label "Switch to light mode" in dark mode', () => {
     mockTheme = 'dark';
     render(<ThemeToggle />);
-    expect(screen.getByRole('button', { name: 'Switch to system mode' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeDefined();
   });
 
   it('cycles light → dark on click', () => {
@@ -53,24 +44,17 @@ describe('ThemeToggle', () => {
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
   });
 
-  it('cycles dark → system on click', () => {
+  it('cycles dark → light on click', () => {
     mockTheme = 'dark';
-    render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to system mode' }));
-    expect(mockSetTheme).toHaveBeenCalledWith('system');
-  });
-
-  it('cycles system → light on click', () => {
-    mockTheme = 'system';
     render(<ThemeToggle />);
     fireEvent.click(screen.getByRole('button', { name: 'Switch to light mode' }));
     expect(mockSetTheme).toHaveBeenCalledWith('light');
   });
 
   it('button is not disabled when mounted', () => {
-    mockTheme = 'light';
+    mockTheme = 'dark';
     render(<ThemeToggle />);
-    const btn = screen.getByRole('button', { name: 'Switch to dark mode' });
+    const btn = screen.getByRole('button', { name: 'Switch to light mode' });
     expect(btn.hasAttribute('disabled')).toBe(false);
   });
 });
