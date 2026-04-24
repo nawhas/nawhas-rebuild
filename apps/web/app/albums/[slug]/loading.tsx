@@ -3,9 +3,9 @@ import { Container } from '@/components/layout/container';
 function SkeletonTrackRow(): React.JSX.Element {
   return (
     <li className="flex items-center gap-4 px-4 py-3">
-      <div aria-hidden="true" className="h-4 w-6 animate-pulse rounded-[8px] bg-[var(--surface)]" />
-      <div aria-hidden="true" className="h-4 flex-1 animate-pulse rounded-[8px] bg-[var(--surface)]" />
-      <div aria-hidden="true" className="h-3 w-10 animate-pulse rounded-[8px] bg-[var(--surface)]" />
+      <div aria-hidden="true" className="h-4 w-6 animate-pulse rounded-[8px] bg-[var(--surface-2)]" />
+      <div aria-hidden="true" className="h-4 flex-1 animate-pulse rounded-[8px] bg-[var(--surface-2)]" />
+      <div aria-hidden="true" className="h-3 w-10 animate-pulse rounded-[8px] bg-[var(--surface-2)]" />
     </li>
   );
 }
