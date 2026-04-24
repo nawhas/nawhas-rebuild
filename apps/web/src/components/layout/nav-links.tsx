@@ -34,10 +34,10 @@ export function NavLinks({ links, className = '', onClick }: NavLinksProps): Rea
             href={href}
             {...(onClick !== undefined && { onClick })}
             aria-current={isActive ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background ${
+            className={`rounded px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)] ${
               isActive
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                ? 'text-[var(--text)]'
+                : 'text-[var(--text-dim)] hover:text-[var(--text)]'
             }`}
           >
             {label}

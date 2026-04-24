@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Fraunces, Noto_Nastaliq_Urdu } from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
+import { Footer } from '@nawhas/ui';
 import { SiteHeaderDynamic } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
 import { AudioProvider } from '@/components/providers/audio-provider';
@@ -86,7 +87,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
             <AudioProvider>
-              <PageLayout header={<SiteHeaderDynamic />} footer={<></>}>
+              <PageLayout header={<SiteHeaderDynamic />} footer={<Footer />}>
                 {children}
               </PageLayout>
               <PlayerPanels />
