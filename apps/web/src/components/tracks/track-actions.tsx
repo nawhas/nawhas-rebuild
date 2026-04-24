@@ -16,8 +16,8 @@ interface TrackActionsProps {
 export function TrackActions({ trackId }: TrackActionsProps): React.JSX.Element {
   return (
     <div className="mt-4 flex items-center gap-2">
-      <SaveButton trackId={trackId} className="hover:bg-muted" />
-      <LikeButton trackId={trackId} className="hover:bg-muted" />
+      <SaveButton trackId={trackId} className="hover:bg-[var(--surface)]" />
+      <LikeButton trackId={trackId} className="hover:bg-[var(--surface)]" />
     </div>
   );
 }
