@@ -40,8 +40,8 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
     : 'bg-muted text-foreground';
 
   const titleClass = hasVibrant
-    ? 'font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-[var(--vibrant)] dark:text-white'
-    : 'font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground';
+    ? 'font-serif text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-[var(--vibrant)] dark:text-white'
+    : 'font-serif text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground';
 
   const reciterLinkClass = hasVibrant
     ? 'text-base font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded text-[var(--vibrant)]/80 hover:text-[var(--vibrant)] dark:text-white/80 dark:hover:text-white'

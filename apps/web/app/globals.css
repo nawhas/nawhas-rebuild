@@ -185,9 +185,10 @@
  * Note: this block is intentionally NOT `@theme inline`. With `inline`,
  * Tailwind bakes each value directly into the generated utility
  * (e.g. `.bg-card { background-color: #fff }`), which makes the
- * `.dark { --color-card: ... }` overrides below dead code. Using plain
- * `@theme` emits `.bg-card { background-color: var(--color-card) }`,
- * letting the cascade flip tokens when `<html>` has `class="dark"`.
+ * `[data-theme="dark"] { --color-card: ... }` overrides below dead
+ * code. Using plain `@theme` emits
+ * `.bg-card { background-color: var(--color-card) }`, letting the
+ * cascade flip tokens when `<html>` has `data-theme="dark"`.
  * ──────────────────────────────────────────────────────────────────── */
 
 @theme {
@@ -304,4 +305,13 @@ body {
 
 [lang="ur"] {
   font-family: var(--font-urdu);
+}
+
+/* Arabic falls back to the platform serif — Fraunces (our --font-serif)
+ * has no Arabic glyph coverage, so referencing it here would force the
+ * browser to substitute mid-glyph and break shaping. ui-serif picks the
+ * OS's preferred serif (e.g. Times on Win, Charter on macOS), with
+ * Georgia + generic serif as explicit fallbacks. */
+[lang="ar"] {
+  font-family: ui-serif, Georgia, serif;
 }

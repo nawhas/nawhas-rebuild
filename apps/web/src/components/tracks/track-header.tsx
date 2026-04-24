@@ -24,7 +24,7 @@ export function TrackHeader({ track }: TrackHeaderProps): React.JSX.Element {
 
   return (
     <header className="py-8">
-      <h1 className="font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground">
+      <h1 className="font-serif text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground">
         {track.title}
       </h1>
 

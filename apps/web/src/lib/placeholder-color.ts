@@ -77,8 +77,9 @@ export function getPlaceholderStyle(seed: string): CSSProperties {
 
 /**
  * Tailwind class string that reads the CSS vars set by
- * `getPlaceholderStyle` and flips bg + fg based on the `.dark` theme
- * class. Apply alongside any layout classes you need on the slot.
+ * `getPlaceholderStyle` and flips bg + fg based on the
+ * `[data-theme="dark"]` attribute on `<html>`. Apply alongside any
+ * layout classes you need on the slot.
  */
 export const PLACEHOLDER_CLASSES =
   'bg-[var(--ph-bg-light)] text-[var(--ph-fg-light)] dark:bg-[var(--ph-bg-dark)] dark:text-[var(--ph-fg-dark)]';

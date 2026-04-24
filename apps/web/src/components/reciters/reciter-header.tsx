@@ -32,7 +32,7 @@ export function ReciterHeader({ reciter }: ReciterHeaderProps): React.JSX.Elemen
       </div>
 
       <div className="flex flex-col gap-1">
-        <h1 className="font-slab text-[2.5rem] font-bold tracking-tight text-foreground md:text-[3.5rem]">
+        <h1 className="font-serif text-[2.5rem] font-bold tracking-tight text-foreground md:text-[3.5rem]">
           {reciter.name}
         </h1>
         <p className="text-sm text-muted-foreground">

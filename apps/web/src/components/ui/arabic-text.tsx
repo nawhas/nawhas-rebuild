@@ -5,7 +5,11 @@ interface ArabicTextProps {
 
 /**
  * RTL content block for Arabic text.
- * Uses Noto Naskh Arabic font with appropriate size and line-height for tashkeel visibility.
+ *
+ * Typography: the `lang="ar"` attribute resolves to a system serif via the
+ * `[lang="ar"]` selector in `globals.css` (Fraunces lacks Arabic glyph
+ * coverage, so we deliberately defer to the platform serif). Size and
+ * line-height are tuned for tashkeel visibility.
  *
  * Server Component — no interactivity required.
  */
@@ -14,7 +18,7 @@ export function ArabicText({ children, className }: ArabicTextProps): React.JSX.
     <div
       dir="rtl"
       lang="ar"
-      className={['font-arabic text-[1.125rem] leading-[1.8] text-foreground whitespace-pre-wrap', className ?? '']
+      className={['text-[1.125rem] leading-[1.8] text-foreground whitespace-pre-wrap', className ?? '']
         .join(' ')
         .trim()}
     >
