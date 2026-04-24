@@ -262,7 +262,11 @@
   --color-input:             var(--color-neutral-800);
   --color-ring:              var(--color-primary-400);
 
-  --color-primary:              var(--color-primary-500);
+  /* primary-500 #d34741 vs white gives 4.23:1 — fails WCAG AA (needs 4.5:1) in
+   * dark mode. primary-600 #b9342f gives 6.69:1 — passes cleanly. Light mode
+   * already anchors on primary-600, so dark mode matching it keeps the CTA
+   * visually consistent across themes. */
+  --color-primary:              var(--color-primary-600);
   --color-primary-foreground:   var(--color-neutral-50);
   --color-secondary-bg:         var(--color-secondary-800);
   --color-secondary-foreground: var(--color-secondary-50);
