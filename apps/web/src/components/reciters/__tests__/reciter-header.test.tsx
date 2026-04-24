@@ -51,6 +51,16 @@ describe('ReciterHeader', () => {
     expect(avatar).toBeDefined();
   });
 
+  it('renders an <img> when reciter has an avatarUrl', () => {
+    const reciterWithAvatar = makeReciter({
+      avatarUrl: 'https://example.com/avatar.png',
+    });
+    render(<ReciterHeader reciter={reciterWithAvatar} />);
+    const img = screen.getByRole('img', { name: 'Ali Safdar' });
+    expect(img.tagName).toBe('IMG');
+    expect(img.getAttribute('src')).toBe('https://example.com/avatar.png');
+  });
+
   it('shows "No albums yet" when the reciter has no albums', () => {
     render(<ReciterHeader reciter={makeReciter({ albums: [] })} />);
     expect(screen.getByText('No albums yet')).toBeDefined();
