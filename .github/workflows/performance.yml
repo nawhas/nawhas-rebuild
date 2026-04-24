@@ -11,7 +11,7 @@ on:
       base_url:
         description: Target URL
         required: false
-        default: http://localhost:3000
+        default: http://localhost:3100
   schedule:
     - cron: "0 2 * * 1"  # Every Monday at 2am UTC
 
@@ -26,11 +26,11 @@ jobs:
         run: docker compose up -d
 
       - name: Wait for app
-        run: timeout 60 bash -c "until curl -sf http://localhost:3000; do sleep 2; done"
+        run: timeout 60 bash -c "until curl -sf http://localhost:3100; do sleep 2; done"
 
       - uses: grafana/setup-k6-action@v1
 
       - name: Run k6 smoke test
         run: k6 run apps/web/perf/k6/scripts/smoke.js
         env:
-          BASE_URL: ${{ github.event.inputs.base_url || 'http://localhost:3000' }}
+          BASE_URL: ${{ github.event.inputs.base_url || 'http://localhost:3100' }}

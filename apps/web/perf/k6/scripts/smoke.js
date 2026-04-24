@@ -6,7 +6,7 @@ export const options = {
   duration: '10s',
 };
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:3100';
 
 export default function () {
   const res = http.get(BASE_URL);

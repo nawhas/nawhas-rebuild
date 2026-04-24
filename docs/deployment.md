@@ -202,7 +202,7 @@ The accessibility threshold is the only Lighthouse assertion that blocks a merge
 The production `web` service should expose a health check endpoint. The CI stack uses:
 
 ```bash
-wget --no-verbose --tries=1 --spider http://localhost:3000
+wget --no-verbose --tries=1 --spider http://localhost:3100
 ```
 
 Configure your load balancer or uptime monitor to check `GET /` (or a dedicated `/api/health` endpoint if one is added).

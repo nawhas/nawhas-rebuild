@@ -120,11 +120,11 @@ In production, `S3_PUBLIC_BASE_URL` points to a CDN (e.g. Cloudflare R2 or Cloud
 
 | Service | Role | Dev URL | Production |
 |---------|------|---------|------------|
-| Next.js (web) | App server + API | http://localhost:3000 | Container (standalone build) |
-| PostgreSQL | Relational database | localhost:5432 | Managed DB (e.g. Supabase, RDS) |
-| Typesense | Full-text search | http://localhost:8108 | Typesense Cloud or self-hosted |
-| MinIO | Object storage (audio, images) | http://localhost:9000 | AWS S3, Cloudflare R2, Backblaze B2 |
-| Mailpit | Email catch-all | http://localhost:8025 | Any SMTP provider (Resend, Postmark) |
+| Next.js (web) | App server + API | http://localhost:3100 | Container (standalone build) |
+| PostgreSQL | Relational database | (no host port — `./dev psql`) | Managed DB (e.g. Supabase, RDS) |
+| Typesense | Full-text search | (no host port — internal-only) | Typesense Cloud or self-hosted |
+| MinIO | Object storage (audio, images) | (no host port — internal-only) | AWS S3, Cloudflare R2, Backblaze B2 |
+| Mailpit | Email catch-all | (no host port — internal-only) | Any SMTP provider (Resend, Postmark) |
 
 ## Key Design Decisions
 

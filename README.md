@@ -57,7 +57,7 @@ cp apps/web/.env.example apps/web/.env.local
 ./dev up
 ```
 
-The app will be available at **http://localhost:3000**.
+The app will be available at **http://localhost:3100**.
 
 Seed the database with fixture data (reciters, albums, tracks, audio files):
 

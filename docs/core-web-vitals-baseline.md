@@ -67,7 +67,7 @@ Main thread work breakdown (homepage):
 **Unused JS:** ~73 kB wasted in `8885-141a411732c053cc.js` chunk. This is the largest addressable opportunity.
 
 ### Reciters page failing score gate
-The reciters page at 71 will cause Lighthouse CI to fail if that URL is added to `.lighthouserc.json`. The current CI config only tests `http://localhost:3000` (the root), so this is not currently caught in CI.
+The reciters page at 71 will cause Lighthouse CI to fail if that URL is added to `.lighthouserc.json`. The current CI config only tests `http://localhost:3100` (the root), so this is not currently caught in CI.
 
 ---
 

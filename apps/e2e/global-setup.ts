@@ -8,7 +8,7 @@
  */
 import { chromium } from '@playwright/test';
 
-const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:3000';
+const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:3100';
 const MAX_WAIT_MS = 60_000;
 const POLL_INTERVAL_MS = 500;
 

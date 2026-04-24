@@ -56,7 +56,7 @@ async function extractVerificationUrl(messageId: string): Promise<string> {
 function toVerificationFetchUrl(fullUrl: string): string {
   // The URL from Mailpit may have a different host (e.g. nawhas.test in Docker).
   // Rewrite to BASE_URL so fetch() can reach it from the test runner.
-  const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+  const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3100';
   const { pathname, search } = new URL(fullUrl);
   return `${baseUrl}${pathname}${search}`;
 }
@@ -125,7 +125,7 @@ async function registerAndVerifyUser(params: {
 const test = base.extend<object, WorkerFixtures>({
   verifiedUser: [
     async ({}, use) => {
-      const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+      const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3100';
       const email = `library-e2e-${crypto.randomUUID()}@example.com`;
       const password = 'LibraryTest99!';
       const name = 'Library E2E User';
@@ -379,7 +379,7 @@ test.describe('Account — Delete Account', () => {
   test('delete account → session ends and user is redirected to home', async () => {
     // Create a dedicated user for this destructive test so we don't affect
     // the shared worker-scoped verifiedUser.
-    const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+    const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3100';
     const email = `delete-acct-${crypto.randomUUID()}@example.com`;
     const password = 'DeleteMe99!';
 
@@ -393,7 +393,7 @@ test.describe('Account — Delete Account', () => {
     // Use a fresh browser context for this test
     const { chromium } = await import('@playwright/test');
     const browser = await chromium.launch();
-    const context = await browser.newContext({ baseURL: process.env['BASE_URL'] ?? 'http://localhost:3000' });
+    const context = await browser.newContext({ baseURL: process.env['BASE_URL'] ?? 'http://localhost:3100' });
     const page = await context.newPage();
 
     try {

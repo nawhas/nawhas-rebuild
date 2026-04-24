@@ -202,11 +202,11 @@ cmd_test_e2e() {
   # test:e2e: local uses base + docker-compose.test.yml (Playwright lives in the test overlay).
   # CI / --ci adds docker-compose.ci.yml (includes docker-compose.web-prod.yml) — same three -f chain as GHA E2E.
   #
-  # Why port 3000 matters: docker-compose.yml publishes web as "3000:3000" so you can
-  # open http://localhost:3000 on the host. Starting `web` requires binding host :3000.
+  # Why port 3100 matters: docker-compose.yml publishes web as "3100:3100" so you can
+  # open http://localhost:3100 on the host. Starting `web` requires binding host :3100.
   # If something else already listens there (pnpm/next dev on the host, another stack),
   # Docker errors with "address already in use". Free it: ./dev down, or stop the other
-  # process (see docs/dev-setup.md — E2E and port 3000).
+  # process (see docs/dev-setup.md — E2E and port 3100).
   #
   # Bring web up first (same as CI "Start stack"), then run Playwright with --no-deps so
   # we do not ask compose to reconcile `web` again in the same `run` invocation.
@@ -244,8 +244,8 @@ cmd_smoke_prodlike() {
   SEED_MODERATOR_PASSWORD="$seed_password" cmd_db_seed
 
   echo "Running HTTP smoke checks..."
-  local reciter_url="http://localhost:3000/reciters/${reciter_slug}"
-  local album_url="http://localhost:3000/albums/${album_slug}"
+  local reciter_url="http://localhost:3100/reciters/${reciter_slug}"
+  local album_url="http://localhost:3100/albums/${album_slug}"
   local reciter_code
   local album_code
   reciter_code="$(curl -s -o /dev/null -w "%{http_code}" "$reciter_url")"

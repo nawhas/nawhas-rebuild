@@ -13,7 +13,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL ?? 'http://localhost:3000',
+    baseURL: process.env.BASE_URL ?? 'http://localhost:3100',
     trace: 'on-first-retry',
     actionTimeout: 15_000,
   },
@@ -23,7 +23,7 @@ export default defineConfig({
   ...(process.env.DOCKER !== 'true' && {
     webServer: {
       command: 'pnpm run dev',
-      url: 'http://localhost:3000',
+      url: 'http://localhost:3100',
       reuseExistingServer: !process.env.CI,
     },
   }),
