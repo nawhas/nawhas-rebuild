@@ -43,4 +43,11 @@ describe('CoverArt', () => {
     const root = container.firstChild as HTMLElement;
     expect(root.getAttribute('data-size')).toBe('sm');
   });
+
+  it('fluid mode fills its parent (100% width/height) instead of using fixed pixel dimensions', () => {
+    const { container } = render(<CoverArt slug="x" label="A" fluid />);
+    const root = container.firstChild as HTMLElement;
+    expect(root.style.width).toBe('100%');
+    expect(root.style.height).toBe('100%');
+  });
 });

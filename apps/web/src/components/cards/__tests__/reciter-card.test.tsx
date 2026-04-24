@@ -22,8 +22,10 @@ describe('ReciterCard', () => {
     expect(screen.getByText('Ali Safdar')).toBeDefined();
   });
 
-  it('renders a ReciterAvatar with initials in the gradient fallback path', () => {
+  it('renders a ReciterAvatar with the reciter name as accessible label', () => {
     render(<ReciterCard reciter={reciter} />);
-    expect(screen.getByText('AS')).toBeDefined();
+    // ReciterAvatar contract: role="img" + aria-label=name (gradient fallback path)
+    const avatar = screen.getByRole('img', { name: 'Ali Safdar' });
+    expect(avatar).toBeDefined();
   });
 });

@@ -4,6 +4,13 @@ export interface ReciterAvatarProps {
   name: string;
   avatarUrl?: string | null;
   size?: 'sm' | 'md' | 'lg';
+  /**
+   * When true, fills the parent container instead of using the size token's
+   * fixed dimensions. The parent wrapper is responsible for setting
+   * width/height. In fluid mode, the initials font-size scales with the
+   * container (40% of width) so it stays proportionate at any size.
+   */
+  fluid?: boolean;
 }
 
 const GRADIENTS = [
@@ -40,8 +47,22 @@ function deriveInitials(name: string): string {
   return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase();
 }
 
-export function ReciterAvatar({ name, avatarUrl, size = 'md' }: ReciterAvatarProps): React.JSX.Element {
+export function ReciterAvatar({
+  name,
+  avatarUrl,
+  size = 'md',
+  fluid = false,
+}: ReciterAvatarProps): React.JSX.Element {
   const dims = SIZES[size];
+
+  const widthValue = fluid ? '100%' : dims.width;
+  const heightValue = fluid ? '100%' : dims.height;
+  // In fluid mode the parent drives sizing, so initials should scale
+  // with the container rather than being pinned to the size token's px.
+  // 40% of width is roughly proportional to the fixed-size ratios
+  // (e.g. md: 16px on a 56px circle ≈ 28%; lg: 28px on 96px ≈ 29%).
+  // 40% reads slightly bolder, which works better at small grid sizes.
+  const fontSizeValue = fluid ? '40%' : dims.fontSize;
 
   if (avatarUrl) {
     return (
@@ -50,8 +71,8 @@ export function ReciterAvatar({ name, avatarUrl, size = 'md' }: ReciterAvatarPro
         src={avatarUrl}
         alt={name}
         style={{
-          width: dims.width,
-          height: dims.height,
+          width: widthValue,
+          height: heightValue,
           borderRadius: '50%',
           objectFit: 'cover',
         }}
@@ -66,15 +87,15 @@ export function ReciterAvatar({ name, avatarUrl, size = 'md' }: ReciterAvatarPro
       role="img"
       aria-label={name}
       style={{
-        width: dims.width,
-        height: dims.height,
+        width: widthValue,
+        height: heightValue,
         borderRadius: '50%',
         background: GRADIENTS[variantIndex],
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontSize: dims.fontSize,
+        fontSize: fontSizeValue,
         fontWeight: 600,
       }}
     >

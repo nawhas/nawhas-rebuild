@@ -16,7 +16,7 @@ export async function HeroSection(): Promise<React.JSX.Element> {
   return (
     <section
       aria-label={t('ariaLabel')}
-      className="relative isolate overflow-hidden bg-gradient-to-br from-[var(--accent)] via-[var(--accent-soft)] to-[#7e1f1c] px-6 py-16 text-white md:py-24"
+      className="relative isolate overflow-hidden bg-gradient-to-br from-[var(--accent)] via-[var(--accent-soft)] to-[var(--accent-deep)] px-6 py-16 text-white md:py-24"
     >
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="font-serif text-[2.5rem] font-medium leading-tight tracking-normal md:text-[3.5rem]">

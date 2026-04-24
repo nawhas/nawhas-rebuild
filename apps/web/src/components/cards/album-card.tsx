@@ -4,8 +4,6 @@ import type { AlbumDTO } from '@nawhas/types';
 
 interface AlbumCardProps {
   album: AlbumDTO;
-  /** When true, mark this card as a candidate for above-the-fold image priority. Currently ignored — POC CoverArt uses an <img> with no priority knob; keep prop for caller-side compatibility. */
-  priority?: boolean;
 }
 
 /**
@@ -27,6 +25,7 @@ export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
           artworkUrl={album.artworkUrl}
           label={album.title}
           size="md"
+          fluid
         />
       </div>
       <div className="flex flex-col gap-0.5 px-1">

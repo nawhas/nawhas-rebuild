@@ -66,4 +66,15 @@ describe('AlbumCard', () => {
     const { container } = render(<AlbumCard album={album} />);
     expect(container.querySelector('[data-cover-variant]')).not.toBeNull();
   });
+
+  it('renders the cover art with the provided artworkUrl', () => {
+    const albumWithArtwork = {
+      ...album,
+      artworkUrl: 'https://example.com/cover.jpg',
+    };
+    render(<AlbumCard album={albumWithArtwork} />);
+    // The mock <CoverArt> stub renders an <img> when artworkUrl is set.
+    const img = screen.getByTestId('cover-img');
+    expect(img.getAttribute('src')).toBe('https://example.com/cover.jpg');
+  });
 });

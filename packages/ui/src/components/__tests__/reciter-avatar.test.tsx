@@ -29,4 +29,11 @@ describe('ReciterAvatar', () => {
     const vb = b.querySelector('[data-avatar-variant]')?.getAttribute('data-avatar-variant');
     expect(va).toBe(vb);
   });
+
+  it('fluid mode fills its parent (100% width/height) instead of using fixed pixel dimensions', () => {
+    const { container } = render(<ReciterAvatar name="Ali Safdar" fluid />);
+    const root = container.firstChild as HTMLElement;
+    expect(root.style.width).toBe('100%');
+    expect(root.style.height).toBe('100%');
+  });
 });

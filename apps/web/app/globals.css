@@ -222,6 +222,7 @@
   /* ─── POC tokens (light mode) ─── */
   --accent:        #c9302c;
   --accent-soft:   #e8524e;
+  --accent-deep:   #7e1f1c;
   --accent-glow:   rgba(201, 48, 44, 0.08);
   --bg:            #ffffff;
   --surface:       #fafafa;
@@ -269,6 +270,7 @@
   /* ─── POC tokens (dark mode) ─── */
   --accent:        #c9302c;
   --accent-soft:   #e8524e;
+  --accent-deep:   #7e1f1c;
   --accent-glow:   rgba(201, 48, 44, 0.15);
   --bg:            #0a0a0b;
   --surface:       #141416;
