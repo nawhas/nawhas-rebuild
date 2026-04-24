@@ -24,12 +24,14 @@ const inter = Inter({
 });
 
 // Fraunces — display serif for headings, branding (--font-serif / --font-fraunces).
-// optical-size axis lets headings render in the larger optical-size variant
-// (more contrast, finer detail) while body uses the smaller (sturdier).
+// Pinned weights only; `axes: ['opsz']` was dropped during the Phase B Lighthouse
+// canary because Next.js 16 / Turbopack rejects `axes` when `weight` is set
+// (Axes can only be defined for variable fonts when weight is `variable`).
+// Pinned weights win here — every heading/brand surface uses one of 300/400/500/600,
+// and we'd rather ship those than swap to weight: 'variable' for the optical-size axis.
 const fraunces = Fraunces({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600'],
-  axes: ['opsz'],
   variable: '--font-fraunces',
   display: 'swap',
 });

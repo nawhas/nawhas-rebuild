@@ -1,7 +1,9 @@
 # Next.js production-like `web` (build + start). Included by docker-compose.ci.yml and E2E CI stack.
 services:
   web:
-    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build && pnpm --filter @nawhas/db db:migrate && pnpm run build && pnpm --filter @nawhas/web start"
+    # `next start` defaults to PORT 3000; the base compose publishes 3100:3100, and the
+    # healthcheck + Lighthouse config target :3100, so force Next to bind :3100 with -p.
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @nawhas/db build && pnpm --filter @nawhas/db db:migrate && pnpm run build && pnpm --filter @nawhas/web exec next start -p 3100"
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100 || exit 1"]
       interval: 10s
