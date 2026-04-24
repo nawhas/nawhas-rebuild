@@ -1,11 +1,10 @@
 import Link from 'next/link';
-import { Card } from '@nawhas/ui/components/card';
-import { AppImage } from '@/components/ui/image';
+import { CoverArt } from '@nawhas/ui';
 import type { AlbumDTO } from '@nawhas/types';
-import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 interface AlbumCardProps {
   album: AlbumDTO;
+  /** When true, mark this card as a candidate for above-the-fold image priority. Currently ignored — POC CoverArt uses an <img> with no priority knob; keep prop for caller-side compatibility. */
   priority?: boolean;
 }
 
@@ -15,62 +14,29 @@ interface AlbumCardProps {
  *
  * Server Component — no interactivity required.
  */
-export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JSX.Element {
+export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
   return (
     <Link
       href={`/albums/${album.slug}`}
-      className="group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-colors hover:border-[var(--border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
       aria-label={`View album: ${album.title}${album.year ? `, ${album.year}` : ''}`}
     >
-      <Card className="flex flex-col gap-3 overflow-hidden transition-shadow group-hover:shadow-md">
-        {/* Album artwork */}
-        <div
-          style={album.artworkUrl ? undefined : getPlaceholderStyle(album.slug)}
-          className={`relative aspect-square w-full overflow-hidden ${album.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
-        >
-          {album.artworkUrl ? (
-            <AppImage
-              src={album.artworkUrl}
-              alt={`${album.title} album cover`}
-              fill
-              priority={priority}
-              className="object-cover transition-transform duration-200 group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            />
-          ) : (
-            <div
-              aria-hidden="true"
-              className="flex h-full w-full items-center justify-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1}
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                />
-              </svg>
-            </div>
-          )}
-        </div>
-
-        {/* Album metadata */}
-        <div className="flex flex-col gap-0.5 px-3 pb-3">
-          <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
-            {album.title}
-          </span>
-          {album.year && (
-            <span className="text-xs text-muted-foreground">{album.year}</span>
-          )}
-        </div>
-      </Card>
+      <div className="aspect-square w-full overflow-hidden rounded-xl">
+        <CoverArt
+          slug={album.slug}
+          artworkUrl={album.artworkUrl}
+          label={album.title}
+          size="md"
+        />
+      </div>
+      <div className="flex flex-col gap-0.5 px-1">
+        <span className="line-clamp-2 text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
+          {album.title}
+        </span>
+        {album.year && (
+          <span className="text-xs text-[var(--text-faint)]">{album.year}</span>
+        )}
+      </div>
     </Link>
   );
 }

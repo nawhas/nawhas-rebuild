@@ -30,7 +30,7 @@ const createCaller = createCallerFactory(appRouter);
  * and passes it to pure-presentation section components.
  *
  * Layout order:
- *   1. HeroSection — red-gradient + Bellefair slogan + hero SearchBar.
+ *   1. HeroSection — POC red-gradient + Fraunces slogan + hero SearchBar.
  *   2. SavedStrip (client) — only renders for signed-in users with saves.
  *   3. FeaturedReciters / RecentAlbums / PopularTracks — pre-existing.
  *   4. TopNawhasTable — numbered ordered list with deep links.
