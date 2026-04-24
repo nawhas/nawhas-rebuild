@@ -40,7 +40,7 @@ export async function TopNawhasTable({
         {tracks.map((track, index) => (
           <li
             key={track.id}
-            className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-[var(--surface)]"
+            className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-[var(--surface-2)]"
           >
             <span
               aria-hidden="true"

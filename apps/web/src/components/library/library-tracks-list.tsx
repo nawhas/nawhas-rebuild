@@ -86,12 +86,9 @@ export function LibraryTracksList({
         <p className="mb-6 text-sm text-[var(--text-dim)]">
           {t('emptyDescription')}
         </p>
-        <Link
-          href="/albums"
-          className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-soft)] transition-colors"
-        >
-          {t('browseAlbums')}
-        </Link>
+        <Button asChild>
+          <Link href="/albums">{t('browseAlbums')}</Link>
+        </Button>
       </div>
     );
   }
@@ -151,7 +148,7 @@ function LibraryTrackRow({ item, onUnsave }: LibraryTrackRowProps): React.JSX.El
   const { track } = item;
 
   return (
-    <li className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface)]">
+    <li className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-2)]">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-dim)]">
         <MusicNoteIcon />
       </div>
@@ -172,7 +169,6 @@ function LibraryTrackRow({ item, onUnsave }: LibraryTrackRowProps): React.JSX.El
         onSavedChange={(saved) => {
           if (!saved) onUnsave(track.id);
         }}
-        className="hover:bg-[var(--surface)]"
       />
     </li>
   );
