@@ -42,4 +42,34 @@ describe('TrackRow', () => {
     const root = container.firstChild as HTMLElement;
     expect(root.className).toContain('last:border-b-0');
   });
+
+  it('uses the override href when provided', () => {
+    render(
+      <TrackRow
+        slug="kun-faya"
+        title="Kun Faya"
+        reciter="Ali Safdar"
+        reciterSlug="ali-safdar"
+        duration={245}
+        href="/reciters/ali-safdar/albums/x/tracks/kun-faya"
+      />,
+    );
+    const link = screen.getByRole('link', { name: 'Kun Faya' });
+    expect(link.getAttribute('href')).toBe('/reciters/ali-safdar/albums/x/tracks/kun-faya');
+  });
+
+  it('renders an aria-hidden placeholder instead of a reciter link when reciter is empty', () => {
+    const { container } = render(
+      <TrackRow
+        slug="x"
+        title="X"
+        reciter=""
+        reciterSlug="y"
+        duration={100}
+      />,
+    );
+    // The aria-hidden span should be the second grid child (after the title link)
+    const links = container.querySelectorAll('a');
+    expect(links.length).toBe(1); // only the title link, no reciter link
+  });
 });

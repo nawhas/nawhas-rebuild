@@ -8,6 +8,8 @@ export interface TrackRowProps {
   poet?: string;
   duration: number;
   plays?: number;
+  /** Override the default /track/[slug] href. Use when callers need hierarchical URLs (e.g. /reciters/X/albums/Y/tracks/Z). */
+  href?: string;
 }
 
 function formatDuration(seconds: number): string {
@@ -30,24 +32,30 @@ export function TrackRow({
   poet,
   duration,
   plays,
+  href,
 }: TrackRowProps): React.JSX.Element {
+  const titleHref = href ?? `/track/${slug}`;
   return (
     <div
       className="grid items-center gap-4 border-b border-[var(--border)] py-3 last:border-b-0"
       style={{ gridTemplateColumns: '1fr 180px 100px 80px 80px' }}
     >
       <Link
-        href={`/track/${slug}`}
+        href={titleHref}
         className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)] transition-colors"
       >
         {title}
       </Link>
-      <Link
-        href={`/reciter/${reciterSlug}`}
-        className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
-      >
-        {reciter}
-      </Link>
+      {reciter ? (
+        <Link
+          href={`/reciter/${reciterSlug}`}
+          className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
+        >
+          {reciter}
+        </Link>
+      ) : (
+        <span aria-hidden="true" />
+      )}
       <div className="text-sm text-[var(--text-faint)]">{poet || '—'}</div>
       <div className="text-sm text-[var(--text-faint)]">{formatDuration(duration)}</div>
       <div className="text-sm text-[var(--text-faint)]">{formatPlays(plays)}</div>
