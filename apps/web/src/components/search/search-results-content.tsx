@@ -12,8 +12,7 @@ import type {
   SearchHighlightDTO,
 } from '@nawhas/types';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@nawhas/ui/components/tabs';
-import { AppImage } from '@/components/ui/image';
-import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
+import { CoverArt, ReciterAvatar } from '@nawhas/ui';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -114,28 +113,18 @@ function ReciterResult({
   item: ReciterSearchItemDTO;
   highlights: SearchHighlightDTO[];
 }) {
-  const initials = item.name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
-
   const nameSnippet = findSnippet(highlights, 'name');
 
   return (
     <Link
       href={`/reciters/${item.slug}`}
-      className="group flex flex-col items-center gap-3 rounded-lg p-4 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group flex flex-col items-center gap-3 rounded-lg p-4 text-center transition-colors hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View ${item.name}'s profile`}
     >
-      <div
-        aria-hidden="true"
-        style={getPlaceholderStyle(item.slug)}
-        className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold transition-colors ${PLACEHOLDER_CLASSES}`}
-      >
-        {initials}
+      <div className="h-16 w-16">
+        <ReciterAvatar name={item.name} size="sm" fluid />
       </div>
-      <span className="text-sm font-medium text-foreground group-hover:text-muted-foreground">
+      <span className="text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
         <HighlightedText snippet={nameSnippet} fallback={item.name} />
       </span>
     </Link>
@@ -158,46 +147,20 @@ function AlbumResult({
       className="group flex flex-col gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`View album: ${item.title}${item.year ? `, ${item.year}` : ''}`}
     >
-      <div
-        style={item.artworkUrl ? undefined : getPlaceholderStyle(item.slug)}
-        className={`relative aspect-square w-full overflow-hidden rounded-lg ${item.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
-      >
-        {item.artworkUrl ? (
-          <AppImage
-            src={item.artworkUrl}
-            alt={`${item.title} album cover`}
-            fill
-            className="object-cover transition-transform duration-200 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="flex h-full w-full items-center justify-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1}
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-              />
-            </svg>
-          </div>
-        )}
+      <div className="aspect-square w-full overflow-hidden">
+        <CoverArt
+          slug={item.slug}
+          artworkUrl={item.artworkUrl}
+          label={item.title}
+          size="sm"
+          fluid
+        />
       </div>
       <div className="flex flex-col gap-0.5">
-        <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
+        <span className="line-clamp-2 text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
           <HighlightedText snippet={titleSnippet} fallback={item.title} />
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-[var(--text-dim)]">
           <HighlightedText snippet={reciterSnippet} fallback={item.reciterName} />
           {item.year ? ` · ${item.year}` : ''}
         </span>
@@ -224,30 +187,33 @@ function TrackResult({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       aria-label={`View track ${item.title} from ${item.albumTitle} by ${item.reciterName}`}
     >
-      {/* Track number badge */}
-      {item.trackNumber != null && (
-        <span
-          aria-hidden="true"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs tabular-nums text-muted-foreground group-hover:bg-muted/80"
-        >
-          {item.trackNumber}
-        </span>
-      )}
+      {/* Album cover thumbnail — TrackSearchItemDTO has no artworkUrl, so
+       * CoverArt renders a deterministic gradient seeded by the album slug.
+       * Replaces the legacy track-number badge for visual consistency with
+       * the album/reciter result rows. */}
+      <div className="h-12 w-12 shrink-0 overflow-hidden">
+        <CoverArt
+          slug={item.albumSlug}
+          label={item.albumTitle}
+          size="sm"
+          fluid
+        />
+      </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground group-hover:text-muted-foreground">
+        <p className="truncate text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
           <HighlightedText snippet={titleSnippet} fallback={item.title} />
         </p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-xs text-[var(--text-dim)]">
           <HighlightedText snippet={reciterSnippet} fallback={item.reciterName} />
           {' · '}
           <HighlightedText snippet={albumSnippet} fallback={item.albumTitle} />
         </p>
         {lyricsHighlight && (
-          <p className="mt-0.5 truncate text-xs italic text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs italic text-[var(--text-faint)]">
             <HighlightedText
               snippet={lyricsHighlight.snippet}
               fallback=""
@@ -311,7 +277,7 @@ function Pagination({
       {hasPrev ? (
         <Link
           href={pageHref(currentPage - 1)}
-          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-md border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('previousLabel')}
         >
           {t('previous')}
@@ -319,21 +285,21 @@ function Pagination({
       ) : (
         <button
           disabled
-          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
+          className="cursor-not-allowed rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-faint)]"
           aria-label={t('previousLabel')}
         >
           {t('previous')}
         </button>
       )}
 
-      <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
+      <span className="text-sm text-[var(--text-dim)]" aria-live="polite" aria-atomic="true">
         {t('pageOf', { current: currentPage, total: totalPages })}
       </span>
 
       {hasNext ? (
         <Link
           href={pageHref(currentPage + 1)}
-          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-md border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('nextLabel')}
           scroll={false}
         >
@@ -342,7 +308,7 @@ function Pagination({
       ) : (
         <button
           disabled
-          className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
+          className="cursor-not-allowed rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-faint)]"
           aria-label={t('nextLabel')}
         >
           {t('next')}
@@ -366,13 +332,13 @@ function EmptyState({ query }: { query: string }) {
       className="flex flex-col items-center gap-4 py-16 text-center"
     >
       <div aria-hidden="true" className="text-5xl">🔍</div>
-      <p className="text-lg font-medium text-foreground">
+      <p className="text-lg font-medium text-[var(--text)]">
         {t.rich('noResults', {
           query,
           italic: (chunks) => <span className="italic">&ldquo;{chunks}&rdquo;</span>,
         })}
       </p>
-      <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+      <ul className="mt-2 space-y-1 text-sm text-[var(--text-dim)]">
         <li>{t('tip1')}</li>
         <li>{t('tip2')}</li>
         <li>{t('tip3')}</li>
@@ -418,7 +384,7 @@ function ResultsGrid({
   if (currentType === 'tracks') {
     // Track results displayed as a list (like AlbumDetail track list).
     return (
-      <ul className="divide-y divide-border rounded-lg border border-border">
+      <ul className="divide-y divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card-bg)]">
         {hits.map((hit) => (
           <li key={`${hit.type}-${hit.item.id}`}>
             <SearchHit hit={hit} />
@@ -470,9 +436,9 @@ function ResultsGrid({
     <div className="space-y-10">
       {groups.map((group) => (
         <section key={group.type} aria-label={group.label}>
-          <h2 className="mb-4 text-lg font-semibold text-foreground">{group.label}</h2>
+          <h2 className="mb-4 font-serif text-2xl font-medium text-[var(--text)]">{group.label}</h2>
           {group.type === 'track' ? (
-            <ul className="divide-y divide-border rounded-lg border border-border">
+            <ul className="divide-y divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card-bg)]">
               {group.hits.map((hit) => (
                 <li key={`${hit.type}-${hit.item.id}`}>
                   <SearchHit hit={hit} />
@@ -592,7 +558,7 @@ export function SearchResultsContent({
     <Tabs value={currentType}>
       <TabsList
         aria-label={t('tabsNavLabel')}
-        className="mb-6 flex h-auto w-full justify-start gap-1 rounded-none border-b border-border bg-transparent p-0 text-muted-foreground"
+        className="mb-6 flex h-auto w-full justify-start gap-0 rounded-none border-b border-[var(--border)] bg-transparent p-0"
       >
         {tabs.map((tab) => {
           const isActive = currentType === tab.type;
@@ -601,7 +567,7 @@ export function SearchResultsContent({
               key={tab.type}
               value={tab.type}
               asChild
-              className="inline-flex items-center gap-1.5 rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              className="inline-flex items-center gap-1.5 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-medium text-[var(--text-dim)] shadow-none transition-colors hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[state=active]:border-[var(--accent)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--accent)] data-[state=active]:shadow-none"
             >
               <Link href={tabHref(tab.type)}>
                 {tab.label}
@@ -610,8 +576,8 @@ export function SearchResultsContent({
                     aria-label={t('resultsCount', { count: tab.count })}
                     className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${
                       isActive
-                        ? 'bg-foreground text-background'
-                        : 'bg-muted text-muted-foreground'
+                        ? 'bg-[var(--accent)] text-white'
+                        : 'bg-[var(--surface)] text-[var(--text-dim)]'
                     }`}
                   >
                     {tab.count}
