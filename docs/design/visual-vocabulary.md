@@ -17,6 +17,17 @@ verify-email, check-email), `(protected)/profile`, `(protected)/settings`,
 - **Content card:** `var(--card-bg)` with `1px solid var(--border)`, radius 16px, padding 32px.
 - **Form input background:** `var(--input-bg)` with `1px solid var(--border)`, radius 8px, padding 12px 16px.
 
+### Hover-bg rule (avoid the dark-mode collision)
+
+`--card-bg` and `--surface` resolve to **the same value** in dark mode (`#141416`). An element with `bg-[var(--card-bg)]` parent that hovers to `--surface` produces zero visual delta in dark mode — a common drift that surfaced repeatedly across Wave 1 / Wave 2 (LoadMore primitive, LibraryTrackRow, top-nawhas-table, search pagination).
+
+The rule:
+
+- Element sits **on the page background** (`--bg` parent, no card wrapper) → `hover:bg-[var(--surface)]` is correct.
+- Element sits **inside a `--card-bg` container** (cards, list rows) → use `hover:bg-[var(--surface-2)]` for visible delta in both themes.
+
+`--surface-2` is `#1a1a1d` dark / `#f4f4f5` light — one step deeper than `--surface` in both themes.
+
 ## Typography
 
 - **Page heading (h1):** `font-serif` (Fraunces), 36–48px, weight 500, color `var(--text)`.
