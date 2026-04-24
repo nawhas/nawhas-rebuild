@@ -201,8 +201,11 @@ export function PlayerBar(): React.JSX.Element {
       // off-screen when no track is loaded. Fixed positioning means it never
       // affects page flow.
       className={[
+        // z-50 preserved — PlayerBar stays above Header (z-40). MobilePlayerOverlay
+        // (z-[60]) sits above this. QueuePanel (z-40) sits below.
         'fixed bottom-0 left-0 right-0 z-50',
-        'border-t border-border bg-card text-card-foreground',
+        // POC treatment — translucent --surface with backdrop blur, --border hairline.
+        'border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur text-[var(--text)]',
         // Upward-casting shadow — Tailwind's shadow-lg casts downward (off-viewport),
         // so we use an explicit upward cast matching legacy nawhas.com's treatment
         // (legacy: 0 -2px 8px 4px rgba(0,0,0,0.16); dark-mode boost for contrast).
@@ -215,10 +218,10 @@ export function PlayerBar(): React.JSX.Element {
       aria-hidden={!isVisible}
     >
       {/* Seek bar — positioned at the very top of the player bar */}
-      <div className="group relative h-1 cursor-pointer bg-muted hover:h-1.5">
+      <div className="group relative h-1 cursor-pointer bg-[var(--border)] hover:h-1.5">
         {/* Progress fill */}
         <div
-          className="h-full bg-foreground transition-all"
+          className="h-full bg-[var(--accent)] transition-all"
           style={{ width: `${progressPercent}%` }}
         />
         {/* Invisible range input overlaid on top for interaction */}
@@ -247,27 +250,27 @@ export function PlayerBar(): React.JSX.Element {
           onClick={openMobileOverlay}
           aria-label={currentTrack ? t('openFullPlayer', { trackTitle: currentTrack.title }) : t('openPlayer')}
           tabIndex={isVisible ? 0 : -1}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring md:cursor-default md:focus:ring-0"
+          className="flex min-w-0 flex-1 items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)] md:cursor-default md:focus:ring-0"
         >
           {/* Album art placeholder — real art requires extending the store */}
           <div
             aria-hidden="true"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[var(--border)] text-[var(--text-dim)]"
           >
             <MusicNoteIcon />
           </div>
 
           {/* Title + expand hint on mobile */}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">
+          <div className="min-w-0 flex-1 text-left">
+            <p className="truncate text-sm font-medium text-[var(--text)]">
               {currentTrack?.title ?? ''}
             </p>
             {/* Reciter name not available in TrackDTO — placeholder for future */}
-            <p className="truncate text-xs text-muted-foreground" aria-hidden="true" />
+            <p className="truncate text-xs text-[var(--text-faint)]" aria-hidden="true" />
           </div>
 
           {/* Expand icon — shown only on mobile (hidden md+) */}
-          <span aria-hidden="true" className="shrink-0 text-muted-foreground md:hidden">
+          <span aria-hidden="true" className="shrink-0 text-[var(--text-dim)] md:hidden">
             <ExpandIcon />
           </span>
         </button>
@@ -291,10 +294,10 @@ export function PlayerBar(): React.JSX.Element {
             aria-pressed={isShuffle}
             tabIndex={isVisible ? 0 : -1}
             className={[
-              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background',
+              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--surface)]',
               isShuffle
-                ? 'text-foreground hover:bg-muted'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                ? 'text-[var(--accent)] hover:bg-[var(--bg)]'
+                : 'text-[var(--text-dim)] hover:bg-[var(--bg)] hover:text-[var(--text)]',
             ].join(' ')}
           >
             <ShuffleIcon />
@@ -306,18 +309,18 @@ export function PlayerBar(): React.JSX.Element {
             onClick={previous}
             aria-label={t('previousTrack')}
             tabIndex={isVisible ? 0 : -1}
-            className="rounded p-1.5 text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+            className="rounded p-1.5 text-[var(--text-dim)] transition-colors hover:bg-[var(--bg)] hover:text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--surface)]"
           >
             <PreviousIcon />
           </button>
 
-          {/* Play / Pause */}
+          {/* Play / Pause — primary CTA in POC accent. */}
           <button
             type="button"
             onClick={isPlaying ? pause : resume}
             aria-label={isPlaying ? t('pause') : t('play')}
             tabIndex={isVisible ? 0 : -1}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface)]"
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -328,7 +331,7 @@ export function PlayerBar(): React.JSX.Element {
             onClick={next}
             aria-label={t('nextTrack')}
             tabIndex={isVisible ? 0 : -1}
-            className="rounded p-1.5 text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+            className="rounded p-1.5 text-[var(--text-dim)] transition-colors hover:bg-[var(--bg)] hover:text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--surface)]"
           >
             <NextIcon />
           </button>
@@ -337,7 +340,7 @@ export function PlayerBar(): React.JSX.Element {
         {/* Right-side: time + volume (volume hidden on mobile) */}
         <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
           {/* Elapsed / total time */}
-          <span className="shrink-0 tabular-nums text-xs text-muted-foreground" aria-live="off">
+          <span className="shrink-0 tabular-nums text-xs text-[var(--text-faint)]" aria-live="off">
             <span className="sr-only">{t('position')}</span>
             <span data-testid="player-position">{formatTime(position)}</span>
             <span aria-hidden="true"> / </span>
@@ -346,7 +349,10 @@ export function PlayerBar(): React.JSX.Element {
           </span>
 
           {/* Volume — desktop only */}
-          <div className="hidden items-center gap-1.5 md:flex" aria-label={t('volumeControlLabel')}>
+          <div
+            className="hidden items-center gap-1.5 text-[var(--text-dim)] md:flex"
+            aria-label={t('volumeControlLabel')}
+          >
             <VolumeIcon level={volume} />
             <input
               type="range"
@@ -361,7 +367,7 @@ export function PlayerBar(): React.JSX.Element {
               aria-valuenow={Math.round(volume * 100) / 100}
               aria-valuetext={`${Math.round(volume * 100)}%`}
               tabIndex={isVisible ? 0 : -1}
-              className="w-20 cursor-pointer accent-foreground"
+              className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-[var(--border)] accent-[var(--accent)]"
             />
           </div>
 
@@ -373,10 +379,10 @@ export function PlayerBar(): React.JSX.Element {
             aria-pressed={isQueueOpen}
             tabIndex={isVisible ? 0 : -1}
             className={[
-              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background',
+              'rounded p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--surface)]',
               isQueueOpen
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                ? 'bg-[var(--bg)] text-[var(--text)]'
+                : 'text-[var(--text-dim)] hover:bg-[var(--bg)] hover:text-[var(--text)]',
             ].join(' ')}
           >
             <QueueIcon />

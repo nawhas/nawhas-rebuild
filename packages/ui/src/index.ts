@@ -16,3 +16,4 @@ export { Footer } from './components/footer.js';
 export { CoverArt, type CoverArtProps } from './components/cover-art.js';
 export { ReciterAvatar, type ReciterAvatarProps } from './components/reciter-avatar.js';
 export { TrackRow, type TrackRowProps } from './components/track-row.js';
+export { Waveform, type WaveformProps } from './components/waveform.js';

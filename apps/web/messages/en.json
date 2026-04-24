@@ -21,6 +21,10 @@
     "albumAlt": "Cover art for {label}",
     "placeholderLabel": "Album cover"
   },
+  "waveform": {
+    "ariaLabel": "Audio waveform — click to seek",
+    "barLabel": "Seek to {percent}%"
+  },
   "footer": {
     "product": "Product",
     "browse": "Browse",
