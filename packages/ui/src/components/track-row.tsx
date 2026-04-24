@@ -33,7 +33,7 @@ export function TrackRow({
 }: TrackRowProps): React.JSX.Element {
   return (
     <div
-      className="grid items-center gap-4 border-b border-[var(--border)] py-3"
+      className="grid items-center gap-4 border-b border-[var(--border)] py-3 last:border-b-0"
       style={{ gridTemplateColumns: '1fr 180px 100px 80px 80px' }}
     >
       <Link

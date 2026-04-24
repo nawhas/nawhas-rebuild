@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { hashToIndex } from '../lib/hash';
 
 export interface CoverArtProps {
   slug: string;
@@ -26,14 +27,6 @@ const SIZES = {
   lg: { width: '360px', height: '360px', fontSize: '160px' },
 } as const;
 
-function pickVariant(slug: string): number {
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) {
-    h = (h * 31 + slug.charCodeAt(i)) >>> 0;
-  }
-  return h % GRADIENTS.length;
-}
-
 export function CoverArt({ slug, artworkUrl, label, size = 'md' }: CoverArtProps): React.JSX.Element {
   const t = useTranslations('coverArt');
   const dims = SIZES[size];
@@ -41,6 +34,7 @@ export function CoverArt({ slug, artworkUrl, label, size = 'md' }: CoverArtProps
 
   if (artworkUrl) {
     return (
+      // Intentional <img>: artworkUrl may be off-domain S3/MinIO; next/image would require per-host remotePatterns config.
       <img
         src={artworkUrl}
         alt={altText}
@@ -56,7 +50,7 @@ export function CoverArt({ slug, artworkUrl, label, size = 'md' }: CoverArtProps
     );
   }
 
-  const variantIndex = pickVariant(slug);
+  const variantIndex = hashToIndex(slug, GRADIENTS.length);
   return (
     <div
       data-cover-variant={`cov-${variantIndex + 1}`}

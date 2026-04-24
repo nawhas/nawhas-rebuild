@@ -1,3 +1,5 @@
+import { hashToIndex } from '../lib/hash';
+
 export interface ReciterAvatarProps {
   name: string;
   avatarUrl?: string | null;
@@ -38,19 +40,12 @@ function deriveInitials(name: string): string {
   return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase();
 }
 
-function pickGradient(name: string): number {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) {
-    h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  }
-  return h % GRADIENTS.length;
-}
-
 export function ReciterAvatar({ name, avatarUrl, size = 'md' }: ReciterAvatarProps): React.JSX.Element {
   const dims = SIZES[size];
 
   if (avatarUrl) {
     return (
+      // Intentional <img>: avatarUrl may be off-domain S3/MinIO; next/image would require per-host remotePatterns config.
       <img
         src={avatarUrl}
         alt={name}
@@ -64,7 +59,7 @@ export function ReciterAvatar({ name, avatarUrl, size = 'md' }: ReciterAvatarPro
     );
   }
 
-  const variantIndex = pickGradient(name);
+  const variantIndex = hashToIndex(name, GRADIENTS.length);
   return (
     <div
       data-avatar-variant={`av-${variantIndex + 1}`}

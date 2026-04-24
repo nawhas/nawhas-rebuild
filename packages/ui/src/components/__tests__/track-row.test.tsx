@@ -36,4 +36,10 @@ describe('TrackRow', () => {
     render(<TrackRow slug="x" title="X" reciter="Y" reciterSlug="y" duration={100} plays={12345} />);
     expect(screen.getByText('12.3k')).toBeDefined();
   });
+
+  it('clears the bottom border on the last row in a list', () => {
+    const { container } = render(<TrackRow slug="x" title="X" reciter="Y" reciterSlug="y" duration={100} />);
+    const root = container.firstChild as HTMLElement;
+    expect(root.className).toContain('last:border-b-0');
+  });
 });
