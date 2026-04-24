@@ -2,11 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { CoverArt } from '@nawhas/ui';
 import type { AlbumListItemDTO } from '@nawhas/types';
-import { AppImage } from '@/components/ui/image';
 import { LoadMore } from '@/components/pagination/load-more';
 import { fetchMoreAlbums } from '@/server/actions/albums';
-import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
 
 interface AlbumListCardProps {
   album: AlbumListItemDTO;
@@ -16,59 +15,35 @@ interface AlbumListCardProps {
  * Album card for the albums listing page.
  * Shows cover art, title, reciter name, year, and track count.
  *
+ * Differs from `<AlbumCard>` (cards/album-card.tsx) by surfacing the extra
+ * `AlbumListItemDTO` fields (reciter name + track count) needed only on the
+ * dedicated /albums grid. Visual surface mirrors the canonical AlbumCard so
+ * cross-route coherence holds (same card chrome + CoverArt primitive).
+ *
  * Server Component safe (no hooks), rendered inside a client grid.
  */
 function AlbumListCard({ album }: AlbumListCardProps): React.JSX.Element {
   return (
     <Link
       href={`/albums/${album.slug}`}
-      className="group flex flex-col gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-colors hover:border-[var(--border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
       aria-label={`View album: ${album.title} by ${album.reciterName}${album.year ? `, ${album.year}` : ''}`}
     >
-      {/* Album artwork */}
-      <div
-        style={album.artworkUrl ? undefined : getPlaceholderStyle(album.slug)}
-        className={`relative aspect-square w-full overflow-hidden rounded-lg ${album.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
-      >
-        {album.artworkUrl ? (
-          <AppImage
-            src={album.artworkUrl}
-            alt={`${album.title} album cover`}
-            fill
-            className="object-cover transition-transform duration-200 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="flex h-full w-full items-center justify-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1}
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-              />
-            </svg>
-          </div>
-        )}
+      <div className="aspect-square w-full overflow-hidden rounded-xl">
+        <CoverArt
+          slug={album.slug}
+          artworkUrl={album.artworkUrl}
+          label={album.title}
+          size="md"
+          fluid
+        />
       </div>
-
-      {/* Album metadata */}
-      <div className="flex flex-col gap-0.5">
-        <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
+      <div className="flex flex-col gap-0.5 px-1">
+        <span className="line-clamp-2 text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
           {album.title}
         </span>
-        <span className="text-xs text-muted-foreground">{album.reciterName}</span>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="text-xs text-[var(--text-dim)]">{album.reciterName}</span>
+        <div className="flex items-center gap-2 text-xs text-[var(--text-faint)]">
           {album.year && <span>{album.year}</span>}
           {album.year && album.trackCount > 0 && <span aria-hidden="true">·</span>}
           {album.trackCount > 0 && (
