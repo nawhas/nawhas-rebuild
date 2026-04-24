@@ -37,10 +37,34 @@ describe('TrackRow', () => {
     expect(screen.getByText('12.3k')).toBeDefined();
   });
 
-  it('clears the bottom border on the last row in a list', () => {
+  it('does not render an inherent border (consumers add divide-y on the list container)', () => {
     const { container } = render(<TrackRow slug="x" title="X" reciter="Y" reciterSlug="y" duration={100} />);
     const root = container.firstChild as HTMLElement;
-    expect(root.className).toContain('last:border-b-0');
+    expect(root.className).not.toContain('border-b');
+  });
+
+  it('renders a leadingSlot before the title when provided', () => {
+    render(
+      <TrackRow
+        slug="x"
+        title="X"
+        reciter="Y"
+        reciterSlug="y"
+        duration={100}
+        leadingSlot={<button type="button" aria-label="Play X">▶</button>}
+      />,
+    );
+    // The leadingSlot button should be reachable via aria-label.
+    expect(screen.getByRole('button', { name: 'Play X' })).toBeDefined();
+    // And it should be the first child of the grid.
+    const root = document.querySelector('[style*="grid-template-columns"]') as HTMLElement;
+    expect(root.firstChild).toBe(screen.getByRole('button', { name: 'Play X' }).parentElement);
+  });
+
+  it('renders em-dash for missing duration', () => {
+    render(<TrackRow slug="x" title="X" reciter="Y" reciterSlug="y" />);
+    // Both duration and plays render em-dash; assert there are at least 2 em-dashes (poet missing too).
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2);
   });
 
   it('uses the override href when provided', () => {

@@ -6,13 +6,20 @@ export interface TrackRowProps {
   reciter: string;
   reciterSlug: string;
   poet?: string;
-  duration: number;
+  duration?: number;
   plays?: number;
   /** Override the default /track/[slug] href. Use when callers need hierarchical URLs (e.g. /reciters/X/albums/Y/tracks/Z). */
   href?: string;
+  /**
+   * Optional ReactNode rendered as a leading column before the title.
+   * Use for play/pause buttons, track numbers, drag handles. When provided,
+   * the grid template grows by one auto-sized column at the start.
+   */
+  leadingSlot?: React.ReactNode;
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(seconds: number | undefined): string {
+  if (seconds === undefined || seconds === null) return '—';
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${String(secs).padStart(2, '0')}`;
@@ -33,13 +40,18 @@ export function TrackRow({
   duration,
   plays,
   href,
+  leadingSlot,
 }: TrackRowProps): React.JSX.Element {
   const titleHref = href ?? `/track/${slug}`;
+  const gridTemplate = leadingSlot
+    ? 'auto 1fr 180px 100px 80px 80px'
+    : '1fr 180px 100px 80px 80px';
   return (
     <div
-      className="grid items-center gap-4 border-b border-[var(--border)] py-3 last:border-b-0"
-      style={{ gridTemplateColumns: '1fr 180px 100px 80px 80px' }}
+      className="grid items-center gap-4 py-3"
+      style={{ gridTemplateColumns: gridTemplate }}
     >
+      {leadingSlot && <div className="flex items-center">{leadingSlot}</div>}
       <Link
         href={titleHref}
         className="text-sm font-medium text-[var(--text)] hover:text-[var(--accent)] transition-colors"

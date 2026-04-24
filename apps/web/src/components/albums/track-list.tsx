@@ -1,5 +1,5 @@
 import type { TrackDTO } from '@nawhas/types';
-import { TrackRow } from '@nawhas/ui';
+import { TrackListRow } from './track-list-row';
 
 interface TrackListProps {
   tracks: TrackDTO[];
@@ -11,9 +11,13 @@ interface TrackListProps {
  * Ordered track list for the album detail page.
  *
  * Server Component — data is passed as props from the album page.
- * Each row renders the canonical <TrackRow> primitive. Legacy
- * track-list-item.tsx (per-row component with custom play/highlight
- * affordances) is deprecated in favour of the shared TrackRow.
+ * Each row is rendered via the TrackListRow client wrapper, which
+ * threads the per-row TrackPlayButton + add-to-queue affordances
+ * around the canonical <TrackRow> primitive from @nawhas/ui.
+ *
+ * Borders between rows come from `divide-y` on this <ol> — TrackRow
+ * itself is borderless (consumers own the divider style so it works
+ * regardless of how rows are wrapped).
  */
 export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): React.JSX.Element {
   return (
@@ -30,19 +34,16 @@ export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): R
       ) : (
         <ol
           aria-label={`${tracks.length} track${tracks.length !== 1 ? 's' : ''}`}
-          className="flex flex-col"
+          className="flex flex-col divide-y divide-[var(--border)]"
         >
-          {tracks.map((track) => (
-            <li key={track.id}>
-              <TrackRow
-                slug={track.slug}
-                title={track.title}
-                reciter="" /* hidden — context is the album header */
-                reciterSlug={reciterSlug}
-                duration={track.duration ?? 0}
-                href={`/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${track.slug}`}
-              />
-            </li>
+          {tracks.map((track, index) => (
+            <TrackListRow
+              key={track.id}
+              track={track}
+              trackNumber={track.trackNumber ?? index + 1}
+              href={`/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${track.slug}`}
+              reciterSlug={reciterSlug}
+            />
           ))}
         </ol>
       )}

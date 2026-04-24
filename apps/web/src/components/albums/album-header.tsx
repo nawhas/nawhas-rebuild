@@ -26,12 +26,13 @@ export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
 
   return (
     <div className="flex flex-col items-center gap-6 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-8 sm:flex-row sm:items-start">
-      <div className="shrink-0">
+      <div className="aspect-square w-full max-w-[360px] shrink-0 overflow-hidden rounded-xl">
         <CoverArt
           slug={album.slug}
           artworkUrl={album.artworkUrl}
           label={album.title}
           size="lg"
+          fluid
         />
       </div>
       <div className="flex flex-col gap-3 text-center sm:text-left">
