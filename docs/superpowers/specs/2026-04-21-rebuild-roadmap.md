@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.1c + 2.4 W2/W3 + Phase 3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 spec'd (2026-04-24) · Phase 2.1c + 2.5 + 2.4 W2/W3 + Phase 3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-24
@@ -428,6 +428,9 @@ targetType / date range) + expandable meta on `/mod/audit`. Extend the
 `/mod` dashboard with pending count, awaiting-apply count, 7-day
 throughput sparkline, and oldest-pending age.
 
+Scope extends to include the public day-grouped `/changes` feed
+surfaced by Phase 2.5 (the public-facing twin of `/mod/audit`).
+
 Own spec and plan will land before execution.
 
 ### 2.4 W3 Contributor lifecycle (not started)
@@ -441,7 +444,35 @@ prior rejection + the moderator's comment. Digest email to moderators
 (throttled to once per hour) + in-app pending-count badge on the
 Moderator Dashboard nav link.
 
+Scope extends to include the public `/contributor/[slug]` profile,
+contribution heatmap, and `/dashboard` stats surfaced by Phase 2.5.
+
 Own spec and plan will land before execution.
+
+## Phase 2.5 — POC Design Port
+
+A separate prototype repository, [`nawhas/new-design-poc`](https://github.com/nawhas/new-design-poc),
+was built from a set of 12 design mockups into a fully functional Next.js 16 prototype on the same
+stack as the rebuild. The roadmap owner has chosen the POC as the rebuild's forward visual
+direction. Phase 2.5 ports the POC's tokens, fonts, components, and layouts onto the rebuild's
+existing data layer, re-skinning every currently-implemented surface.
+
+This is a forward-looking aesthetic decision that supersedes the brand-hue / typography
+decisions resolved in the 2026-04-22 design audit (which were anchored on legacy production
+aesthetic). Both decisions are coherent in their own time.
+
+**Sequencing.** Phase 2.5 is the next thing to ship; W2 and W3 pause for its duration.
+Downstream phases (W2, W3, Phase 3, Phase 4) inherit the POC design system from the start.
+
+**Three POC-only surfaces** (public contributor profile + heatmap, public day-grouped changes
+feed, contributor dashboard with stats) are deferred from this roadmap and folded into W2 / W3
+where they thematically belong (see the W2 and W3 entries above).
+
+**Branch strategy.** Single long-running feature branch (`phase-2.5-poc-reskin`), batched merge
+to `main`, mirroring Phase 1's shape.
+
+Spec: [`2026-04-24-poc-design-port-design.md`](./2026-04-24-poc-design-port-design.md). Plan
+will land before execution.
 
 ## Phase 3 — Launch Prep
 

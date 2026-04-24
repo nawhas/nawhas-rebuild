@@ -1,5 +1,16 @@
 # Design Audit — Legacy `nawhas.com` vs Rebuild
 
+> **Superseded for forward decisions.** The "Decisions resolved 2026-04-22" section
+> below — including the brand-hue restoration to legacy red `#F44336` and the
+> Bellefair / Roboto Slab / Roboto Mono typography choices — is **superseded** by
+> [`docs/superpowers/specs/2026-04-24-poc-design-port-design.md`](../superpowers/specs/2026-04-24-poc-design-port-design.md).
+> The rebuild's forward design direction comes from the
+> [`nawhas/new-design-poc`](https://github.com/nawhas/new-design-poc) prototype
+> (palette anchored on `#c9302c` + Inter / Fraunces / Noto Nastaliq Urdu), not from
+> the legacy production aesthetic this audit captures. The audit remains accurate
+> as a historical record of the legacy → rebuild gap; it should not be cited as
+> authority for forward token / typography decisions.
+
 This directory is the output of **Phase 2.1** of the rebuild roadmap. Two companion docs compare legacy production `nawhas.com` against the current rebuild — row-by-row for tokens and page-by-page for layouts — with the goal of scoping Phase 2.2 (primitives) and Phase 2.3 (page redesigns) as concrete, traceable work.
 
 ## Contents
