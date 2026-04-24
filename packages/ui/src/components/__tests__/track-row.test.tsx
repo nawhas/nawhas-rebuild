@@ -11,10 +11,10 @@ describe('TrackRow', () => {
     expect(link.getAttribute('href')).toBe('/track/kun-faya');
   });
 
-  it('links the reciter to /reciter/[slug]', () => {
+  it('links the reciter to /reciters/[slug]', () => {
     render(<TrackRow slug="kun-faya" title="Kun Faya" reciter="Ali Safdar" reciterSlug="ali-safdar" duration={245} />);
     const link = screen.getByRole('link', { name: 'Ali Safdar' });
-    expect(link.getAttribute('href')).toBe('/reciter/ali-safdar');
+    expect(link.getAttribute('href')).toBe('/reciters/ali-safdar');
   });
 
   it('formats duration as M:SS', () => {
@@ -82,7 +82,7 @@ describe('TrackRow', () => {
     expect(link.getAttribute('href')).toBe('/reciters/ali-safdar/albums/x/tracks/kun-faya');
   });
 
-  it('renders an aria-hidden placeholder instead of a reciter link when reciter is empty', () => {
+  it('omits the reciter cell entirely when reciter is empty (no dead grid space)', () => {
     const { container } = render(
       <TrackRow
         slug="x"
@@ -92,8 +92,11 @@ describe('TrackRow', () => {
         duration={100}
       />,
     );
-    // The aria-hidden span should be the second grid child (after the title link)
+    // Only the title link should render — no reciter link, no placeholder span.
     const links = container.querySelectorAll('a');
-    expect(links.length).toBe(1); // only the title link, no reciter link
+    expect(links.length).toBe(1);
+    // Grid template should drop the 180px reciter column.
+    const root = container.firstChild as HTMLElement;
+    expect(root.style.gridTemplateColumns).not.toContain('180px');
   });
 });

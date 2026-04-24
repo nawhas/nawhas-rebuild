@@ -43,9 +43,12 @@ export function TrackRow({
   leadingSlot,
 }: TrackRowProps): React.JSX.Element {
   const titleHref = href ?? `/track/${slug}`;
-  const gridTemplate = leadingSlot
-    ? 'auto 1fr 180px 100px 80px 80px'
-    : '1fr 180px 100px 80px 80px';
+  // When reciter is empty, drop the 180px reciter column entirely so the title
+  // takes the freed space instead of leaving dead grid area on every row.
+  const cols = ['1fr', reciter ? '180px' : null, '100px', '80px', '80px']
+    .filter(Boolean)
+    .join(' ');
+  const gridTemplate = leadingSlot ? `auto ${cols}` : cols;
   return (
     <div
       className="grid items-center gap-4 py-3"
@@ -58,15 +61,13 @@ export function TrackRow({
       >
         {title}
       </Link>
-      {reciter ? (
+      {reciter && (
         <Link
-          href={`/reciter/${reciterSlug}`}
+          href={`/reciters/${reciterSlug}`}
           className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
         >
           {reciter}
         </Link>
-      ) : (
-        <span aria-hidden="true" />
       )}
       <div className="text-sm text-[var(--text-faint)]">{poet || '—'}</div>
       <div className="text-sm text-[var(--text-faint)]">{formatDuration(duration)}</div>
