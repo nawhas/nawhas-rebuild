@@ -124,15 +124,22 @@ describe('ReciterGrid', () => {
     expect(screen.getByRole('link', { name: 'B' })).toBeDefined();
   });
 
-  it('groups non-alpha names under #', () => {
+  it('groups non-alpha names under # and places it at the end of the directory', () => {
     render(
       <ReciterGrid
-        initialItems={[makeReciter('1', '€uro Reciter')]}
+        initialItems={[
+          makeReciter('1', 'Ali Safdar'),
+          makeReciter('2', '€uro Reciter'),
+        ]}
         initialCursor={null}
       />,
     );
     expect(screen.getByRole('link', { name: '#' })).toBeDefined();
     expect(screen.getByRole('region', { name: /reciters starting with #/i })).toBeDefined();
+    const navLinks = screen
+      .getAllByRole('link')
+      .filter((link) => /^(#|[A-Z])$/.test(link.textContent ?? ''));
+    expect(navLinks.map((link) => link.textContent)).toEqual(['A', '#']);
   });
 
   it('re-groups Load More entries into their letter sections', async () => {

@@ -23,7 +23,14 @@ function groupByLetter(reciters: ReciterDTO[]): Map<string, ReciterDTO[]> {
     list.push(reciter);
     groups.set(letter, list);
   }
-  return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
+  return new Map(
+    [...groups.entries()].sort(([a], [b]) => {
+      // Put '#' (non-alpha bucket) at the end of the directory.
+      if (a === '#') return 1;
+      if (b === '#') return -1;
+      return a.localeCompare(b);
+    }),
+  );
 }
 
 /**
@@ -77,10 +84,9 @@ export function ReciterGrid({ initialItems, initialCursor }: ReciterGridProps): 
             key={letter}
             id={`letter-${letter}`}
             aria-label={`Reciters starting with ${letter}`}
-            className="scroll-mt-24"
+            className="scroll-mt-32"
           >
             <h2
-              id={`letter-${letter}-heading`}
               className="mb-4 font-serif text-2xl font-medium text-[var(--text)]"
             >
               {letter}
