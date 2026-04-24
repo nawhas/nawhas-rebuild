@@ -5,7 +5,7 @@ export default function RecitersLoading(): React.JSX.Element {
   return (
     <main className="py-10" aria-busy="true" aria-label="Loading reciters">
       <Container>
-        <div aria-hidden="true" className="mb-8 h-8 w-32 animate-pulse rounded bg-muted" />
+        <div aria-hidden="true" className="mb-8 h-8 w-32 animate-pulse rounded-[8px] bg-[var(--surface)]" />
         <ul
           role="list"
           className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"

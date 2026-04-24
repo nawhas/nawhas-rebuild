@@ -8,7 +8,7 @@ describe('Skeleton', () => {
     const el = container.firstChild as HTMLElement;
     expect(el.getAttribute('aria-hidden')).toBe('true');
     expect(el.className).toContain('animate-pulse');
-    expect(el.className).toContain('bg-muted');
+    expect(el.className).toContain('bg-[var(--surface)]');
   });
 
   it('applies additional className', () => {

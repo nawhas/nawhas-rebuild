@@ -12,7 +12,7 @@ export function Skeleton({ className = '' }: SkeletonProps): React.JSX.Element {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded bg-muted ${className}`}
+      className={`animate-pulse rounded-[8px] bg-[var(--surface)] ${className}`}
     />
   );
 }
