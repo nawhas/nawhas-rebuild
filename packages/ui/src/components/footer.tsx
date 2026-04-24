@@ -2,22 +2,24 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 /**
- * Site-wide footer with i18n strings, four-column grid, and a bottom
- * copyright bar. Pure presentation — links route to the rebuild's actual
- * routes (`/library`, `/reciters`, `/albums`, `/changes`, `/profile`,
- * `/contribute`, `/mod`).
+ * Site-wide footer *content* with i18n strings, four-column grid, and a
+ * bottom copyright bar. Pure presentation — links route to the rebuild's
+ * actual routes (`/library`, `/reciters`, `/albums`, `/changes`,
+ * `/profile`, `/contribute`, `/mod`).
  *
- * The component renders a `<footer>` landmark element. Note that the
- * shared `PageLayout` already wraps this slot in a `<footer
- * role="contentinfo">`, so this inner element exists primarily to keep
- * the component a self-contained landmark when used outside that layout.
+ * This component does NOT render its own `<footer>` landmark. It is
+ * intended to be rendered inside a parent `<footer>` element (typically
+ * the `<footer role="contentinfo">` provided by the shared `PageLayout`),
+ * which carries the landmark semantics. Rendering its own `<footer>`
+ * would create nested `contentinfo` landmarks and cause screen readers
+ * to announce two footers per page.
  */
 export function Footer(): React.JSX.Element {
   const t = useTranslations('footer');
   const year = new Date().getFullYear();
 
   return (
-    <footer
+    <div
       className="mt-30 border-t border-[var(--border)] bg-[var(--surface)] py-16"
     >
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-8 sm:grid-cols-2 md:grid-cols-4">
@@ -51,6 +53,6 @@ export function Footer(): React.JSX.Element {
       <div className="mx-auto mt-10 max-w-[1200px] border-t border-[var(--border)] px-8 pt-10 text-center text-xs text-[var(--text-faint)]">
         <p>{t('copyright', { year })}</p>
       </div>
-    </footer>
+    </div>
   );
 }

@@ -48,8 +48,8 @@ describe('Footer', () => {
     expect(screen.getByText(`© ${year} Nawhas. All rights reserved.`)).toBeDefined();
   });
 
-  it('uses a <footer> landmark', () => {
+  it('does not render its own <footer> element (parent provides the landmark)', () => {
     const { container } = render(<Footer />);
-    expect(container.querySelector('footer')).not.toBeNull();
+    expect(container.querySelector('footer')).toBeNull();
   });
 });
