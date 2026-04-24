@@ -261,7 +261,9 @@ test.describe('Audio playback — YouTube embed', () => {
     await watchTab.click();
     await expect(watchTab).toHaveAttribute('aria-selected', 'true');
 
-    const watchPanel = page.locator('#panel-watch');
+    // The Radix Tabs primitive auto-generates panel ids (`:r1:`-style), so
+    // selecting by role + accessible-name is the durable contract.
+    const watchPanel = page.getByRole('tabpanel', { name: 'Watch' });
     await expect(watchPanel).toBeVisible();
     await expect(watchPanel.locator('iframe')).toHaveAttribute(
       'src',

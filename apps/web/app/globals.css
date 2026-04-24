@@ -230,7 +230,13 @@
   --card-bg:       #ffffff;
   --text:          #0a0a0b;
   --text-dim:      #5a5a62;
-  --text-faint:    #8e8e98;
+  /* WCAG 2.1 AA: light-mode --text-faint must be at least 4.5:1 vs #ffffff
+   * for normal text. The POC's #8e8e98 (3.34:1) failed the home a11y axe scan
+   * (color-contrast rule) on the footer copyright + hero subtitle paragraphs.
+   * #6b6b70 ≈ 5.51:1 on white — passes AA. Matches the dark-mode value to
+   * keep the token meaning ("near-but-not-quite-disabled secondary text")
+   * symmetric across themes. */
+  --text-faint:    #6b6b70;
   --header-bg:     rgba(255, 255, 255, 0.8);
   --input-bg:      #f4f4f5;
   --border:        #e6e6e8;
@@ -278,7 +284,14 @@
   --card-bg:       #141416;
   --text:          #f5f5f7;
   --text-dim:      #a1a1a6;
-  --text-faint:    #6b6b70;
+  /* WCAG 2.1 AA: dark-mode --text-faint must be at least 4.5:1 vs #0a0a0b
+   * for normal text. The POC's #6b6b70 (≈ 3.75:1 on the dark bg) failed the
+   * axe color-contrast check on the home/auth/player surfaces (footer
+   * copyright + hero subtitle paragraphs). #8e8e98 ≈ 6.04:1 on the dark bg —
+   * passes AA. (Mirrors the light-mode value before we swapped it; the
+   * faint-text token is now mode-symmetric: each mode's token value is the
+   * other mode's lightness range.) */
+  --text-faint:    #8e8e98;
   --header-bg:     rgba(10, 10, 11, 0.7);
   --input-bg:      #1a1a1d;
   --border:        rgba(255, 255, 255, 0.1);
