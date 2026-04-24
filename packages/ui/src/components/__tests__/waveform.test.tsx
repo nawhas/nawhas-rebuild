@@ -4,6 +4,7 @@ import { Waveform } from '../waveform';
 
 const translations: Record<string, string> = {
   ariaLabel: 'Audio waveform — click to seek',
+  decorativeAriaLabel: 'Audio waveform (visual only)',
   barLabel: 'Seek to {percent}%',
 };
 vi.mock('next-intl', () => ({
@@ -52,8 +53,27 @@ describe('Waveform', () => {
     expect(screen.getByText('4:05')).toBeDefined();
   });
 
-  it('has an accessible region label', () => {
-    render(<Waveform slug="x" />);
+  it('has an interactive region label when onSeek is provided', () => {
+    render(<Waveform slug="x" onSeek={vi.fn()} />);
     expect(screen.getByRole('group', { name: 'Audio waveform — click to seek' })).toBeDefined();
+  });
+
+  it('has a decorative region label when onSeek is omitted', () => {
+    render(<Waveform slug="x" />);
+    expect(screen.getByRole('group', { name: 'Audio waveform (visual only)' })).toBeDefined();
+  });
+
+  it('renders bars as <div> (not <button>) when onSeek is omitted', () => {
+    const { container } = render(<Waveform slug="x" />);
+    const buttons = container.querySelectorAll('button[data-waveform-bar]');
+    const divs = container.querySelectorAll('div[data-waveform-bar]');
+    expect(buttons.length).toBe(0);
+    expect(divs.length).toBe(64);
+  });
+
+  it('renders em-dash when durationSec is omitted', () => {
+    render(<Waveform slug="x" />);
+    // 0:00 should not appear as the duration; em-dash should
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 });

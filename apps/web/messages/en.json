@@ -23,6 +23,7 @@
   },
   "waveform": {
     "ariaLabel": "Audio waveform — click to seek",
+    "decorativeAriaLabel": "Audio waveform (visual only)",
     "barLabel": "Seek to {percent}%"
   },
   "footer": {

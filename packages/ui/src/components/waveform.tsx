@@ -2,10 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
+import { cn } from '../lib/utils.js';
 
 export interface WaveformProps {
   slug: string;
-  durationSec?: number;
+  durationSec?: number | undefined;
   currentPercent?: number;
   onSeek?: (percent: number) => void;
 }
@@ -27,7 +28,8 @@ function buildBars(slug: string): number[] {
   return bars;
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(seconds: number | undefined): string {
+  if (seconds === undefined || seconds === null) return '—';
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${String(secs).padStart(2, '0')}`;
@@ -35,41 +37,51 @@ function formatDuration(seconds: number): string {
 
 export function Waveform({
   slug,
-  durationSec = 0,
+  durationSec,
   currentPercent = 0,
   onSeek,
 }: WaveformProps): React.JSX.Element {
   const t = useTranslations('waveform');
   const bars = useMemo(() => buildBars(slug), [slug]);
   const activeBar = Math.min(BAR_COUNT - 1, Math.floor((currentPercent / 100) * BAR_COUNT));
+  const isInteractive = typeof onSeek === 'function';
 
   return (
     <div className="pb-12">
       <div
         role="group"
-        aria-label={t('ariaLabel')}
-        className="flex items-center gap-[2px] h-[72px] mb-4 cursor-pointer"
+        aria-label={isInteractive ? t('ariaLabel') : t('decorativeAriaLabel')}
+        className={cn(
+          'flex items-center gap-[2px] h-[72px] mb-4',
+          isInteractive && 'cursor-pointer',
+        )}
       >
         {bars.map((height, idx) => {
           const isActive = idx === activeBar;
           const percent = Math.round((idx / BAR_COUNT) * 100);
-          return (
-            <button
-              key={idx}
-              type="button"
-              data-waveform-bar
-              data-active={isActive ? 'true' : 'false'}
-              aria-label={t('barLabel', { percent })}
-              onClick={() => onSeek?.(percent)}
-              className="flex-1 rounded-[2px] border-0 transition-colors"
-              style={{
-                background: isActive ? 'var(--accent-soft)' : 'var(--border)',
-                minHeight: '6px',
-                height: `${height}%`,
-                padding: 0,
-              }}
-            />
-          );
+          const sharedProps = {
+            'data-waveform-bar': true,
+            'data-active': isActive ? 'true' : 'false',
+            className: 'flex-1 rounded-[2px] border-0 transition-colors',
+            style: {
+              background: isActive ? 'var(--accent-soft)' : 'var(--border)',
+              minHeight: '6px',
+              height: `${height}%`,
+              padding: 0,
+            },
+          } as const;
+          if (isInteractive) {
+            return (
+              <button
+                key={idx}
+                type="button"
+                {...sharedProps}
+                aria-label={t('barLabel', { percent })}
+                onClick={() => onSeek?.(percent)}
+              />
+            );
+          }
+          return <div key={idx} {...sharedProps} />;
         })}
       </div>
       <div className="flex justify-between text-xs text-[var(--text-faint)]">

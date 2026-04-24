@@ -75,7 +75,7 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
         )}
 
         <div className="mt-6">
-          <Waveform slug={track.slug} durationSec={track.duration ?? 0} />
+          <Waveform slug={track.slug} durationSec={track.duration ?? undefined} />
         </div>
 
         {track.lyrics.length > 0 && (
