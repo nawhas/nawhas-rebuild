@@ -23,7 +23,8 @@ const createCaller = createCallerFactory(appRouter);
  * Reciters Listing Page
  *
  * Server Component — fetches the first page of reciters and passes initial
- * data + cursor to the ReciterGrid client component for "Load More" pagination.
+ * data + cursor to the ReciterGrid client component. Grid groups reciters
+ * by leading letter and emits A–Z anchor nav as the primary affordance.
  */
 export default async function RecitersPage(): Promise<React.JSX.Element> {
   setDefaultRequestLocale();
@@ -34,7 +35,9 @@ export default async function RecitersPage(): Promise<React.JSX.Element> {
   return (
     <div className="py-10">
       <Container>
-        <h1 className="mb-8 text-2xl font-bold text-foreground">{t('reciters')}</h1>
+        <h1 className="mb-8 font-serif text-[2.5rem] font-medium tracking-tight text-[var(--text)]">
+          {t('reciters')}
+        </h1>
         <ReciterGrid initialItems={items} initialCursor={nextCursor} />
       </Container>
     </div>
