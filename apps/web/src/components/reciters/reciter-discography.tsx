@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server';
 import type { AlbumDTO } from '@nawhas/types';
-import { SectionTitle } from '@nawhas/ui/components/section-title';
 import { LoadMoreAlbums } from '@/components/albums/load-more-albums';
 
 interface ReciterDiscographyProps {
@@ -10,10 +9,9 @@ interface ReciterDiscographyProps {
 }
 
 /**
- * Displays a reciter's discography as a paginated album grid.
+ * Reciter discography section — paginated album grid.
  *
- * Server Component — renders the section heading, then delegates the
- * interactive "Load More" grid to the <LoadMoreAlbums> client component.
+ * Server Component — renders heading + delegates the grid to LoadMoreAlbums.
  */
 export async function ReciterDiscography({
   reciterSlug,
@@ -24,10 +22,15 @@ export async function ReciterDiscography({
 
   return (
     <section aria-labelledby="discography-heading">
-      <SectionTitle id="discography-heading">{t('heading')}</SectionTitle>
+      <h2
+        id="discography-heading"
+        className="mb-6 font-serif text-2xl font-medium text-[var(--text)]"
+      >
+        {t('heading')}
+      </h2>
 
       {initialAlbums.length === 0 ? (
-        <p className="text-muted-foreground">{t('empty')}</p>
+        <p className="text-[var(--text-dim)]">{t('empty')}</p>
       ) : (
         <LoadMoreAlbums
           reciterSlug={reciterSlug}
