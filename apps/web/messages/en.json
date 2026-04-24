@@ -17,6 +17,11 @@
     "contribute": "Contribute",
     "moderatorDashboard": "Moderator Dashboard"
   },
+  "coverArt": {
+    "albumAlt": "Cover art for {label}",
+    "trackAlt": "Cover art for {label}",
+    "placeholderLabel": "Album cover"
+  },
   "footer": {
     "product": "Product",
     "browse": "Browse",
