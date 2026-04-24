@@ -59,6 +59,8 @@ export function CoverArt({
         src={artworkUrl}
         alt={altText}
         data-size={size}
+        loading="lazy"
+        decoding="async"
         style={{
           width: widthValue,
           height: heightValue,

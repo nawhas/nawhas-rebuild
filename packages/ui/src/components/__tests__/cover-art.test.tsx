@@ -50,4 +50,11 @@ describe('CoverArt', () => {
     expect(root.style.width).toBe('100%');
     expect(root.style.height).toBe('100%');
   });
+
+  it('marks the artwork-present <img> as lazy and async-decoded', () => {
+    render(<CoverArt slug="x" artworkUrl="https://example.com/a.png" label="A" />);
+    const img = screen.getByRole('img');
+    expect(img.getAttribute('loading')).toBe('lazy');
+    expect(img.getAttribute('decoding')).toBe('async');
+  });
 });
