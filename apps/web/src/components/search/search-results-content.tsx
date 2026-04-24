@@ -154,6 +154,7 @@ function AlbumResult({
           label={item.title}
           size="sm"
           fluid
+          elevation="flat"
         />
       </div>
       <div className="flex flex-col gap-0.5">
@@ -200,6 +201,7 @@ function TrackResult({
           label={item.albumTitle}
           size="sm"
           fluid
+          elevation="flat"
         />
       </div>
 
@@ -208,6 +210,12 @@ function TrackResult({
           <HighlightedText snippet={titleSnippet} fallback={item.title} />
         </p>
         <p className="truncate text-xs text-[var(--text-dim)]">
+          {item.trackNumber != null && (
+            <>
+              <span>Track {item.trackNumber}</span>
+              <span aria-hidden="true">{' · '}</span>
+            </>
+          )}
           <HighlightedText snippet={reciterSnippet} fallback={item.reciterName} />
           {' · '}
           <HighlightedText snippet={albumSnippet} fallback={item.albumTitle} />

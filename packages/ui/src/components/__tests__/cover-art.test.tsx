@@ -57,4 +57,10 @@ describe('CoverArt', () => {
     expect(img.getAttribute('loading')).toBe('lazy');
     expect(img.getAttribute('decoding')).toBe('async');
   });
+
+  it('omits the heroic boxShadow when elevation="flat"', () => {
+    const { container } = render(<CoverArt slug="x" label="A" elevation="flat" />);
+    const root = container.firstChild as HTMLElement;
+    expect(root.style.boxShadow).toBe('none');
+  });
 });

@@ -17,6 +17,13 @@ export interface CoverArtProps {
    * grid-cell sizes.
    */
   fluid?: boolean;
+  /**
+   * 'hero' (default) — heavy 0 40px 80px drop shadow, suitable for album-detail
+   * heroes (size="lg" or large fluid wrappers).
+   * 'flat' — no shadow, suitable for small thumbnails (search rows, sidebar
+   * tiles) where the heroic shadow would be clipped or visually disproportionate.
+   */
+  elevation?: 'hero' | 'flat';
 }
 
 const GRADIENTS = [
@@ -44,6 +51,7 @@ export function CoverArt({
   label,
   size = 'md',
   fluid = false,
+  elevation = 'hero',
 }: CoverArtProps): React.JSX.Element {
   const t = useTranslations('coverArt');
   const dims = SIZES[size];
@@ -51,6 +59,7 @@ export function CoverArt({
 
   const widthValue = fluid ? '100%' : dims.width;
   const heightValue = fluid ? '100%' : dims.height;
+  const shadowValue = elevation === 'flat' ? 'none' : '0 40px 80px rgba(0,0,0,0.4)';
 
   if (artworkUrl) {
     return (
@@ -66,7 +75,7 @@ export function CoverArt({
           height: heightValue,
           borderRadius: '16px',
           objectFit: 'cover',
-          boxShadow: '0 40px 80px rgba(0,0,0,0.4)',
+          boxShadow: shadowValue,
         }}
       />
     );
@@ -88,7 +97,7 @@ export function CoverArt({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        boxShadow: '0 40px 80px rgba(0,0,0,0.4)',
+        boxShadow: shadowValue,
         overflow: 'hidden',
       }}
     >
