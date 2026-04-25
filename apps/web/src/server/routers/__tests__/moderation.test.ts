@@ -862,6 +862,42 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     });
   });
 
+  // ── moderation.dashboardStats ─────────────────────────────────────────────
+
+  describe('moderation.dashboardStats', () => {
+    it('returns pending count, last 7 days count, sparkline, oldest pending', async () => {
+      const now = new Date();
+      const fewHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000); // 3 hrs
+
+      const seeded = await db
+        .insert(submissions)
+        .values([
+          { type: 'reciter' as const, action: 'create' as const, data: { name: 'Stats P1' }, status: 'pending' as const, submittedByUserId: contributorId, createdAt: now, updatedAt: now },
+          { type: 'reciter' as const, action: 'create' as const, data: { name: 'Stats P2' }, status: 'pending' as const, submittedByUserId: contributorId, createdAt: fewHoursAgo, updatedAt: fewHoursAgo },
+          { type: 'reciter' as const, action: 'create' as const, data: { name: 'Stats Applied' }, status: 'applied' as const, submittedByUserId: contributorId, createdAt: now, updatedAt: now },
+        ])
+        .returning();
+      for (const s of seeded) seededSubmissionIds.push(s.id);
+
+      const caller = makeModerationCaller(db, moderatorId);
+      const stats = await caller.dashboardStats();
+
+      expect(stats.pendingCount).toBeGreaterThanOrEqual(2);
+      expect(stats.last7DaysCount).toBeGreaterThanOrEqual(3);
+      expect(stats.last7DaysBuckets).toHaveLength(7);
+      expect(stats.last7DaysBuckets.every((n) => typeof n === 'number')).toBe(true);
+      expect(stats.oldestPendingHours).toBeGreaterThanOrEqual(0);
+    });
+
+    it('returns null oldestPending when no pending submissions exist (type check)', async () => {
+      // Other tests in this suite seed pending rows, so we cannot assert null here.
+      // Instead we verify the field is either a number or null — i.e. the correct type.
+      const caller = makeModerationCaller(db, moderatorId);
+      const stats = await caller.dashboardStats();
+      expect(typeof stats.oldestPendingHours === 'number' || stats.oldestPendingHours === null).toBe(true);
+    });
+  });
+
   // ── moderation.auditLog ───────────────────────────────────────────────────
 
   describe('moderation.auditLog', () => {

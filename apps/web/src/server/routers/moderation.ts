@@ -712,6 +712,71 @@ export const moderationRouter = router({
     }),
 
   /**
+   * Three numbers (+ a 7-bucket array) for the /mod overview cards.
+   *
+   * - pendingCount: pending + changes_requested submissions awaiting review
+   * - last7DaysCount: submissions received in the last 7 days
+   * - last7DaysBuckets: per-day counts oldest→newest (index 0 = 6 days ago, index 6 = today),
+   *   in UTC days
+   * - oldestPendingHours: age of the oldest pending submission, or null if none
+   */
+  dashboardStats: moderatorProcedure.query(async ({ ctx }): Promise<{
+    pendingCount: number;
+    last7DaysCount: number;
+    last7DaysBuckets: number[];
+    oldestPendingHours: number | null;
+  }> => {
+    const [pendingRow] = await ctx.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(submissions)
+      .where(inArray(submissions.status, ['pending', 'changes_requested']));
+
+    const [last7Row] = await ctx.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(submissions)
+      .where(sql`${submissions.createdAt} >= now() - interval '7 days'`);
+
+    // Per-day buckets, oldest first (6 days ago) → newest (today), all UTC.
+    // We compute the day offset as (today - createdAt::date) and group by that.
+    // Note: "offset" is a reserved word in PostgreSQL, so we use "day_offset".
+    const bucketRows = await ctx.db.execute<{ day_offset: number; n: number }>(sql`
+      SELECT
+        (CURRENT_DATE - ${submissions.createdAt}::date)::int AS day_offset,
+        COUNT(*)::int AS n
+      FROM ${submissions}
+      WHERE ${submissions.createdAt} >= CURRENT_DATE - interval '6 days'
+      GROUP BY day_offset
+    `);
+
+    // bucketRows is the postgres-js Drizzle response — iterate defensively via
+    // Array.isArray check (shape varies by driver version: direct array or .rows).
+    const bucketArray: number[] = [0, 0, 0, 0, 0, 0, 0];
+    const rows = Array.isArray(bucketRows) ? bucketRows : (bucketRows as { rows?: { day_offset: number; n: number }[] }).rows ?? [];
+    for (const row of rows) {
+      const offset = Number(row.day_offset);
+      const n = Number(row.n);
+      if (offset >= 0 && offset <= 6) {
+        // index 0 = 6 days ago = offset 6; index 6 = today = offset 0
+        bucketArray[6 - offset] = n;
+      }
+    }
+
+    const [oldestRow] = await ctx.db
+      .select({
+        hours: sql<number | null>`extract(epoch from (now() - min(${submissions.createdAt}))) / 3600`,
+      })
+      .from(submissions)
+      .where(eq(submissions.status, 'pending'));
+
+    return {
+      pendingCount: Number(pendingRow?.n ?? 0),
+      last7DaysCount: Number(last7Row?.n ?? 0),
+      last7DaysBuckets: bucketArray,
+      oldestPendingHours: oldestRow?.hours == null ? null : Number(oldestRow.hours),
+    };
+  }),
+
+  /**
    * Paginated audit log, newest first.
    * Supports optional filters: actor, action, targetType, from, to (date range, inclusive both ends).
    */
