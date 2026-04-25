@@ -15,7 +15,8 @@ import {
   SubmissionActionBadge,
   SubmissionStatusBadge,
 } from '@/components/mod/badges';
-import type { SubmissionDTO } from '@nawhas/types';
+import { ChangesRequestedBanner } from '@/components/contribute/changes-requested-banner';
+import type { SubmissionDTO, ResubmitContextDTO } from '@nawhas/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +58,15 @@ export default async function MyContributionDetailPage({
   const thread = await caller.submission.getMyReviewThread({ submissionId: id });
   const currentValues = await fetchCurrentValues(submission);
 
+  let resubmitCtx: ResubmitContextDTO | null = null;
+  if (submission.status === 'changes_requested') {
+    try {
+      resubmitCtx = await caller.submission.getResubmitContext({ id });
+    } catch {
+      resubmitCtx = null;
+    }
+  }
+
   const t = await getTranslations('profile.contributions');
   const tFields = await getTranslations('mod.submission');
 
@@ -78,6 +88,15 @@ export default async function MyContributionDetailPage({
         <SubmissionActionBadge action={submission.action} />
         <SubmissionStatusBadge status={submission.status} />
       </div>
+
+      {resubmitCtx && (
+        <ChangesRequestedBanner
+          comment={resubmitCtx.lastReviewComment}
+          reviewedAt={resubmitCtx.lastReviewedAt}
+          priorData={resubmitCtx.priorData as unknown as Record<string, unknown>}
+          currentData={submission.data as unknown as Record<string, unknown>}
+        />
+      )}
 
       {submission.notes && (
         <section
