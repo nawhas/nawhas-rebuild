@@ -293,6 +293,12 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
         .from(auditLog)
         .where(sql`(meta->>'submissionId') = ${submission.id}`);
       expect(auditRows).toHaveLength(0);
+
+      const reviewRows = await db
+        .select()
+        .from(submissionReviews)
+        .where(eq(submissionReviews.submissionId, submission.id));
+      expect(reviewRows).toHaveLength(0);
     });
 
     it('approve on a track edit upserts lyrics in the same transaction', async () => {
