@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 shipped (2026-04-25) · Phase 2.1c + 2.4 W2/W3 + Phase 3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 shipped (2026-04-25) · Phase 2.4 W2 shipped (2026-04-25) · Phase 2.1c + 2.4 W3 + Phase 3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-25
@@ -415,23 +415,124 @@ Refs:
 [`docs/superpowers/specs/2026-04-23-contributor-moderator-overhaul-design.md`](./2026-04-23-contributor-moderator-overhaul-design.md),
 [`docs/superpowers/plans/2026-04-23-w1-contribute-forms-plan.md`](../plans/2026-04-23-w1-contribute-forms-plan.md).
 
-### 2.4 W2 Moderation flow (not started)
+### 2.4 W2 Moderation flow ✅ shipped 2026-04-25
 
-Merge `moderation.review(approve)` + `applyApproved` into a single
-coherent action (approve-and-apply in one transaction by default; keep
-`applyApproved` only as a retry/backfill escape hatch). Surface
-approved-but-unapplied drift as a dashboard tab rather than an orphan
-state. Add internal moderator notes (`moderator_notes` column shipped
-in W1), render the full `submission_reviews` history as a chronological
-thread on the detail page, and add filter params (actor / action /
-targetType / date range) + expandable meta on `/mod/audit`. Extend the
-`/mod` dashboard with pending count, awaiting-apply count, 7-day
-throughput sparkline, and oldest-pending age.
+Shipped as 27 commits on `main` (`db9a661..68d0428`).
 
-Scope extends to include the public day-grouped `/changes` feed
-surfaced by Phase 2.5 (the public-facing twin of `/mod/audit`).
+**Server (heart of W2 — `b644585`):** `moderation.review(action='approved')`
+now writes the canonical entity inline in the same transaction as the
+review row + status update + audit log. Status motion `pending →
+applied` (skips `approved`). On any DB error inside the tx (slug
+collision, FK violation, etc.) the whole thing rolls back; submission
+stays `pending`. The canonical-write logic was extracted to a private
+`applyToCanonical(tx, submission)` helper shared by both `review` and
+the now-downgraded `applyApproved` (kept as ops escape hatch only —
+removed from the UI in `19c7d11`). The original spec's "Awaiting apply"
+queue tab was dropped because the merge makes it structurally
+unreachable.
 
-Own spec and plan will land before execution.
+One staging-only data wipe shipped as
+`apps/web/scripts/reset-approved-submissions.ts` (`fcc1594`) — flips
+any legacy `'approved'` rows back to `'pending'` so they go through
+the new merged flow.
+
+**New tRPC procedures:**
+
+| Commit | Procedure | Purpose |
+|---|---|---|
+| `253cd3c` | `moderation.setModeratorNotes` | Persists internal-only `moderator_notes`; audits `submission.notes_updated` with `meta.length` (note text deliberately not mirrored into audit) |
+| `8896670` | `moderation.getReviewThread` | Submitter + chronological reviews + applied bookend, joined for reviewer name + role |
+| `b200ebb` | `submission.getMyReviewThread` | Owner-scoped variant; reviewer names redacted to `''`, role to `null` |
+| `ec101a9` | `moderation.searchUsers` | Typeahead for the audit-log actor filter |
+| `3ae28f4` | `moderation.auditLog` extension | `actor` / `action` / `targetType` / `from` / `to` filter params, all AND-composed; date range inclusive on both ends |
+| `b9079bc` | `moderation.dashboardStats` | Pending count, last-7-days count, 7-bucket sparkline array, oldest-pending hours |
+| `407ada8`, `3ead332` | `home.recentChanges` | Public feed source — `submission.applied` audit rows joined to canonical entity for slug + title + avatar; cursor pagination correct under post-filter row drops |
+
+**Schema:** zero column additions (`moderator_notes` and the `applied`
+/ `withdrawn` enum values shipped in W1). One new index `audit_log_
+action_created_at_idx` on `(action, created_at desc)` (`db9a661`)
+supports the `/changes` feed query and the `/mod/audit` action filter.
+Two DTO additions in `@nawhas/types`: `ReviewThreadDTO` /
+`ReviewThreadEntryDTO` and `RecentChangeDTO`; plus a `moderatorNotes:
+string | null` field on `SubmissionDTO`.
+
+**UI:**
+
+- `<ModeratorNotes />` (`368291e`) — debounced (600ms) textarea above
+  review actions on `/mod/submissions/[id]`. Saves via a new
+  `setSubmissionModeratorNotes` server action. Visible only while the
+  submission is reviewable; never surfaced to the contributor.
+- `<ReviewThread />` (`462f58c`) — shared component used by both the
+  moderator detail page and the new contributor detail page (Task 16).
+  Renders bookends (submitted-by, applied-on) plus chronological review
+  rows with action badges, comments, and timestamps. The
+  `variant="contributor"` path skips reviewer-name rendering.
+- `<AuditFilters />` + `<AuditRow />` (`919ccc9`) — filter strip with
+  actor / action / target-type / date-range fields driving URL query
+  params; per-row chevron toggle expands the `meta` jsonb as a
+  key-value sub-row.
+- `<DashboardStats />` (`e352045`) — three stat cards on `/mod`
+  replacing the single-card grid; the 7-bar sparkline is plain CSS divs
+  (no chart lib) with a screen-reader-only mirror table.
+- New `/profile/contributions/[id]` route (`ba0c8a8`) — per-submission
+  contributor view with reviewer-redacted thread; listing rows now link
+  through. Same task extracted `<SubmissionFields>` and
+  `fetchCurrentValues` into shared helpers used by both detail pages.
+- New public `/changes` route (`737dd0a`) — day-grouped feed with
+  "Today" / "Yesterday" labels and a sticky day heading per section.
+  50-item initial fetch; "Load more" pagination deferred for now.
+- "Recent changes" link added to the public header nav (`ba12332`).
+
+**Tests:** 13 new unit tests across `moderation.test.ts`,
+`submission.test.ts`, and `home.test.ts` covering each new procedure +
+the merged-tx happy-path / FK-rollback / lyrics-upsert + the
+contributor-redaction behavior. 4 new component tests covering
+`<ModeratorNotes>` (debounce), `<ReviewThread>` (variant + bookends),
+`<AuditFilters>` (URL roundtrip + reset), `<DashboardStats>` (3
+cards + 7 bars + empty states). 3 new E2E specs in
+`apps/e2e/tests/moderation-w2.spec.ts` covering single-click
+approve-and-applies, audit filter URL + visible rows, and the public
+`/changes` feed surfacing the just-approved entity. The pre-existing
+two-step E2E tests in `moderation-flows.spec.ts` were marked `.skip`
+in `2c4b7d4` (`Approve and apply` describe block) since they assert
+the legacy two-button UI; they will be retired or rewritten in a
+follow-up.
+
+**Bugs caught in review (all fixed before commit):**
+
+| # | Caught by | Title | Resolution |
+|---|---|---|---|
+| 1 | spec reviewer (Task 3) | `submission_reviews` rollback on FK violation was untested | Added assertion in `fbc9415` |
+| 2 | spec reviewer (Task 3) | Merged-approve test seeded a reciter that wasn't tracked for `afterAll` cleanup | Track in `seededReciterIds` (`86d1053`) |
+| 3 | code-reviewer (Task 11) | `recentChanges` cursor advancement and `hasMore` heuristic both wrong under post-filter row drops (could produce duplicates AND spurious empty pages) | Track `processedCount` explicitly; cursor advances past dropped rows (`3ead332`) |
+| 4 | controller pre-merge (Task 16) | Privacy strip swapped — `notes` (submitter-facing) was being nulled on contributor responses while `moderatorNotes` (the actually-internal field) was leaking | Swap field name in all five strip sites (`875cafc`) |
+| 5 | searchUsers tests (Task 8 + Task 9) | Test queries didn't actually match seeded data; tests would have skipped at validation | Use `String(SUFFIX)` for substring scope, `'bobs-'` for the email-match (`101c4f5`, `51a4e21`) |
+
+**Verification:** `./dev qa` green throughout (typecheck + lint + 627
+unit tests). DB-backed integration tests pass when invoked directly
+inside the test container (turbo cache occasionally replays "skipped"
+when the test DB stack flips between dev and test overlays). E2E
+specs typecheck clean; not run end-to-end in this session because the
+web container went unhealthy mid-execution — the user should run
+`./dev test:e2e` in a clean environment as the final sanity gate.
+
+**Deferred follow-ups:**
+
+- E2E `moderation-flows.spec.ts` rewrite — the `.skip`-marked Apply-
+  button blocks need either deletion (replaced by `moderation-w2.spec.ts`)
+  or rewriting against the new merged flow.
+- Submitter avatar in `/changes` rows — folds into W3 (no per-user
+  avatar slot in the DB today).
+- "Regenerate slug" moderator-only button — listed as open in the W2
+  spec but not shipped here; can fold into W3 polish.
+- `<img>` lint-warning in `change-row.tsx` — pre-existing pattern in
+  the codebase, not a blocker.
+- Manual browser smoke of all five new surfaces — pending user
+  verification.
+
+Refs:
+[`docs/superpowers/specs/2026-04-25-phase-2-4-w2-moderation-flow-design.md`](./2026-04-25-phase-2-4-w2-moderation-flow-design.md),
+[`docs/superpowers/plans/2026-04-25-phase-2-4-w2-moderation-flow.md`](../plans/2026-04-25-phase-2-4-w2-moderation-flow.md).
 
 ### 2.4 W3 Contributor lifecycle (not started)
 
