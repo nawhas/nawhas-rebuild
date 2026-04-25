@@ -705,6 +705,20 @@
     "browseReciters": "Browse reciters",
     "recoveryNavLabel": "Recovery navigation"
   },
+  "changes": {
+    "pageTitle": "Recent changes",
+    "pageDescription": "Latest additions and edits to the catalogue.",
+    "groupToday": "Today",
+    "groupYesterday": "Yesterday",
+    "verbAddReciter": "added a reciter",
+    "verbEditReciter": "edited a reciter",
+    "verbAddAlbum": "added an album",
+    "verbEditAlbum": "edited an album",
+    "verbAddTrack": "added a track",
+    "verbEditTrack": "edited a track",
+    "loadMore": "Load more",
+    "empty": "No changes yet."
+  },
   "common": {
     "save": "Save to library",
     "unsave": "Remove from library",
