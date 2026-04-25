@@ -27,6 +27,7 @@ async function SiteHeaderBase({
     { href: '/', label: t('home') },
     { href: '/reciters', label: t('browseReciters') },
     { href: '/albums', label: t('browseAlbums') },
+    { href: '/changes', label: t('recentChanges') },
   ] as const satisfies ReadonlyArray<{ href: string; label: string }>;
 
   return (
