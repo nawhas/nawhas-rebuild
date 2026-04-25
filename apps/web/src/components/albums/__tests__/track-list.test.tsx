@@ -39,31 +39,31 @@ function makeTrack(id: string, title: string, trackNumber: number | null = null)
 }
 
 describe('TrackList', () => {
-  it('renders an ordered list with the correct aria-label (plural)', () => {
+  it('renders an ordered list with the correct aria-label (plural)', async () => {
     const tracks = [makeTrack('1', 'Track One'), makeTrack('2', 'Track Two')];
     render(
-      <TrackList tracks={tracks} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks, reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     const list = screen.getByRole('list', { name: '2 tracks' });
     expect(list.tagName).toBe('OL');
   });
 
-  it('renders an ordered list with singular aria-label for one track', () => {
+  it('renders an ordered list with singular aria-label for one track', async () => {
     const tracks = [makeTrack('1', 'Solo Track')];
     render(
-      <TrackList tracks={tracks} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks, reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     expect(screen.getByRole('list', { name: '1 track' })).toBeDefined();
   });
 
-  it('renders track titles in document order', () => {
+  it('renders track titles in document order', async () => {
     const tracks = [
       makeTrack('1', 'First Track'),
       makeTrack('2', 'Second Track'),
       makeTrack('3', 'Third Track'),
     ];
     render(
-      <TrackList tracks={tracks} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks, reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     const rows = screen.getAllByTestId('track-list-row');
     expect(rows[0]?.textContent).toBe('First Track');
@@ -71,10 +71,10 @@ describe('TrackList', () => {
     expect(rows[2]?.textContent).toBe('Third Track');
   });
 
-  it('passes correct href to each TrackListRow', () => {
+  it('passes correct href to each TrackListRow', async () => {
     const tracks = [makeTrack('1', 'Ya Hussain')];
     render(
-      <TrackList tracks={tracks} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks, reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     const row = screen.getByTestId('track-list-row');
     expect(row.getAttribute('data-href')).toBe(
@@ -82,33 +82,57 @@ describe('TrackList', () => {
     );
   });
 
-  it('uses trackNumber from track when set, falling back to index+1', () => {
+  it('uses trackNumber from track when set, falling back to index+1', async () => {
     const tracks = [
       makeTrack('1', 'Track A', 5),
       makeTrack('2', 'Track B', null), // no trackNumber → index 1 → fallback 2
     ];
     render(
-      <TrackList tracks={tracks} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks, reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     const rows = screen.getAllByTestId('track-list-row');
     expect(rows[0]?.getAttribute('data-track-number')).toBe('5');
     expect(rows[1]?.getAttribute('data-track-number')).toBe('2');
   });
 
-  it('shows "No tracks available yet." when tracks array is empty', () => {
+  it('shows "No tracks available yet." when tracks array is empty', async () => {
     render(
-      <TrackList tracks={[]} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks: [], reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     expect(screen.getByText('No tracks available yet.')).toBeDefined();
     expect(screen.queryByRole('list')).toBeNull();
   });
 
-  it('renders within a section labelled by the "Tracks" heading', () => {
+  it('renders within a section labelled by the "Tracks" heading', async () => {
     const tracks = [makeTrack('1', 'Track One')];
     render(
-      <TrackList tracks={tracks} reciterSlug="ali-safdar" albumSlug="panjtan-pak" />,
+      await TrackList({ tracks, reciterSlug: 'ali-safdar', albumSlug: 'panjtan-pak' }),
     );
     const section = screen.getByRole('region', { name: 'Tracks' });
     expect(section).toBeDefined();
+  });
+
+  it('omits the "Add track" pill when no addTrackHref is provided', async () => {
+    render(
+      await TrackList({
+        tracks: [makeTrack('1', 'Track One')],
+        reciterSlug: 'ali-safdar',
+        albumSlug: 'panjtan-pak',
+      }),
+    );
+    expect(screen.queryByRole('link', { name: /Add track/i })).toBeNull();
+  });
+
+  it('renders the "+ Add track" pill linking to addTrackHref when provided', async () => {
+    render(
+      await TrackList({
+        tracks: [makeTrack('1', 'Track One')],
+        reciterSlug: 'ali-safdar',
+        albumSlug: 'panjtan-pak',
+        addTrackHref: '/contribute/track/new',
+      }),
+    );
+    const link = screen.getByRole('link', { name: /Add track/i });
+    expect(link.getAttribute('href')).toBe('/contribute/track/new');
   });
 });

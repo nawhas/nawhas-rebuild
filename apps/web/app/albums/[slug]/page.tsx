@@ -68,6 +68,7 @@ export default async function AlbumPage({ params }: AlbumPageProps): Promise<Rea
             tracks={album.tracks}
             reciterSlug={album.reciterSlug}
             albumSlug={album.slug}
+            addTrackHref="/contribute/track/new"
           />
         </div>
       </Container>

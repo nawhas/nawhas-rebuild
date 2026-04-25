@@ -27,7 +27,7 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Reciters list | ⬜ | Close — A–Z filter unclear |
 | Reciter detail | ⬜ | URL path changed; layout close |
 | Albums list | ⬜ | Close — year filter removed |
-| Album detail | ⬜ | Close — componentized |
+| Album detail | ✅ | Aligned — dropped card chrome, eyebrow + description + action pills, accent-soft reciter link, +Add track in tracks header |
 | Track detail | ✅ | Aligned — kept nested URL; new POC hero, breadcrumb, sidebar, lyrics empty-state; YouTube simplified |
 | Library | ⬜ | Differs significantly (paradigm change) |
 | Dashboard | ⬜ | Close — sidebar widget differs |
@@ -218,22 +218,29 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 8. Album detail
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done — all 4 decisions resolved
 
 **POC:** `src/app/album/[slug]/page.tsx`
 **Current:** `apps/web/app/albums/[slug]/page.tsx`
 
 **Findings:**
-- URL matches: `/albums/[slug]`.
-- Layout matches: 320px cover + title + reciter link + year + description + buttons + track list.
-- Current extracted `AlbumHeader` + `PlayAllButton` + `TrackList` components.
-- Visual: POC inline `48px` Fraunces title; Current responsive `text-[2.5rem]→[3.5rem]` serif.
-- "Suggest edit" / "Add track" buttons present in both.
+- URL matches: `/albums/[slug]` (POC singular `/album/[slug]` was a prototype detail).
+- POC header: plain 2-col grid (320px cover + content), no card chrome. "ALBUM" eyebrow, 48px Fraunces title, reciter link in `var(--accent-soft)` (red), "Released YYYY" line, optional description, action pills.
+- Current header: bordered card with the cover and title; smaller serif title (2.5→3.5rem); reciter link in `var(--text-dim)` (grey); year+track-count inline; no description; no action pills.
+- Track list: POC has "+ Add track" pill in the heading row. Current didn't.
+- `<PlayAllButton>` is a Current-only feature (POC has no audio).
 
-**Decisions needed:**
-- [ ] Confirm visual sizing matches POC at desktop breakpoint.
+**Decisions:**
+- [x] **D1: Header chrome** — Drop the card. Header now a plain 2-col grid `[320px_1fr]` with 60px gap.
+- [x] **D2: Header content** — Match POC fully: "ALBUM" eyebrow, "Released YYYY" prefix, description paragraph (max-w-500), and action pills "Suggest edit" + "Add track to album".
+- [x] **D3: Reciter link styling** — `var(--accent-soft)` from rest, hover → `var(--accent)` (matches POC's coloured-link treatment).
+- [x] **D4: Tracks section** — Keep `<PlayAllButton>` (production feature) AND add a small "+ Add track" pill in the tracks heading row (per POC).
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ AlbumHeader rewritten: `apps/web/src/components/albums/album-header.tsx`. Now async server component with `getTranslations`; eyebrow + description + action pills + POC reciter colour. Tests rewritten in `__tests__/album-header.test.tsx`.
+- ✅ TrackList: `apps/web/src/components/albums/track-list.tsx` — added optional `addTrackHref` prop and a small bordered pill in the heading row. Now async (uses i18n). Tests updated in `__tests__/track-list.test.tsx` with new coverage for the pill.
+- ✅ Page: `apps/web/app/albums/[slug]/page.tsx` passes `addTrackHref="/contribute/track/new"` into TrackList.
+- ✅ i18n: new `albumDetail` namespace with `eyebrow`, `releasedPrefix`, `suggestEdit`, `addTrack`, `addTrackShort`, `tracksHeading` keys.
 
 ---
 
