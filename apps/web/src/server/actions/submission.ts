@@ -91,9 +91,12 @@ export async function resubmitSubmission(
 }
 
 /** Fetch the authenticated user's submission history. */
-export async function fetchMySubmissions(cursor?: string): Promise<PaginatedResult<SubmissionDTO>> {
+export async function fetchMySubmissions(
+  cursor?: string,
+  status: 'all' | 'pending' | 'approved' = 'all',
+): Promise<PaginatedResult<SubmissionDTO>> {
   const caller = await getAuthenticatedCaller('submission.fetchMySubmissions');
-  return caller.submission.myHistory({ limit: 20, cursor });
+  return caller.submission.myHistory({ limit: 20, cursor, status });
 }
 
 /** Fetch a single submission (own or moderator). */
