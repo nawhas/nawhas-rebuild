@@ -34,17 +34,6 @@ export async function reviewSubmission(
 }
 
 /**
- * Apply an approved submission to the canonical tables.
- * Moderator only.
- */
-export async function applySubmission(
-  submissionId: string,
-): Promise<{ success: true; entityId: string }> {
-  const caller = await getModeratorCaller('moderation.applySubmission');
-  return caller.moderation.applyApproved({ submissionId });
-}
-
-/**
  * Promote or demote a user's role.
  * Moderator only.
  */

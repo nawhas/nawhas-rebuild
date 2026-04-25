@@ -15,7 +15,6 @@ import {
 } from '@/components/mod/badges';
 import { FieldDiff, DataPreview } from '@/components/mod/field-diff';
 import { ReviewActions } from '@/components/mod/review-actions';
-import { ApplyButton } from '@/components/mod/apply-button';
 import type {
   ReciterSubmissionData,
   AlbumSubmissionData,
@@ -66,7 +65,6 @@ export default async function SubmissionDetailPage({
   const currentValues = await fetchCurrentValues(submission);
 
   const canReview = submission.status === 'pending' || submission.status === 'changes_requested';
-  const canApply = submission.status === 'approved';
 
   const t = await getTranslations('mod.submission');
 
@@ -133,7 +131,6 @@ export default async function SubmissionDetailPage({
 
         {/* Review actions */}
         {canReview && <ReviewActions submissionId={submission.id} />}
-        {canApply && <ApplyButton submissionId={submission.id} />}
       </div>
 
       {/* Metadata sidebar */}
