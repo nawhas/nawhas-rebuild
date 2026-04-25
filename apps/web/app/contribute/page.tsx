@@ -55,7 +55,7 @@ export default async function ContributePage(): Promise<React.JSX.Element> {
           {t('yourContributionsHeading')}
         </h2>
         <Link
-          href="/profile/contributions"
+          href="/dashboard"
           className="inline-flex items-center gap-2 rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-5 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
         >
           {t('viewHistory')}

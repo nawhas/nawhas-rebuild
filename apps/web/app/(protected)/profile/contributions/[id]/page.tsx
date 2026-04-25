@@ -74,7 +74,7 @@ export default async function MyContributionDetailPage({
   return (
     <main id="main-content" className="mx-auto max-w-3xl py-10 px-4">
       <Link
-        href="/profile/contributions"
+        href="/dashboard"
         className="mb-6 inline-flex items-center gap-1 text-sm text-[var(--text-dim)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       >
         {t('detailBackLink')}

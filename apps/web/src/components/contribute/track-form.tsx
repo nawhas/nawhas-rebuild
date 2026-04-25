@@ -142,7 +142,7 @@ export function TrackForm({
         await createTrackSubmission(action, data, targetId);
         draft.clear();
         if (onSuccess) onSuccess();
-        else router.push('/profile/contributions');
+        else router.push('/dashboard');
       } catch (err) {
         setServerError(err instanceof Error ? err.message : t('form.genericFailure'));
       }

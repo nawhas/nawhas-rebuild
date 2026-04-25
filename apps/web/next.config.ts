@@ -74,6 +74,19 @@ const nextConfig: NextConfig = {
         : []),
     ],
   },
+  async redirects() {
+    return [
+      // The submission-history list lives at /dashboard now; the bare
+      // /profile/contributions URL was removed in W3 (the per-id detail
+      // pages /profile/contributions/[id] remain reachable via the
+      // dashboard tabs and email links).
+      {
+        source: '/profile/contributions',
+        destination: '/dashboard',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     const securityHeaders = [
       { key: 'X-Content-Type-Options', value: 'nosniff' },
