@@ -202,8 +202,11 @@ export const homeRouter = router({
         );
 
       const items: RecentChangeDTO[] = [];
+      let processedCount = 0;
+
       for (const r of rows) {
         if (items.length >= limit) break;
+        processedCount++;
         if (!r.targetId) continue;
         if (r.targetType === 'reciter') {
           const ent = reciterMap.get(r.targetId);
@@ -247,10 +250,10 @@ export const homeRouter = router({
         }
       }
 
-      const lastIncludedSourceRow = rows[items.length - 1];
-      const hasMore = rows.length > items.length;
-      const nextCursor = hasMore && lastIncludedSourceRow
-        ? encodeCursor(lastIncludedSourceRow.createdAt, lastIncludedSourceRow.id)
+      const lastProcessed = processedCount > 0 ? rows[processedCount - 1] : null;
+      const hasMore = rows.length > processedCount;
+      const nextCursor = hasMore && lastProcessed
+        ? encodeCursor(lastProcessed.createdAt, lastProcessed.id)
         : null;
 
       return { items, nextCursor };
