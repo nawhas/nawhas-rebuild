@@ -14,6 +14,7 @@ import { accountRouter } from '../routers/account';
 import { submissionRouter } from '../routers/submission';
 import { moderationRouter } from '../routers/moderation';
 import { contributeRouter } from '../routers/contribute';
+import { accessRequestsRouter } from '../routers/accessRequests';
 
 export const appRouter = router({
   health: publicProcedure.query(() => ({ status: 'ok' as const })),
@@ -28,6 +29,7 @@ export const appRouter = router({
   history: historyRouter,
   profile: profileRouter,
   account: accountRouter,
+  accessRequests: accessRequestsRouter,
   submission: submissionRouter,
   moderation: moderationRouter,
   contribute: contributeRouter,
