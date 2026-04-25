@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { inArray } from 'drizzle-orm';
-import { reciters, albums, tracks, users, auditLog } from '@nawhas/db';
+import { eq, inArray } from 'drizzle-orm';
+import { reciters, albums, tracks, users, auditLog, submissions } from '@nawhas/db';
 import { createTestDb, isDbAvailable, makeHomeCaller, makeModerationCaller, makeSubmissionCaller, type TestDb } from './helpers';
 
 const dbAvailable = await isDbAvailable();
@@ -87,8 +87,12 @@ afterAll(async () => {
     await db.delete(auditLog).where(inArray(auditLog.actorUserId, seededUserIds));
   }
   if (seededSubmissionIds.length > 0) {
-    const { submissions } = await import('@nawhas/db');
     await db.delete(submissions).where(inArray(submissions.id, seededSubmissionIds));
+  }
+  // W3 contributorProfile/Heatmap tests insert submissions without tracking IDs;
+  // sweep all submissions by any seeded user id.
+  if (seededUserIds.length > 0) {
+    await db.delete(submissions).where(inArray(submissions.submittedByUserId, seededUserIds));
   }
   // Cascade deletes handle tracks/albums when reciters are removed.
   if (seededReciterIds.length > 0) {
@@ -204,6 +208,78 @@ describe('home.recentChanges', () => {
     expect(
       res.items.every((i) => ['reciter', 'album', 'track'].includes(i.entityType)),
     ).toBe(true);
+  });
+});
+
+// ── home.contributorProfile / contributorHeatmap (W3) ─────────────────────
+
+async function seedUserForProfile(role: 'user' | 'contributor' | 'moderator'): Promise<string> {
+  const id = `home-w3-${role}-${seededUserIds.length}-${SUFFIX}`;
+  const now = new Date();
+  await db.insert(users).values({
+    id,
+    name: 'Test User',
+    email: `${id}@example.com`,
+    emailVerified: true,
+    role,
+    createdAt: now,
+    updatedAt: now,
+  });
+  seededUserIds.push(id);
+  return id;
+}
+
+describe('home.contributorProfile (W3)', () => {
+  it('returns null for unknown username', async () => {
+    const caller = makeHomeCaller(db);
+    const out = await caller.contributorProfile({ username: 'no-such-user-xyz' });
+    expect(out).toBeNull();
+  });
+
+  it('returns DTO for known username with stats', async () => {
+    const userId = await seedUserForProfile('contributor');
+    // Set the user's username via direct update (signup flow not invoked in tests).
+    await db.update(users).set({ name: 'Alex Doe', username: `prof-${SUFFIX}` }).where(eq(users.id, userId));
+    // Seed two applied + one pending submission.
+    await db.insert(submissions).values([
+      { type: 'reciter', action: 'create', data: { name: 'A' }, status: 'applied', submittedByUserId: userId },
+      { type: 'reciter', action: 'create', data: { name: 'B' }, status: 'applied', submittedByUserId: userId },
+      { type: 'reciter', action: 'create', data: { name: 'C' }, status: 'pending', submittedByUserId: userId },
+    ]);
+    const caller = makeHomeCaller(db);
+    const out = await caller.contributorProfile({ username: `prof-${SUFFIX}` });
+    expect(out?.username).toBe(`prof-${SUFFIX}`);
+    expect(out?.stats.total).toBe(3);
+    expect(out?.stats.approved).toBe(2);
+    expect(out?.stats.pending).toBe(1);
+    expect(out?.stats.approvalRate).toBeCloseTo(2 / 3, 2);
+  });
+
+  it('looks up case-insensitively', async () => {
+    const userId = await seedUserForProfile('contributor');
+    await db.update(users).set({ username: `mixedcase-${SUFFIX}` }).where(eq(users.id, userId));
+    const caller = makeHomeCaller(db);
+    const out = await caller.contributorProfile({ username: `MixedCase-${SUFFIX}` });
+    expect(out?.userId).toBe(userId);
+  });
+});
+
+describe('home.contributorHeatmap (W3)', () => {
+  it('returns dense buckets for the year', async () => {
+    const userId = await seedUserForProfile('contributor');
+    const username = `hm-${SUFFIX}`;
+    await db.update(users).set({ username }).where(eq(users.id, userId));
+    // Seed two submissions today.
+    await db.insert(submissions).values([
+      { type: 'reciter', action: 'create', data: { name: 'X' }, status: 'pending', submittedByUserId: userId },
+      { type: 'reciter', action: 'create', data: { name: 'Y' }, status: 'pending', submittedByUserId: userId },
+    ]);
+    const caller = makeHomeCaller(db);
+    const out = await caller.contributorHeatmap({ username });
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const today = new Date().toISOString().slice(0, 10);
+    const todayRow = out.find((b) => b.date === today);
+    expect(todayRow?.count).toBeGreaterThanOrEqual(2);
   });
 });
 

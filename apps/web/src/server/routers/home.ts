@@ -3,7 +3,7 @@ import { and, asc, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import { albums, auditLog, reciters, submissions, tracks, userSavedTracks, users } from '@nawhas/db';
 import { router, protectedProcedure, publicProcedure } from '../trpc/trpc';
-import type { FeaturedDTO, PaginatedResult, RecentChangeDTO, TrackListItemDTO } from '@nawhas/types';
+import type { ContributorHeatmapBucketDTO, ContributorProfileDTO, FeaturedDTO, PaginatedResult, RecentChangeDTO, TrackListItemDTO } from '@nawhas/types';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
 
 // Number of featured items per category returned on the home page.
@@ -292,5 +292,100 @@ export const homeRouter = router({
         .where(eq(userSavedTracks.userId, ctx.user.id))
         .orderBy(desc(userSavedTracks.savedAt), desc(userSavedTracks.trackId))
         .limit(limit);
+    }),
+
+  /**
+   * Public contributor profile lookup by username (case-insensitive).
+   * Returns null on unknown username (route renders 404).
+   * Stats: total / approved (status=applied) / pending (pending+changes_requested) /
+   * approvalRate = approved / (total - withdrawn).
+   */
+  contributorProfile: publicProcedure
+    .input(z.object({ username: z.string().min(1).max(64) }))
+    .query(async ({ ctx, input }): Promise<ContributorProfileDTO | null> => {
+      const [user] = await ctx.db
+        .select({
+          id: users.id,
+          name: users.name,
+          username: users.username,
+          bio: users.bio,
+          trustLevel: users.trustLevel,
+        })
+        .from(users)
+        .where(sql`lower(${users.username}) = lower(${input.username})`)
+        .limit(1);
+      if (!user || !user.username) return null;
+
+      const [agg] = await ctx.db
+        .select({
+          total: sql<number>`count(*)::int`,
+          approved: sql<number>`count(*) filter (where status = 'applied')::int`,
+          pending: sql<number>`count(*) filter (where status in ('pending', 'changes_requested'))::int`,
+          withdrawn: sql<number>`count(*) filter (where status = 'withdrawn')::int`,
+        })
+        .from(submissions)
+        .where(eq(submissions.submittedByUserId, user.id));
+
+      const total = Number(agg?.total ?? 0);
+      const approved = Number(agg?.approved ?? 0);
+      const pending = Number(agg?.pending ?? 0);
+      const withdrawn = Number(agg?.withdrawn ?? 0);
+      const denom = total - withdrawn;
+      const approvalRate = denom > 0 ? approved / denom : 0;
+
+      const initials = user.name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase() ?? '')
+        .join('');
+
+      return {
+        userId: user.id,
+        username: user.username,
+        name: user.name,
+        bio: user.bio,
+        trustLevel: user.trustLevel as ContributorProfileDTO['trustLevel'],
+        avatarInitials: initials || '·',
+        stats: { total, approved, pending, approvalRate },
+      };
+    }),
+
+  /**
+   * Public contributor activity heatmap. Returns dense buckets — only days
+   * with count > 0 — so transmitting 365 zeros is avoided. UI fills the grid
+   * client-side from the year start.
+   */
+  contributorHeatmap: publicProcedure
+    .input(
+      z.object({
+        username: z.string().min(1).max(64),
+        year: z.number().int().min(2020).max(2100).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<ContributorHeatmapBucketDTO[]> => {
+      const [user] = await ctx.db
+        .select({ id: users.id })
+        .from(users)
+        .where(sql`lower(${users.username}) = lower(${input.username})`)
+        .limit(1);
+      if (!user) return [];
+
+      const year = input.year ?? new Date().getUTCFullYear();
+      const yearStart = new Date(Date.UTC(year, 0, 1));
+      const yearEnd = new Date(Date.UTC(year + 1, 0, 1));
+
+      const buckets = await ctx.db.execute<{ d: string; n: number }>(sql`
+        SELECT to_char(${submissions.createdAt} at time zone 'UTC', 'YYYY-MM-DD') AS d,
+               COUNT(*)::int AS n
+        FROM ${submissions}
+        WHERE ${submissions.submittedByUserId} = ${user.id}
+          AND ${submissions.createdAt} >= ${yearStart.toISOString()}
+          AND ${submissions.createdAt} < ${yearEnd.toISOString()}
+        GROUP BY d
+        ORDER BY d ASC
+      `);
+      const rows = Array.isArray(buckets) ? buckets : (buckets as { rows?: { d: string; n: number }[] }).rows ?? [];
+      return rows.map((r) => ({ date: String(r.d), count: Number(r.n) }));
     }),
 });
