@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
-import { Button } from '@nawhas/ui/components/button';
 import { createAlbumSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 import { ImageUpload } from '@/components/contribute/image-upload';
@@ -132,39 +131,38 @@ export function AlbumForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
       {draft.draft && !draftRestored && (
         <div
           role="status"
-          className="rounded-md border border-info-200 bg-info-50 px-4 py-3 dark:border-info-800 dark:bg-info-950"
+          className="rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3"
         >
-          <p className="text-sm text-info-900 dark:text-info-100">
+          <p className="text-sm text-[var(--text)]">
             {t('draft.restorePrompt', {
               days: Math.floor((draft.ageMs ?? 0) / 86_400_000),
             })}
           </p>
           <div className="mt-2 flex gap-2">
-            <Button
+            <button
               type="button"
-              size="sm"
               onClick={() => {
                 setValues(draft.draft!);
                 setDraftRestored(true);
               }}
+              className="rounded-[8px] bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               {t('draft.restore')}
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              size="sm"
-              variant="ghost"
               onClick={() => {
                 draft.clear();
                 setDraftRestored(true);
               }}
+              className="rounded-[8px] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--input-bg)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               {t('draft.discard')}
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -229,9 +227,9 @@ export function AlbumForm({
           maxLength={1000}
           rows={4}
           placeholder={t('album.descriptionPlaceholder')}
-          className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+          className="w-full resize-y rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
         />
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-[13px] text-[var(--text-faint)]">
           {t('form.charCount', { count: values.description.length, max: 1000 })}
         </p>
       </FormField>
@@ -246,14 +244,21 @@ export function AlbumForm({
       </FormField>
 
       {serverError && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-[13px] text-[var(--color-error-500)]">
           {serverError}
         </p>
       )}
 
-      <Button type="submit" disabled={isPending} aria-busy={isPending}>
-        {isPending ? t('form.submitting') : t('form.submit')}
-      </Button>
+      <div className="flex items-center justify-end gap-3">
+        <button
+          type="submit"
+          disabled={isPending}
+          aria-busy={isPending}
+          className="rounded-[8px] bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
+        >
+          {isPending ? t('form.submitting') : t('form.submit')}
+        </button>
+      </div>
     </form>
   );
 }

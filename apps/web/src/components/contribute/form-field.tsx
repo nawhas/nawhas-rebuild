@@ -40,18 +40,18 @@ export function FormField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-foreground">
+      <label htmlFor={id} className="mb-2 block text-[13px] font-medium text-[var(--text-dim)]">
         {label}
-        {required && <span aria-hidden="true" className="ml-0.5 text-destructive">*</span>}
+        {required && <span aria-hidden="true" className="ml-0.5 text-[var(--color-error-500)]">*</span>}
       </label>
       {child}
       {hint && !error && (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-muted-foreground">
+        <p id={`${id}-hint`} className="mt-2 text-[13px] text-[var(--text-faint)]">
           {hint}
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-destructive">
+        <p id={`${id}-error`} role="alert" className="mt-2 text-[13px] text-[var(--color-error-500)]">
           {error}
         </p>
       )}
@@ -66,7 +66,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function Input({ id, error, hint, className = '', ...rest }: InputProps): React.JSX.Element {
-  const errorClasses = error ? 'border-destructive focus-visible:ring-destructive' : '';
+  const errorClasses = error ? 'border-[var(--color-error-500)] focus-visible:outline-[var(--color-error-500)]' : '';
   return (
     <UiInput
       id={id}

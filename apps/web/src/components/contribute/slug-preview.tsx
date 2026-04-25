@@ -21,8 +21,8 @@ export function SlugPreview({ source, template }: SlugPreviewProps): React.JSX.E
   if (!slug) return null;
   const url = template.replace('{slug}', slug);
   return (
-    <p className="mt-1 text-xs text-muted-foreground">
-      {t('preview', { url })}
+    <p className="mt-1 text-[13px] text-[var(--text-faint)]">
+      <span className="font-mono text-[var(--text-dim)]">{t('preview', { url })}</span>
       <span className="ml-1 opacity-75">{t('collisionNote')}</span>
     </p>
   );

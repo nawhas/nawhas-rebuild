@@ -98,6 +98,25 @@ The rule:
 
 This vocabulary is intentionally narrow. Anything not specified above defaults to the corresponding Phase B component or POC reference. If a Phase C row needs a treatment that this doc does not cover, extend this doc as part of that row's commit.
 
+## Contribute landing (`/contribute`)
+
+- Centered single column, `Container` width.
+- Page heading: `font-serif` 36–48px weight 500 — "Contribute".
+- Sub-copy: `text-[var(--text-dim)] text-base mb-8` — one paragraph.
+- **"Create new" grid:** 3 cards in a `grid grid-cols-1 sm:grid-cols-3 gap-4`. Each card is `bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-6 hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors block`. Inside each card: 24px icon (color `var(--accent)`), serif h3 24px weight 500, body copy `text-[var(--text-dim)]`.
+- **"Recent contributions" section:** below the grid, h2 serif 24px, then `<ContributionList>`.
+
+## Form layout (contribute wizards)
+
+- **Page wrapper:** `Container size="md"` for the form viewport (max-width ~720px).
+- **Breadcrumb:** Inter 13px `text-[var(--text-dim)]`, separator `/` in `text-[var(--text-faint)]`. Current page name in `text-[var(--text)]`.
+- **Page heading:** serif 36px weight 500. Subtitle below: `text-base text-[var(--text-dim)]`.
+- **Form card:** `bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-8 mt-6`.
+- **Field stack, labels, inputs, errors, help text:** per existing Forms vocab.
+- **Action row:** sticky-bottom or fixed at form end, `flex items-center justify-end gap-3`. Cancel = secondary CTA, Submit = primary CTA.
+- **Image / audio uploaders:** dropzone is `border-2 border-dashed border-[var(--border)] rounded-[12px] p-8 text-center text-[var(--text-dim)] hover:border-[var(--accent)] transition-colors`. Selected-file preview keeps existing thumb but swaps wrapper to `bg-[var(--surface-2)] rounded-[8px] p-3`.
+- **Lyrics tabs:** tab strip `border-b border-[var(--border)]`, each tab `px-4 py-2 text-sm text-[var(--text-dim)] data-[state=active]:text-[var(--text)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)]`.
+
 ---
 
 ## Lighthouse canary — Phase B end (2026-04-24)

@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
-import { Button } from '@nawhas/ui/components/button';
 import { resubmitSubmission } from '@/server/actions/submission';
 import { FormField, Input } from '@/components/contribute/form-field';
 import type { SubmissionDTO, ReciterSubmissionData, AlbumSubmissionData, TrackSubmissionData } from '@nawhas/types';
@@ -70,22 +69,22 @@ function ReciterResubmitFields({ submission, onSuccess, onCancel }: ResubmitForm
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
-      <p className="text-xs font-medium text-warning-700 dark:text-warning-300">{t('form.resubmitHeading')}</p>
+    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-[12px] border border-[var(--color-warning-200)] bg-[var(--color-warning-50)] p-4 dark:border-[var(--color-warning-800)] dark:bg-[var(--color-warning-950)]">
+      <p className="text-xs font-medium text-[var(--color-warning-700)] dark:text-[var(--color-warning-300)]">{t('form.resubmitHeading')}</p>
       <FormField id="name" label={t('reciter.nameLabel')} required error={errors.name}>
         <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={isPending} error={errors.name} />
       </FormField>
       <FormField id={`rs-slug-${submission.id}`} label={t('form.slugLabel')} error={errors.slug}>
         <Input id={`rs-slug-${submission.id}`} type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={isPending} error={errors.slug} />
       </FormField>
-      {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
+      {serverError && <p role="alert" className="text-[13px] text-[var(--color-error-500)]">{serverError}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={isPending} aria-busy={isPending}>
+        <button type="submit" disabled={isPending} aria-busy={isPending} className="rounded-[8px] bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60">
           {isPending ? t('form.submitting') : t('form.submit')}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+        </button>
+        <button type="button" onClick={onCancel} disabled={isPending} className="rounded-[8px] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--input-bg)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60">
           {t('form.cancel')}
-        </Button>
+        </button>
       </div>
     </form>
   );
@@ -143,8 +142,8 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
-      <p className="text-xs font-medium text-warning-700 dark:text-warning-300">{t('form.resubmitHeading')}</p>
+    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-[12px] border border-[var(--color-warning-200)] bg-[var(--color-warning-50)] p-4 dark:border-[var(--color-warning-800)] dark:bg-[var(--color-warning-950)]">
+      <p className="text-xs font-medium text-[var(--color-warning-700)] dark:text-[var(--color-warning-300)]">{t('form.resubmitHeading')}</p>
       <FormField id={`ra-title-${submission.id}`} label={t('album.titleLabel')} required error={errors.title}>
         <Input id={`ra-title-${submission.id}`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending} error={errors.title} />
       </FormField>
@@ -160,14 +159,14 @@ function AlbumResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
       <FormField id={`ra-art-${submission.id}`} label={t('album.artworkUrlLabel')} error={errors.artworkUrl}>
         <Input id={`ra-art-${submission.id}`} type="url" value={artworkUrl} onChange={(e) => setArtworkUrl(e.target.value)} disabled={isPending} error={errors.artworkUrl} />
       </FormField>
-      {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
+      {serverError && <p role="alert" className="text-[13px] text-[var(--color-error-500)]">{serverError}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={isPending} aria-busy={isPending}>
+        <button type="submit" disabled={isPending} aria-busy={isPending} className="rounded-[8px] bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60">
           {isPending ? t('form.submitting') : t('form.resubmit')}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+        </button>
+        <button type="button" onClick={onCancel} disabled={isPending} className="rounded-[8px] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--input-bg)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60">
           {t('form.cancel')}
-        </Button>
+        </button>
       </div>
     </form>
   );
@@ -223,8 +222,8 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-lg border border-warning-200 bg-warning-50 p-4 dark:border-warning-800 dark:bg-warning-950">
-      <p className="text-xs font-medium text-warning-700 dark:text-warning-300">{t('form.resubmitHeading')}</p>
+    <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4 rounded-[12px] border border-[var(--color-warning-200)] bg-[var(--color-warning-50)] p-4 dark:border-[var(--color-warning-800)] dark:bg-[var(--color-warning-950)]">
+      <p className="text-xs font-medium text-[var(--color-warning-700)] dark:text-[var(--color-warning-300)]">{t('form.resubmitHeading')}</p>
       <FormField id={`rt-title-${submission.id}`} label={t('track.titleLabel')} required error={errors.title}>
         <Input id={`rt-title-${submission.id}`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending} error={errors.title} />
       </FormField>
@@ -246,14 +245,14 @@ function TrackResubmitFields({ submission, onSuccess, onCancel }: ResubmitFormPr
       <FormField id={`rt-dur-${submission.id}`} label={t('track.durationShortLabel')} error={errors.duration}>
         <Input id={`rt-dur-${submission.id}`} type="number" value={duration} onChange={(e) => setDuration(e.target.value)} disabled={isPending} min={1} error={errors.duration} />
       </FormField>
-      {serverError && <p role="alert" className="text-xs text-destructive">{serverError}</p>}
+      {serverError && <p role="alert" className="text-[13px] text-[var(--color-error-500)]">{serverError}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={isPending} aria-busy={isPending}>
+        <button type="submit" disabled={isPending} aria-busy={isPending} className="rounded-[8px] bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60">
           {isPending ? t('form.submitting') : t('form.resubmit')}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+        </button>
+        <button type="button" onClick={onCancel} disabled={isPending} className="rounded-[8px] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--input-bg)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60">
           {t('form.cancel')}
-        </Button>
+        </button>
       </div>
     </form>
   );

@@ -25,25 +25,25 @@ export default async function ContributePage(): Promise<React.JSX.Element> {
 
   return (
     <main id="main-content" className="mx-auto max-w-2xl py-10 px-4">
-      <h1 className="mb-2 text-3xl font-bold text-foreground">{t('heading')}</h1>
-      <p className="mb-8 text-sm text-muted-foreground">
+      <h1 className="mb-2 font-serif text-4xl font-medium text-[var(--text)]">{t('heading')}</h1>
+      <p className="mb-8 text-base text-[var(--text-dim)]">
         {t('intro')}
       </p>
 
       {/* New content */}
       <section aria-label={t('addNewSectionLabel')} className="mb-8">
-        <h2 className="mb-3 text-base font-semibold text-foreground uppercase tracking-wider">
+        <h2 className="mb-4 font-serif text-2xl font-medium text-[var(--text)]">
           {t('addNewHeading')}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {items.map(({ href, label, description }) => (
             <Link
               key={href}
               href={href}
-              className="flex flex-col rounded-lg border border-border bg-card p-4 hover:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+              className="block rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
-              <span className="font-medium text-foreground">{label}</span>
-              <span className="mt-1 text-xs text-muted-foreground">{description}</span>
+              <span className="font-serif text-xl font-medium text-[var(--text)]">{label}</span>
+              <span className="mt-1 block text-sm text-[var(--text-dim)]">{description}</span>
             </Link>
           ))}
         </div>
@@ -51,12 +51,12 @@ export default async function ContributePage(): Promise<React.JSX.Element> {
 
       {/* Contributions history */}
       <section aria-label={t('yourContributionsSectionLabel')}>
-        <h2 className="mb-3 text-base font-semibold text-foreground uppercase tracking-wider">
+        <h2 className="mb-4 font-serif text-2xl font-medium text-[var(--text)]">
           {t('yourContributionsHeading')}
         </h2>
         <Link
           href="/profile/contributions"
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+          className="inline-flex items-center gap-2 rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-5 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
         >
           {t('viewHistory')}
         </Link>

@@ -36,23 +36,23 @@ export default async function ContributeLayout({
     return (
       <main id="main-content" className="flex min-h-[60vh] items-center justify-center py-16">
         <div className="mx-auto max-w-md text-center">
-          <h1 className="mb-3 text-2xl font-bold text-foreground">
+          <h1 className="mb-3 font-serif text-4xl font-medium text-[var(--text)]">
             {t('heading')}
           </h1>
-          <p className="mb-6 text-sm text-muted-foreground">
+          <p className="mb-6 text-sm text-[var(--text-dim)]">
             {t('description')}
           </p>
-          <div className="rounded-lg border border-info-200 bg-info-50 px-5 py-4 text-left dark:border-info-800 dark:bg-info-950">
-            <p className="mb-2 text-sm font-medium text-info-900 dark:text-info-100">
+          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--card-bg)] px-5 py-4 text-left">
+            <p className="mb-2 text-sm font-medium text-[var(--text)]">
               {t('howToHeading')}
             </p>
-            <p className="text-sm text-info-700 dark:text-info-300">
+            <p className="text-sm text-[var(--text-dim)]">
               {t('howToDescription')}
             </p>
           </div>
           <Link
             href="/"
-            className="mt-6 inline-block text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+            className="mt-6 inline-block text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           >
             {t('backToHome')}
           </Link>
