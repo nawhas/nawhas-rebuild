@@ -49,7 +49,7 @@ export default async function EditReciterPage({
               </Link>
             </li>
             <li className="text-[var(--text-faint)]">/</li>
-            <li className="text-[var(--text)]">Edit reciter</li>
+            <li aria-current="page" className="text-[var(--text)]">Edit reciter</li>
           </ol>
         </nav>
         <h1 className="mt-4 font-serif text-4xl font-medium text-[var(--text)]">

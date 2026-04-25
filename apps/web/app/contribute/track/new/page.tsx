@@ -27,7 +27,7 @@ export default async function NewTrackPage(): Promise<React.JSX.Element> {
               </Link>
             </li>
             <li className="text-[var(--text-faint)]">/</li>
-            <li className="text-[var(--text)]">New track</li>
+            <li aria-current="page" className="text-[var(--text)]">New track</li>
           </ol>
         </nav>
         <h1 className="mt-4 font-serif text-4xl font-medium text-[var(--text)]">
