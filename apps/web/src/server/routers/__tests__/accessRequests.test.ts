@@ -85,3 +85,44 @@ describe('accessRequests.create', () => {
     await expect(caller.create({ reason: null })).rejects.toThrow(/already.*pending|CONFLICT/i);
   });
 });
+
+describe('accessRequests.withdrawMine', () => {
+  it.skipIf(!dbAvailable)('flips status to withdrawn and stamps withdrawn_at', async () => {
+    const userId = await seedUser('user');
+    const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await caller.create({ reason: null });
+    await caller.withdrawMine({ id });
+    const [row] = await testDb.db.select().from(accessRequests).where(eq(accessRequests.id, id));
+    expect(row?.status).toBe('withdrawn');
+    expect(row?.withdrawnAt).toBeInstanceOf(Date);
+  });
+
+  it.skipIf(!dbAvailable)("rejects withdrawing another user's row with NOT_FOUND", async () => {
+    const ownerId = await seedUser('user');
+    const otherId = await seedUser('user');
+    const ownerCaller = makeAccessRequestsCaller(testDb.db, ownerId, 'user');
+    const { id } = await ownerCaller.create({ reason: null });
+    const otherCaller = makeAccessRequestsCaller(testDb.db, otherId, 'user');
+    await expect(otherCaller.withdrawMine({ id })).rejects.toThrow(/NOT_FOUND/i);
+  });
+
+  it.skipIf(!dbAvailable)('rejects withdrawing an already-withdrawn row with BAD_REQUEST', async () => {
+    const userId = await seedUser('user');
+    const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await caller.create({ reason: null });
+    await caller.withdrawMine({ id });
+    await expect(caller.withdrawMine({ id })).rejects.toThrow(/BAD_REQUEST|status/i);
+  });
+
+  it.skipIf(!dbAvailable)('writes an audit_log row', async () => {
+    const userId = await seedUser('user');
+    const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await caller.create({ reason: null });
+    await caller.withdrawMine({ id });
+    const rows = await testDb.db
+      .select()
+      .from(auditLog)
+      .where(and(eq(auditLog.action, 'access_request.withdrawn'), eq(auditLog.targetId, id)));
+    expect(rows.length).toBeGreaterThan(0);
+  });
+});

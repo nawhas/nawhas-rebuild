@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { eq } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { accessRequests } from '@nawhas/db';
+import { accessRequests, auditLog } from '@nawhas/db';
 import { router, protectedProcedure } from '../trpc/trpc';
 
 export const accessRequestsRouter = router({
@@ -44,5 +45,42 @@ export const accessRequestsRouter = router({
         }
         throw err;
       }
+    }),
+
+  /**
+   * Cancel one's own pending application. No-ops on already-withdrawn rows
+   * (BAD_REQUEST). Writes audit_log so moderators see the trail.
+   */
+  withdrawMine: protectedProcedure
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ ctx, input }): Promise<{ ok: true }> => {
+      const [row] = await ctx.db
+        .select()
+        .from(accessRequests)
+        .where(eq(accessRequests.id, input.id))
+        .limit(1);
+      if (!row || row.userId !== ctx.user.id) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      if (row.status !== 'pending') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Only pending applications can be withdrawn (current status: ${row.status}).`,
+        });
+      }
+      await ctx.db.transaction(async (tx) => {
+        await tx
+          .update(accessRequests)
+          .set({ status: 'withdrawn', withdrawnAt: new Date(), updatedAt: new Date() })
+          .where(eq(accessRequests.id, input.id));
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: 'access_request.withdrawn',
+          targetType: 'user',
+          targetId: input.id,
+          meta: {},
+        });
+      });
+      return { ok: true };
     }),
 });
