@@ -6,9 +6,10 @@ import { Container } from '@/components/layout/container';
 import { FeaturedReciters } from '@/components/home/featured-reciters';
 import { HeroSection } from '@/components/home/hero-section';
 import { PopularTracks } from '@/components/home/popular-tracks';
-import { RecentAlbums } from '@/components/home/recent-albums';
+import { QuoteBanner } from '@/components/home/quote-banner';
 import { SavedStrip } from '@/components/home/saved-strip';
 import { TopNawhasTable } from '@/components/home/top-nawhas-table';
+import { TrendingTracks } from '@/components/home/trending-tracks';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
@@ -29,11 +30,14 @@ const createCaller = createCallerFactory(appRouter);
  * Server Component — fetches featured content via tRPC server-side caller
  * and passes it to pure-presentation section components.
  *
- * Layout order:
- *   1. HeroSection — POC red-gradient + Fraunces slogan + hero SearchBar.
- *   2. SavedStrip (client) — only renders for signed-in users with saves.
- *   3. FeaturedReciters / RecentAlbums / PopularTracks — pre-existing.
- *   4. TopNawhasTable — numbered ordered list with deep links.
+ * Layout order (post-Phase-2.6 POC alignment):
+ *   1. HeroSection — POC dark+red-glow + Inter sans slogan + hero SearchBar.
+ *   2. TrendingTracks — 5-up cover-grid (B-impl, see roadmap follow-up).
+ *   3. SavedStrip (client) — always rendered; empty state with sign-in CTA.
+ *   4. QuoteBanner — POC editorial pull-quote (hardcoded copy).
+ *   5. FeaturedReciters — flat avatar grid with album/track counts.
+ *   6. PopularTracks — POC 2-col card grid with cover + reciter + duration.
+ *   7. TopNawhasTable — numbered ordered list with serif rank numerals.
  */
 export default async function HomePage(): Promise<React.JSX.Element> {
   setDefaultRequestLocale();
@@ -49,9 +53,10 @@ export default async function HomePage(): Promise<React.JSX.Element> {
       <div className="py-10">
         <Container>
           <div className="flex flex-col gap-12">
+            <TrendingTracks tracks={topTracks.slice(0, 5)} />
             <SavedStrip />
+            <QuoteBanner />
             <FeaturedReciters reciters={featured.reciters} />
-            <RecentAlbums albums={featured.albums} />
             <PopularTracks tracks={featured.tracks} />
             <TopNawhasTable tracks={topTracks} />
           </div>

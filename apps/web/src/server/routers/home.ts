@@ -3,7 +3,7 @@ import { and, asc, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import { albums, auditLog, reciters, submissions, tracks, userSavedTracks, users } from '@nawhas/db';
 import { router, protectedProcedure, publicProcedure } from '../trpc/trpc';
-import type { ContributorHeatmapBucketDTO, ContributorProfileDTO, FeaturedDTO, PaginatedResult, RecentChangeDTO, TrackListItemDTO } from '@nawhas/types';
+import type { ContributorHeatmapBucketDTO, ContributorProfileDTO, FeaturedDTO, PaginatedResult, RecentChangeDTO, ReciterFeaturedDTO, TrackListItemDTO } from '@nawhas/types';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
 
 // Number of featured items per category returned on the home page.
@@ -42,9 +42,27 @@ export const homeRouter = router({
    */
   getFeatured: publicProcedure.query(async ({ ctx }): Promise<FeaturedDTO> => {
     const [featuredReciters, recentAlbums, popularTracks] = await Promise.all([
+      // Aggregated reciter list — joins albums + tracks to surface counts
+      // for the home-page "Top Reciters" cards in a single query.
       ctx.db
-        .select()
+        .select({
+          id: reciters.id,
+          name: reciters.name,
+          slug: reciters.slug,
+          arabicName: reciters.arabicName,
+          country: reciters.country,
+          birthYear: reciters.birthYear,
+          description: reciters.description,
+          avatarUrl: reciters.avatarUrl,
+          createdAt: reciters.createdAt,
+          updatedAt: reciters.updatedAt,
+          albumCount: sql<number>`count(distinct ${albums.id})::int`,
+          trackCount: sql<number>`count(distinct ${tracks.id})::int`,
+        })
         .from(reciters)
+        .leftJoin(albums, eq(albums.reciterId, reciters.id))
+        .leftJoin(tracks, eq(tracks.albumId, albums.id))
+        .groupBy(reciters.id)
         .orderBy(desc(reciters.createdAt))
         .limit(FEATURED_RECITERS_LIMIT),
 
@@ -55,14 +73,16 @@ export const homeRouter = router({
         .limit(RECENT_ALBUMS_LIMIT),
 
       ctx.db
-        .select()
+        .select(trackListItemColumns)
         .from(tracks)
+        .innerJoin(albums, eq(tracks.albumId, albums.id))
+        .innerJoin(reciters, eq(albums.reciterId, reciters.id))
         .orderBy(desc(tracks.createdAt))
         .limit(POPULAR_TRACKS_LIMIT),
     ]);
 
     return {
-      reciters: featuredReciters,
+      reciters: featuredReciters as ReciterFeaturedDTO[],
       albums: recentAlbums,
       tracks: popularTracks,
     };

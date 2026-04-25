@@ -35,6 +35,11 @@ vi.mock('@nawhas/ui/components/section-title', () => ({
   ),
 }));
 
+// Stub @nawhas/ui barrel — only CoverArt is consumed
+vi.mock('@nawhas/ui', () => ({
+  CoverArt: ({ slug }: { slug: string }) => <div data-testid={`cover-${slug}`} />,
+}));
+
 import { SavedStrip } from '../saved-strip';
 import { useSession } from '@/lib/auth-client';
 import { getRecentSavedTracks } from '@/server/actions/library';
@@ -65,43 +70,47 @@ function makeTrack(id: string, title: string): TrackListItemDTO {
 }
 
 describe('SavedStrip', () => {
-  it('renders nothing when there is no authenticated session (unauthenticated)', async () => {
+  it('renders the signed-out empty state with a Sign in CTA', async () => {
     mockUseSession.mockReturnValue({ data: null, isPending: false });
     mockGetRecentSavedTracks.mockResolvedValue([]);
 
-    let container!: HTMLElement;
     await act(async () => {
-      ({ container } = render(<SavedStrip />));
+      render(<SavedStrip />);
     });
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByText('Recently Saved')).toBeDefined();
+    expect(screen.getByText('Save the nawhas you love')).toBeDefined();
+    const cta = screen.getByRole('link', { name: 'Sign In' });
+    expect(cta.getAttribute('href')).toBe('/login');
   });
 
-  it('renders nothing while session is still loading', async () => {
+  it('renders the section heading while session is still loading (no CTA flash)', async () => {
     mockUseSession.mockReturnValue({ data: null, isPending: true });
     mockGetRecentSavedTracks.mockResolvedValue([]);
 
-    let container!: HTMLElement;
     await act(async () => {
-      ({ container } = render(<SavedStrip />));
+      render(<SavedStrip />);
     });
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByText('Recently Saved')).toBeDefined();
+    // Don't show the signed-out CTA while we're still resolving the session
+    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
   });
 
-  it('renders nothing for a signed-in user with an empty saved library', async () => {
+  it('renders the authed empty state when signed-in with no saves', async () => {
     mockUseSession.mockReturnValue({
       data: { user: { id: 'u1', name: 'Test User', email: 'test@example.com' } },
       isPending: false,
     });
     mockGetRecentSavedTracks.mockResolvedValue([]);
 
-    let container!: HTMLElement;
     await act(async () => {
-      ({ container } = render(<SavedStrip />));
+      render(<SavedStrip />);
     });
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByText('Your saved tracks live here')).toBeDefined();
+    // Authed empty state has no Sign In CTA
+    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
   });
 
   it('renders saved tracks for a signed-in user', async () => {

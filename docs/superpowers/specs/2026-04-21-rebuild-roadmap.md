@@ -728,6 +728,74 @@ plans: `docs/superpowers/plans/2026-04-24-phase-2-5-foundation-and-components.md
 `docs/superpowers/plans/2026-04-24-phase-2-5-pages-wave2-discovery-and-auth.md`,
 `docs/superpowers/plans/2026-04-25-phase-2-5-pages-wave3-contribute-mod-protected-boundaries.md`.
 
+## Phase 2.6 — POC Alignment (in progress)
+
+A page-by-page comparison between [`new-design-poc`](https://github.com/nawhas/new-design-poc)
+and the rebuild surfaced gaps that escaped the Phase 2.5 port. Tracked
+inline in `docs/design/poc-alignment.md`. Decisions are batched per page
+with status (⬜ → 🟨 → ✅) so the work can be split across sessions.
+
+### 2.6 Header / Navbar ✅ shipped 2026-04-25
+
+Gradient "N" mark + 22px white wordmark; restored Library nav link;
+short labels matching POC ("Reciters" / "Albums" / "Changes");
+role-gated red "+ Contribute" pill in header for `contributor` /
+`moderator` (moves out of user-menu); user-menu redesigned to match
+POC dropdown — gold/brown gradient avatar (with `user.image` fallback
+for future profile-picture upload), name + @username + colour-coded
+role badge header, hybrid item set with subtitles (My Dashboard /
+Public profile / Account settings / Moderation queue / Sign out);
+mobile menu mirrors the same dropdown style. Shared `RoleBadge`
+extracted at `apps/web/src/components/layout/role-badge.tsx`.
+
+### 2.6 Home page (in progress)
+
+Hero rebuilt to POC spec — dark `var(--bg)` with two-layer red
+radial-gradient + noise circles, Inter sans h1, white-pill `<SearchBar
+variant="hero">` with a right-side circular dark submit button.
+"Trending This Month" section restored visually, backed temporarily by
+`home.getTopTracks` (the same newest-first proxy as `TopNawhasTable`).
+
+#### Follow-up: real trending data
+
+The current "Trending This Month" component is a B-implementation —
+visual restoration only. It reuses the existing newest-first proxy, so
+its first 5 entries duplicate the top of `TopNawhasTable`. The eventual
+A-implementation:
+
+- New tRPC procedure `home.getTrendingTracks({ window: '30d', limit })`
+  that ranks tracks by play count over a rolling 30-day window.
+- Backed by a `track_plays` event table (or an aggregation on
+  `listening_history` if event-level granularity isn't needed).
+- Wire into the existing `<TrendingTracks>` component — no UI change,
+  just swap the prop source from `topTracks.slice(0, 5)` to
+  `trendingTracks`.
+- Same play-count source unblocks the "Most Popular Tracks" card
+  subtitle (currently shows duration as a placeholder; POC shows a
+  "{N} plays" count).
+
+Blocked on having real play-count data in production. Sequencing: queue
+this immediately after Phase 2.6's home-page section is done; can run
+in parallel with Phase 3 launch prep since it doesn't touch
+data-migration or SEO.
+
+#### Follow-up: editable / rotating quote banner
+
+`<QuoteBanner>` currently hardcodes a single quote string in JSX
+(option-A restoration of the POC banner). Future work:
+
+- Move the quote text + attribution into i18n (under
+  `home.sections.quoteBanner.*`) so it can be edited / translated
+  without code changes.
+- Optionally extend to a small list of quotes the component picks from
+  per-render (deterministic by date so it doesn't shift inside a single
+  visit but rotates day-over-day).
+- If the list grows beyond a handful, move to a content-managed source
+  (a small `editorial_quotes` table or a JSON file in `public/`).
+
+Low priority — purely an editorial / content lever. Pick up whenever
+content stewardship lands.
+
 ## Phase 3 — Launch Prep
 
 ### 3.1 Data strategy

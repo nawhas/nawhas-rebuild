@@ -21,8 +21,8 @@ describe('HeroSection', () => {
 
   it('renders the translated slogan', async () => {
     render(await HeroSection());
-    // en.json: home.hero.slogan = "Discover the beauty of nawha recitation."
-    expect(screen.getByText('Discover the beauty of nawha recitation.')).toBeDefined();
+    // en.json: home.hero.slogan = "Explore the most advanced library of nawhas online"
+    expect(screen.getByText('Explore the most advanced library of nawhas online')).toBeDefined();
   });
 
   it('renders the SearchBar', async () => {

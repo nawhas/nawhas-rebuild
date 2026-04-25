@@ -1,16 +1,26 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, cleanup, screen } from '@testing-library/react';
 
-// Stub ReciterCard to avoid pulling in ReciterAvatar / @nawhas/ui in this test
-vi.mock('@/components/cards/reciter-card', () => ({
-  ReciterCard: ({ reciter }: { reciter: { name: string; slug: string } }) => (
-    <a href={`/reciters/${reciter.slug}`} aria-label={`View ${reciter.name}'s profile`}>
-      {reciter.name}
+vi.mock('next/link', () => ({
+  default: ({
+    href,
+    children,
+    ...rest
+  }: {
+    href: string;
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...rest}>
+      {children}
     </a>
   ),
 }));
 
-// Stub @nawhas/ui/components/section-title — path import that isn't mocked globally
+vi.mock('@nawhas/ui', () => ({
+  ReciterAvatar: ({ name }: { name: string }) => <div data-testid={`avatar-${name}`} />,
+}));
+
 vi.mock('@nawhas/ui/components/section-title', () => ({
   SectionTitle: ({ children, id }: { children: React.ReactNode; id?: string }) => (
     <h2 id={id}>{children}</h2>
@@ -18,11 +28,16 @@ vi.mock('@nawhas/ui/components/section-title', () => ({
 }));
 
 import { FeaturedReciters } from '../featured-reciters';
-import type { ReciterDTO } from '@nawhas/types';
+import type { ReciterFeaturedDTO } from '@nawhas/types';
 
 afterEach(() => cleanup());
 
-function makeReciter(id: string, name: string, slug: string): ReciterDTO {
+function makeReciter(
+  id: string,
+  name: string,
+  slug: string,
+  overrides: Partial<ReciterFeaturedDTO> = {},
+): ReciterFeaturedDTO {
   return {
     id,
     name,
@@ -33,7 +48,10 @@ function makeReciter(id: string, name: string, slug: string): ReciterDTO {
     avatarUrl: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
-  } as ReciterDTO;
+    albumCount: 0,
+    trackCount: 0,
+    ...overrides,
+  } as ReciterFeaturedDTO;
 }
 
 describe('FeaturedReciters', () => {
@@ -42,23 +60,23 @@ describe('FeaturedReciters', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders the section heading', () => {
+  it('renders the "Top Reciters" section heading', () => {
     render(
       <FeaturedReciters reciters={[makeReciter('r1', 'Ali Safdar', 'ali-safdar')]} />,
     );
-    expect(screen.getByText('Featured Reciters')).toBeDefined();
+    expect(screen.getByText('Top Reciters')).toBeDefined();
   });
 
-  it('renders one card per reciter', () => {
+  it('renders one entry per reciter with name + counts subtitle', () => {
     const reciters = [
-      makeReciter('r1', 'Ali Safdar', 'ali-safdar'),
-      makeReciter('r2', 'Nadeem Sarwar', 'nadeem-sarwar'),
-      makeReciter('r3', 'Syed Raza Abbas', 'syed-raza-abbas'),
+      makeReciter('r1', 'Ali Safdar', 'ali-safdar', { albumCount: 12, trackCount: 84 }),
+      makeReciter('r2', 'Nadeem Sarwar', 'nadeem-sarwar', { albumCount: 25, trackCount: 200 }),
     ];
     render(<FeaturedReciters reciters={reciters} />);
     expect(screen.getByText('Ali Safdar')).toBeDefined();
     expect(screen.getByText('Nadeem Sarwar')).toBeDefined();
-    expect(screen.getByText('Syed Raza Abbas')).toBeDefined();
+    expect(screen.getByText('12 albums · 84 tracks')).toBeDefined();
+    expect(screen.getByText('25 albums · 200 tracks')).toBeDefined();
   });
 
   it('links to /reciters/[slug] for each reciter', () => {

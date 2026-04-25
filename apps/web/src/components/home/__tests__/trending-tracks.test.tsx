@@ -17,17 +17,17 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-vi.mock('@nawhas/ui', () => ({
-  CoverArt: ({ slug }: { slug: string }) => <div data-testid={`cover-${slug}`} />,
-}));
-
 vi.mock('@nawhas/ui/components/section-title', () => ({
   SectionTitle: ({ children, id }: { children: React.ReactNode; id?: string }) => (
     <h2 id={id}>{children}</h2>
   ),
 }));
 
-import { PopularTracks } from '../popular-tracks';
+vi.mock('@nawhas/ui', () => ({
+  CoverArt: ({ slug }: { slug: string }) => <div data-testid={`cover-${slug}`} />,
+}));
+
+import { TrendingTracks } from '../trending-tracks';
 import type { TrackListItemDTO } from '@nawhas/types';
 
 afterEach(() => cleanup());
@@ -55,48 +55,33 @@ function makeTrack(
   } as TrackListItemDTO;
 }
 
-describe('PopularTracks', () => {
+describe('TrendingTracks', () => {
   it('returns null when the tracks array is empty', async () => {
-    const { container } = render(await PopularTracks({ tracks: [] }));
+    const { container } = render(await TrendingTracks({ tracks: [] }));
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders the "Popular Nawhas" section heading', async () => {
-    render(await PopularTracks({ tracks: [makeTrack('t1')] }));
-    // en.json: home.sections.popularTracks = "Popular Nawhas"
-    expect(screen.getByText('Popular Nawhas')).toBeDefined();
+  it('renders the "Trending This Month" section heading', async () => {
+    render(await TrendingTracks({ tracks: [makeTrack('t1')] }));
+    expect(screen.getByText('Trending This Month')).toBeDefined();
   });
 
   it('renders a "See all" link to /library', async () => {
-    render(await PopularTracks({ tracks: [makeTrack('t1')] }));
+    render(await TrendingTracks({ tracks: [makeTrack('t1')] }));
     const link = screen.getByRole('link', { name: /see all/i });
     expect(link.getAttribute('href')).toBe('/library');
   });
 
-  it('renders track titles + reciter names', async () => {
+  it('renders one card per track with title + reciter name', async () => {
     const tracks = [
       makeTrack('t1', { title: 'Salam Hussain', reciterName: 'Ali Safdar' }),
       makeTrack('t2', { title: 'Ya Ali Madad', reciterName: 'Mir Hasan Mir' }),
     ];
-    render(await PopularTracks({ tracks }));
+    render(await TrendingTracks({ tracks }));
     expect(screen.getByText('Salam Hussain')).toBeDefined();
-    expect(screen.getByText('Ali Safdar')).toBeDefined();
     expect(screen.getByText('Ya Ali Madad')).toBeDefined();
+    expect(screen.getByText('Ali Safdar')).toBeDefined();
     expect(screen.getByText('Mir Hasan Mir')).toBeDefined();
-  });
-
-  it('formats duration as m:ss when duration is present', async () => {
-    // 185 seconds → "3:05"
-    render(await PopularTracks({ tracks: [makeTrack('t1', { duration: 185 })] }));
-    expect(screen.getByText('3:05')).toBeDefined();
-  });
-
-  it('omits duration when duration is null', async () => {
-    const { container } = render(
-      await PopularTracks({ tracks: [makeTrack('t1', { duration: null })] }),
-    );
-    const tabularNums = container.querySelectorAll('.tabular-nums');
-    expect(tabularNums.length).toBe(0);
   });
 
   it('links each card to the canonical track page', async () => {
@@ -106,9 +91,9 @@ describe('PopularTracks', () => {
       albumSlug: 'panjtan-pak',
       slug: 'salam-hussain',
     });
-    render(await PopularTracks({ tracks: [track] }));
-    const cardLink = screen.getByRole('link', { name: /salam hussain/i });
-    expect(cardLink.getAttribute('href')).toBe(
+    render(await TrendingTracks({ tracks: [track] }));
+    const link = screen.getByRole('link', { name: /salam hussain/i });
+    expect(link.getAttribute('href')).toBe(
       '/reciters/ali-safdar/albums/panjtan-pak/tracks/salam-hussain',
     );
   });

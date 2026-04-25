@@ -95,12 +95,11 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
 
   const isHero = variant === 'hero';
   const containerClass = isHero ? 'relative w-full' : 'relative hidden md:block';
-  const iconWrapperClass = isHero
-    ? 'pointer-events-none absolute inset-y-0 left-5 flex items-center text-[var(--text-dim)]'
-    : 'pointer-events-none absolute inset-y-0 left-3 flex items-center text-[var(--text-dim)]';
-  const iconSize = isHero ? 20 : 16;
+  // Default variant keeps the left magnifying-glass icon. POC's hero treatment
+  // uses a right-side circular submit button instead, so the left icon is
+  // omitted in hero variant.
   const inputClass = isHero
-    ? 'h-14 w-full rounded-full border border-transparent bg-[var(--card-bg)] pl-14 pr-6 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] shadow-lg focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2'
+    ? 'h-14 w-full rounded-full border border-transparent bg-white pl-7 pr-16 text-base text-[#0a0a0b] placeholder:text-[#6b6b70] shadow-[0_20px_60px_rgba(0,0,0,0.4)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2'
     : 'h-9 w-64 rounded-md border border-[var(--border)] bg-[var(--card-bg)] pl-9 pr-4 text-sm text-[var(--text)] placeholder:text-[var(--text-dim)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2';
   const listboxClass = isHero
     ? 'absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] shadow-menu'
@@ -109,16 +108,20 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
   return (
     <div ref={containerRef} className={containerClass}>
       <div className="relative">
-        {/* Search icon */}
-        <span className={iconWrapperClass} aria-hidden="true">
-          <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M9 3a6 6 0 100 12A6 6 0 009 3zM1 9a8 8 0 1114.32 4.906l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387A8 8 0 011 9z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </span>
+        {!isHero && (
+          <span
+            className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[var(--text-dim)]"
+            aria-hidden="true"
+          >
+            <svg width={16} height={16} viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M9 3a6 6 0 100 12A6 6 0 009 3zM1 9a8 8 0 1114.32 4.906l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387A8 8 0 011 9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </span>
+        )}
 
         <input
           ref={inputRef}
@@ -141,6 +144,26 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
           }}
           className={inputClass}
         />
+
+        {isHero && (
+          <button
+            type="button"
+            aria-label={t('inputLabel')}
+            onClick={() => {
+              inputRef.current?.focus();
+              if (query.trim()) setIsOpen(true);
+            }}
+            className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#0a0a0b] text-white focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+          >
+            <svg width={18} height={18} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path
+                fillRule="evenodd"
+                d="M9 3a6 6 0 100 12A6 6 0 009 3zM1 9a8 8 0 1114.32 4.906l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387A8 8 0 011 9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Dropdown */}

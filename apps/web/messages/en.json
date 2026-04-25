@@ -56,15 +56,20 @@
   "home": {
     "hero": {
       "ariaLabel": "Hero",
-      "slogan": "Discover the beauty of nawha recitation.",
-      "subtitle": "Browse reciters, albums, and tracks from the devotional tradition."
+      "slogan": "Explore the most advanced library of nawhas online"
     },
     "sections": {
+      "trendingThisMonth": "Trending This Month",
       "recentlySaved": "Recently Saved",
       "topNawhas": "Top Nawhas",
       "topReciters": "Top Reciters",
       "topAlbums": "Top Albums",
-      "popularTracks": "Popular Nawhas"
+      "popularTracks": "Popular Nawhas",
+      "seeAll": "See all →",
+      "savedEmptyAuthedTitle": "Your saved tracks live here",
+      "savedEmptyAuthedBody": "Save any track to your library and it'll show up here for quick replay.",
+      "savedEmptySignedOutTitle": "Save the nawhas you love",
+      "savedEmptySignedOutBody": "Sign in to keep your favourite tracks in one place."
     }
   },
   "auth": {

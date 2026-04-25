@@ -163,10 +163,22 @@ export interface ListenHistoryEntryDTO {
 // Home / Featured
 // ---------------------------------------------------------------------------
 
+/**
+ * ReciterDTO + aggregated album + track counts. Used by the home page's
+ * "Top Reciters" section so each card can display "{N} albums · {N} tracks"
+ * without an N+1 fetch per card.
+ */
+export interface ReciterFeaturedDTO extends ReciterDTO {
+  albumCount: number;
+  trackCount: number;
+}
+
 export interface FeaturedDTO {
-  reciters: ReciterDTO[];
+  reciters: ReciterFeaturedDTO[];
   albums: AlbumDTO[];
-  tracks: TrackDTO[];
+  // TrackListItemDTO so home-page "Most Popular Tracks" cards can link to
+  // their canonical /reciters/.../albums/.../tracks/... URL without N+1 fetches.
+  tracks: TrackListItemDTO[];
 }
 
 // ---------------------------------------------------------------------------

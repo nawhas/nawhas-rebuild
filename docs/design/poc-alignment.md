@@ -23,7 +23,7 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Footer | ✅ | Exact match in structure |
 | Header / Navbar | ✅ | Aligned — gradient logo + Library link + short labels + Contribute pill + POC dropdown style |
 | Player bar | ⬜ | Close — Current has more features (queue, lazy load) |
-| Home | ⬜ | Differs significantly |
+| Home | ✅ | Aligned — POC hero + 6-section roster (Trending / Saved / Quote / Top Reciters / Popular / TopNawhas); plays-count + trending data on roadmap |
 | Reciters list | ⬜ | Close — A–Z filter unclear |
 | Reciter detail | ⬜ | URL path changed; layout close |
 | Albums list | ⬜ | Close — year filter removed |
@@ -115,27 +115,41 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 4. Home page
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done — all 6 decisions resolved
 
 **POC:** `src/app/page.tsx`
-**Current:** `apps/web/app/page.tsx` + `src/components/home/`
+**Current:** `apps/web/app/page.tsx` + `apps/web/src/components/home/`
 
 **Findings:**
-- POC sections (in order): Hero → Trending → Saved Tracks → Quote Banner → Top Reciters → Most Popular Tracks.
-- Current sections (in order): Hero → SavedStrip → FeaturedReciters → RecentAlbums → PopularTracks → TopNawhasTable.
-- **Quote banner removed** in Current.
-- **RecentAlbums section is new** — POC has no equivalent.
-- **Most Popular Tracks** in POC = 2-col grid of 6. Current's `TopNawhasTable` = numbered `<ol>` with serif ranking numerals.
+- POC sections (in order): Hero → **Trending This Month** → Saved Tracks → **Quote Banner** → Top Reciters → Most Popular Tracks (2-col card grid).
+- Current sections (in order): Hero → SavedStrip → FeaturedReciters → **RecentAlbums** → PopularTracks (`<ol>`) → **TopNawhasTable** (`<ol>` with serif numerals).
+- **Trending This Month** missing in Current — POC has 5-col grid.
+- **Quote banner** missing in Current.
+- **RecentAlbums** new in Current — POC has no equivalent.
+- **Most Popular Tracks**: POC = 2-col card grid (cover + reciter + plays). Current = `<ol>` numbered list with title + duration only.
+- **TopNawhasTable** new in Current — `<ol>` with serif rank numerals + reciter · album subtitle.
 - SavedStrip is new and auth-aware (hidden if user not logged in or empty).
 - Track links use nested URL `/reciters/.../albums/.../tracks/...` — POC uses flat `/track/[slug]`.
+- Hero — POC: dark + red radial gradient + noise circles, Inter sans h1, white-pill search w/ right circular button. Current was: red linear gradient, Fraunces serif h1 with subtitle, dark `<SearchBar>` shared component.
 
-**Decisions needed:**
-- [ ] Restore quote banner section?
-- [ ] Keep RecentAlbums section (Current) or drop it?
-- [ ] Use POC's "Most Popular" 2-col grid or Current's TopNawhasTable serif-numeral list?
-- [ ] Reorder sections to match POC (Trending before Saved)?
+**Decisions:**
+- [x] **D1: Hero** — Match POC fully: dark `var(--bg)` background with two-layer radial gradient (red glow + noise circles), Inter sans h1 (POC clamp 34→52 / weight 700 / -0.025em letter-spacing), POC headline "Explore the most advanced library of nawhas online", no subtitle, `<SearchBar variant="hero" />` restyled to white pill (140×540) with right-side circular dark submit button + heavy shadow. ✅
+- [x] **D2: Trending section** — Option B (visual restoration). New `<TrendingTracks>` component wired in above SavedStrip, backed temporarily by `home.getTopTracks` (newest-first proxy, slice 5). Real "last 30 days play count" trending procedure tracked as a Phase 2.6 follow-up in the rebuild roadmap. ✅
+- [x] **D3: Saved tracks** — Option B + always-visible: keep Current's compact 6-col strip, swap placeholder `<div>` for proper `<CoverArt>`, and always render the section. Three states: (1) signed-out → empty state with sign-in CTA; (2) signed-in but no saves → empty state explaining how to save; (3) signed-in with saves → grid. Loading shows the heading without flashing the wrong CTA. ✅
+- [x] **D4: Quote banner** — Option A: restore POC banner with hardcoded quote. New `<QuoteBanner>` component matches POC visual exactly (`var(--accent-glow)` bg, 64px vertical padding, 16px radius, 24px italic semibold quote, dim attribution). Inserted between SavedStrip and FeaturedReciters. Option B (i18n + rotating quotes) tracked as a Phase 2.6 follow-up in the roadmap. ✅
+- [x] **D5: Top Reciters** — Option A (full POC fidelity): drop card chrome, flat avatar + name + "{N} albums · {N} tracks" subtitle, 2/3/4-col responsive grid. Backend change: new `ReciterFeaturedDTO` (extends `ReciterDTO` with `albumCount` + `trackCount`); `home.getFeatured` aggregates counts via single grouped query. Heading renamed "Featured Reciters" → "Top Reciters". `<ReciterCard>` left untouched (still used on `/reciters` and `/albums/[slug]`). ✅
+- [x] **D6: Other sections** — Option C: dropped `<RecentAlbums>` (covered by Trending), restyled `<PopularTracks>` to POC's 2-col horizontal-card grid (cover + title + reciter + duration, with "See all" link), kept `<TopNawhasTable>` unchanged. Backend: `FeaturedDTO.tracks` upgraded from `TrackDTO[]` to `TrackListItemDTO[]` (added album/reciter joins to the popular-tracks query) so cards can link to canonical track URLs. Plays-count subtitle deferred — same play-event dependency as Trending follow-up. ✅
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Hero: `apps/web/src/components/home/hero-section.tsx` (full rewrite to match POC). i18n updated in `apps/web/messages/en.json` (`slogan` updated; `subtitle` key removed).
+- ✅ SearchBar hero variant restyled: `apps/web/src/components/search/search-bar.tsx` — white pill bg, dark text, right-side circular dark submit button, no left icon (kept for default variant). Hero test updated.
+- ✅ Trending This Month: new component `apps/web/src/components/home/trending-tracks.tsx` + test in `__tests__/trending-tracks.test.tsx` + wired into `apps/web/app/page.tsx` (above SavedStrip). i18n keys `home.sections.trendingThisMonth` and `home.sections.seeAll` added.
+- 📌 Follow-up captured in `docs/superpowers/specs/2026-04-21-rebuild-roadmap.md` under Phase 2.6: real trending procedure backed by 30-day play count.
+- ✅ SavedStrip rewritten in `apps/web/src/components/home/saved-strip.tsx`. Real `<CoverArt>` swapped in for the placeholder div. Three-state empty/empty/grid handled with new i18n keys (`savedEmptyAuthedTitle/Body`, `savedEmptySignedOutTitle/Body`). Tests updated in `__tests__/saved-strip.test.tsx`.
+- ✅ Quote banner: new `apps/web/src/components/home/quote-banner.tsx` + test in `__tests__/quote-banner.test.tsx`; wired into `apps/web/app/page.tsx` between SavedStrip and FeaturedReciters.
+- 📌 Follow-up captured in roadmap Phase 2.6: i18n + rotating quote-banner copy.
+- ✅ Top Reciters: `apps/web/src/components/home/featured-reciters.tsx` rewritten to flat avatar+name+counts; new `ReciterFeaturedDTO` in `packages/types/src/index.ts`; `home.getFeatured` aggregates counts in `apps/web/src/server/routers/home.ts`. Test rewritten in `__tests__/featured-reciters.test.tsx`.
+- ✅ Section roster trimmed: deleted `apps/web/src/components/home/recent-albums.tsx` + its test (only used on home). PopularTracks rewritten as POC 2-col card grid in `apps/web/src/components/home/popular-tracks.tsx`. `FeaturedDTO.tracks` upgraded to `TrackListItemDTO[]` in `packages/types/src/index.ts`; popular-tracks query in `apps/web/src/server/routers/home.ts` joins albums + reciters. Test rewritten in `__tests__/popular-tracks.test.tsx`. Plays-count subtitle is a Phase 2.6 follow-up sharing the play-event source with the trending follow-up (extended note added in roadmap).
 
 ---
 
