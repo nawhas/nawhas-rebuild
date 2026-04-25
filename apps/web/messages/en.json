@@ -486,7 +486,16 @@
       "recentActivitySectionLabel": "Recent moderation activity",
       "recentActivityListLabel": "Recent audit log entries",
       "viewAll": "View all →",
-      "noActivity": "No activity yet."
+      "noActivity": "No activity yet.",
+      "statPendingTitle": "Pending review",
+      "statPendingSubtitle": "submissions awaiting review",
+      "statPendingEmpty": "All caught up",
+      "statRecentTitle": "Last 7 days",
+      "statRecentSubtitle": "submissions received",
+      "statOldestTitle": "Oldest pending",
+      "statOldestEmpty": "No pending items",
+      "statOldestHours": "{n, plural, =0 {Just now} =1 {1 hour old} other {# hours old}}",
+      "statOldestDays": "{n, plural, =1 {1 day old} other {# days old}}"
     },
     "queue": {
       "heading": "Moderation Queue",

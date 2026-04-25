@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { buildMetadata } from '@/lib/metadata';
+import { DashboardStats } from '@/components/mod/dashboard-stats';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Moderation Overview',
@@ -33,8 +34,8 @@ export default async function ModOverviewPage(): Promise<React.JSX.Element> {
     user: sessionData?.user ?? null,
   });
 
-  const [queue, auditLog] = await Promise.all([
-    caller.moderation.queue({ limit: 5 }),
+  const [stats, auditLog] = await Promise.all([
+    caller.moderation.dashboardStats(),
     caller.moderation.auditLog({ limit: 10 }),
   ]);
 
@@ -43,21 +44,7 @@ export default async function ModOverviewPage(): Promise<React.JSX.Element> {
   return (
     <div>
       {/* Stat cards */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Link
-          href="/mod/queue"
-          className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
-        >
-          <p className="font-serif text-3xl font-medium text-[var(--text)]">
-            {queue.items.length}
-            {queue.nextCursor ? '+' : ''}
-          </p>
-          <p className="mt-1 text-sm text-[var(--text-dim)]">{t('pendingSubmissions')}</p>
-          <span className="mt-2 block text-xs text-[var(--text-faint)]">
-            {t('viewQueue')} →
-          </span>
-        </Link>
-      </div>
+      <DashboardStats stats={stats} />
 
       {/* Recent activity */}
       <section aria-label={t('recentActivitySectionLabel')}>
