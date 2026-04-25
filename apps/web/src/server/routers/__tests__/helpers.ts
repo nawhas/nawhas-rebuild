@@ -154,6 +154,7 @@ export function makeAuthCtx(
   const user = {
     id: userId,
     name: 'Test User',
+    username: `test_${userId.replace(/-/g, '').slice(0, 24)}`,
     email: `test-${userId}@example.com`,
     emailVerified: true,
     image: null,

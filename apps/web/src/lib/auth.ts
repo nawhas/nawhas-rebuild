@@ -3,8 +3,27 @@ import { admin } from 'better-auth/plugins/admin';
 import { role } from 'better-auth/plugins/access';
 import type { SocialProviders } from 'better-auth/social-providers';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { z } from 'zod';
 import { db, users, sessions, accounts, verificationTokens } from '@nawhas/db';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email';
+
+/**
+ * Public username schema. Lowercased server-side via the `users_username_idx`
+ * functional unique index — collisions surface as Postgres 23505 and are
+ * mapped to a friendly "Username already taken" error in the signup form.
+ *
+ * Constraints:
+ *   - 3–32 chars, letters / digits / underscore only.
+ *   - Case-insensitive uniqueness (enforced by lower() unique index).
+ */
+export const usernameSchema = z
+  .string()
+  .min(3, 'Username must be at least 3 characters.')
+  .max(32, 'Username must be 32 characters or fewer.')
+  .regex(
+    /^[a-z0-9_]+$/i,
+    'Username may contain only letters, numbers, and underscores.',
+  );
 
 /**
  * Build the socialProviders config from env vars.
@@ -63,6 +82,17 @@ export const auth = betterAuth({
       verification: verificationTokens,
     },
   }),
+  user: {
+    additionalFields: {
+      // Public handle the contributor displays under, e.g. /contributor/<username>.
+      // Required at signup; the schema-level unique index catches collisions.
+      username: {
+        type: 'string',
+        required: true,
+        input: true,
+      },
+    },
+  },
   plugins: [
     admin({
       defaultRole: 'user',

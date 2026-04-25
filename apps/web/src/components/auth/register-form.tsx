@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
 import { Input } from '@nawhas/ui/components/input';
 import { signUp } from '@/lib/auth-client';
+import { usernameSchema } from '@/lib/auth';
 import { SocialButtons } from './social-buttons';
 import type { EnabledSocialProvider } from '@/lib/social-providers';
 
@@ -14,18 +15,20 @@ interface RegisterFormProps {
   enabledProviders?: EnabledSocialProvider[];
 }
 
-type InvalidField = 'name' | 'email' | 'password' | null;
+type InvalidField = 'name' | 'username' | 'email' | 'password' | null;
 
 export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): React.JSX.Element {
   const t = useTranslations('auth.register');
   const router = useRouter();
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [invalidField, setInvalidField] = useState<InvalidField>(null);
   const [loading, setLoading] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -35,11 +38,19 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
     setInvalidField(null);
 
     const trimmedName = name.trim();
+    const trimmedUsername = username.trim();
     const trimmedEmail = email.trim();
     if (!trimmedName) {
       setError(t('nameRequired'));
       setInvalidField('name');
       nameRef.current?.focus();
+      return;
+    }
+    const usernameResult = usernameSchema.safeParse(trimmedUsername);
+    if (!usernameResult.success) {
+      setError(usernameResult.error.issues[0]?.message ?? 'Invalid username.');
+      setInvalidField('username');
+      usernameRef.current?.focus();
       return;
     }
     if (!trimmedEmail) {
@@ -57,13 +68,33 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
 
     setLoading(true);
 
-    const result = await signUp.email({ name: trimmedName, email: trimmedEmail, password });
+    // better-auth accepts the registered additional field (`username`)
+    // alongside the standard email/password/name payload.
+    const result = await signUp.email({
+      name: trimmedName,
+      email: trimmedEmail,
+      password,
+      username: trimmedUsername,
+    } as Parameters<typeof signUp.email>[0]);
 
     if (result.error) {
-      setError(result.error.message ?? t('fallbackError'));
-      setInvalidField('email');
+      const message = result.error.message ?? t('fallbackError');
+      // Postgres unique-violation surfaces here once the case-insensitive
+      // index trips. Map it to a friendly username-taken hint.
+      const isUniqueViolation =
+        message.toLowerCase().includes('username') ||
+        message.toLowerCase().includes('unique') ||
+        message.toLowerCase().includes('23505');
+      if (isUniqueViolation) {
+        setError('That username is already taken — please pick another.');
+        setInvalidField('username');
+        usernameRef.current?.focus();
+      } else {
+        setError(message);
+        setInvalidField('email');
+        emailRef.current?.focus();
+      }
       setLoading(false);
-      emailRef.current?.focus();
       return;
     }
 
@@ -92,6 +123,28 @@ export function RegisterForm({ enabledProviders = [] }: RegisterFormProps): Reac
             aria-invalid={invalidField === 'name' ? true : undefined}
             aria-describedby={error ? 'register-error' : undefined}
           />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
+            Username
+          </label>
+          <Input
+            id="username"
+            ref={usernameRef}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+            placeholder="e.g. mehdi_bhatti"
+            disabled={loading}
+            aria-invalid={invalidField === 'username' ? true : undefined}
+            aria-describedby={error ? 'register-error' : 'username-help'}
+          />
+          <p id="username-help" className="mt-1 text-xs text-[var(--text-dim)]">
+            3–32 characters. Letters, numbers, and underscores only. Used for your public profile URL.
+          </p>
         </div>
 
         <div className="mb-4">

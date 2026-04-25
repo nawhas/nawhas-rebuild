@@ -44,6 +44,7 @@ const LINKS = [
 const mockUser = {
   id: 'user-1',
   name: 'Ali Hussain',
+  username: 'ali_h',
   email: 'ali@example.com',
   emailVerified: true,
   createdAt: new Date(),

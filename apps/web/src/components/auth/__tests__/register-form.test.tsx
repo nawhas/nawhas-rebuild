@@ -25,6 +25,13 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+function fillValidForm(): void {
+  fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
+  fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'ali_x' } });
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ali@example.com' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+}
+
 describe('RegisterForm', () => {
   beforeEach(() => {
     mockSignUp.mockResolvedValue({ data: { user: { id: '1' } }, error: null });
@@ -33,6 +40,7 @@ describe('RegisterForm', () => {
   it('renders all form fields with accessible labels', () => {
     render(<RegisterForm />);
     expect(screen.getByLabelText('Name')).toBeDefined();
+    expect(screen.getByLabelText('Username')).toBeDefined();
     expect(screen.getByLabelText('Email')).toBeDefined();
     expect(screen.getByLabelText('Password')).toBeDefined();
   });
@@ -48,17 +56,16 @@ describe('RegisterForm', () => {
     expect(link.getAttribute('href')).toBe('/login');
   });
 
-  it('calls signUp.email with name, email and password on submit', async () => {
+  it('calls signUp.email with name, username, email and password on submit', async () => {
     render(<RegisterForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ali@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+    fillValidForm();
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith({
         name: 'Ali',
+        username: 'ali_x',
         email: 'ali@example.com',
         password: 'secret123',
       });
@@ -68,15 +75,11 @@ describe('RegisterForm', () => {
   it('redirects to /check-email on successful registration', async () => {
     render(<RegisterForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ali@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+    fillValidForm();
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        '/check-email?email=ali%40example.com',
-      );
+      expect(mockPush).toHaveBeenCalledWith('/check-email?email=ali%40example.com');
     });
   });
 
@@ -88,9 +91,7 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'existing@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+    fillValidForm();
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
@@ -103,9 +104,7 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
+    fillValidForm();
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
@@ -121,9 +120,7 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ali@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+    fillValidForm();
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
@@ -139,13 +136,59 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
+    fillValidForm();
     fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
 
     await waitFor(() => {
       expect(mockPush).not.toHaveBeenCalled();
+    });
+  });
+
+  it('blocks submission when username is too short', async () => {
+    render(<RegisterForm />);
+
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'ab' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ali@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+    fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toMatch(/at least 3 characters/i);
+    });
+    expect(mockSignUp).not.toHaveBeenCalled();
+  });
+
+  it('blocks submission when username has invalid characters', async () => {
+    render(<RegisterForm />);
+
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ali' } });
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'has space' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'ali@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } });
+    fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toMatch(/letters, numbers, and underscores/i);
+    });
+    expect(mockSignUp).not.toHaveBeenCalled();
+  });
+
+  it('shows a username-taken hint when signUp surfaces a unique violation', async () => {
+    mockSignUp.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'duplicate key value violates unique constraint "users_username_idx"',
+      },
+    });
+
+    render(<RegisterForm />);
+
+    fillValidForm();
+    fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toMatch(/already taken/i);
     });
   });
 });
