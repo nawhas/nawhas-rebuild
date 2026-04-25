@@ -80,6 +80,7 @@ export function DisplayNameEdit({ initialName }: DisplayNameEditProps): React.JS
         <button
           type="submit"
           disabled={isPending || !draft.trim()}
+          aria-busy={isPending || undefined}
           aria-label={t('saveNameLabel')}
           className="rounded-[8px] bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-soft)] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors"
         >

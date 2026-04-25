@@ -44,7 +44,7 @@ export default async function ContributionsPage(): Promise<React.JSX.Element> {
         <h1 className="text-2xl font-serif font-medium text-[var(--text)]">{t('pageTitle')}</h1>
         <Link
           href="/contribute"
-          className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
+          className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus-visible:outline-none focus-visible:underline"
         >
           {t('newSubmission')}
         </Link>

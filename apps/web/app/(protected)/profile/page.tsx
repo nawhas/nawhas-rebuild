@@ -79,7 +79,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
                 {user.email}{' '}
                 <Link
                   href="/settings"
-                  className="text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
+                  className="text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus-visible:outline-none focus-visible:underline"
                 >
                   {t('changeInSettings')}
                 </Link>
@@ -101,7 +101,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
             </p>
             <Link
               href="/library/tracks"
-              className="mt-2 inline-block text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
+              className="mt-2 inline-block text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus-visible:outline-none focus-visible:underline"
             >
               {t('viewLibrary')}
             </Link>
@@ -115,7 +115,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
             <p className="mt-1 text-sm text-[var(--text-dim)]">{t('tracksPlayed')}</p>
             <Link
               href="/history"
-              className="mt-2 inline-block text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
+              className="mt-2 inline-block text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus-visible:outline-none focus-visible:underline"
             >
               {t('viewHistory')}
             </Link>
@@ -128,7 +128,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
             <h2 className="text-2xl font-serif font-medium text-[var(--text)]">{t('recentlyPlayed')}</h2>
             <Link
               href="/history"
-              className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
+              className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus-visible:outline-none focus-visible:underline"
             >
               {t('seeAll')}
             </Link>

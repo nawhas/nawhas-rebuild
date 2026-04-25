@@ -73,6 +73,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded: onUploadedProp }: Ava
         aria-label={t('avatarChangeLabel')}
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
+        aria-busy={uploading || undefined}
         className="group relative h-24 w-24 overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
       >
         {currentUrl ? (
