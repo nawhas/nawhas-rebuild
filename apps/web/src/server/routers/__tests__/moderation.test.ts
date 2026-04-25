@@ -831,10 +831,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
 
     it('returns sorted by name', async () => {
       const caller = makeModerationCaller(db, moderatorId);
-      const result = await caller.searchUsers({ query: '' });
+      // Substring scoped to this test run's seeded users only.
+      const result = await caller.searchUsers({ query: SUFFIX });
 
-      // Should return results including our three seeded users, sorted by name.
-      expect(result.length).toBeGreaterThan(0);
+      // Should return all three seeded users (Alice, Bob, Charlie), sorted by name.
+      expect(result.length).toBeGreaterThanOrEqual(3);
       for (let i = 0; i < result.length - 1; i++) {
         expect(result[i]!.name.localeCompare(result[i + 1]!.name)).toBeLessThanOrEqual(0);
       }
@@ -842,7 +843,7 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
 
     it('respects limit parameter', async () => {
       const caller = makeModerationCaller(db, moderatorId);
-      const result = await caller.searchUsers({ query: '', limit: 2 });
+      const result = await caller.searchUsers({ query: SUFFIX, limit: 2 });
 
       expect(result.length).toBeLessThanOrEqual(2);
     });
