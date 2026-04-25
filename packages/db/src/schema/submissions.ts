@@ -1,4 +1,5 @@
 import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { users } from './users.js';
 
 /**
@@ -29,6 +30,8 @@ export const submissions = pgTable(
     notes: text('notes'),
     /** Internal notes visible only to moderators on /mod/submissions/[id]. */
     moderatorNotes: text('moderator_notes'),
+    /** When the moderator digest cron last included this row. Null while not yet notified. */
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -36,5 +39,9 @@ export const submissions = pgTable(
     index('submissions_submitted_by_user_id_idx').on(t.submittedByUserId),
     index('submissions_status_idx').on(t.status),
     index('submissions_type_action_idx').on(t.type, t.action),
+    // Digest-cron query: pending and unnotified, ordered by createdAt.
+    index('submissions_pending_unnotified_idx')
+      .on(t.createdAt)
+      .where(sql`status = 'pending' AND notified_at IS NULL`),
   ],
 );
