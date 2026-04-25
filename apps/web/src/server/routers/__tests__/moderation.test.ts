@@ -607,6 +607,50 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     });
   });
 
+  // ── moderation.setModeratorNotes ─────────────────────────────────────────
+
+  describe('moderation.setModeratorNotes', () => {
+    it('writes notes and audits notes_updated', async () => {
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const { id: submissionId } = await contribCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Notes Test Reciter' },
+      });
+      seededSubmissionIds.push(submissionId);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.setModeratorNotes({
+        submissionId,
+        notes: 'Looks good but check the avatar.',
+      });
+
+      const [row] = await db.select().from(submissions).where(eq(submissions.id, submissionId));
+      expect(row?.moderatorNotes).toBe('Looks good but check the avatar.');
+
+      const auditRows = await db
+        .select()
+        .from(auditLog)
+        .where(and(eq(auditLog.action, 'submission.notes_updated'), eq(auditLog.targetId, submissionId)));
+      expect(auditRows).toHaveLength(1);
+      expect((auditRows[0]?.meta as { length: number }).length).toBe('Looks good but check the avatar.'.length);
+    });
+
+    it('rejects non-moderators', async () => {
+      const { makeAuthCtx } = await import('./helpers');
+      const { createCallerFactory } = await import('../../trpc/trpc');
+      const { moderationRouter } = await import('../moderation');
+      const ctx = makeAuthCtx(db, contributorId, 'contributor');
+      const restrictedCaller = createCallerFactory(moderationRouter)(ctx);
+      await expect(
+        restrictedCaller.setModeratorNotes({
+          submissionId: '00000000-0000-0000-0000-000000000000',
+          notes: 'x',
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
   // ── moderation.setRole ───────────────────────────────────────────────────
 
   describe('moderation.setRole', () => {

@@ -465,6 +465,45 @@ export const moderationRouter = router({
     }),
 
   /**
+   * Update internal moderator notes on a submission.
+   * Writes an audit log entry per save (length only — note text is not
+   * mirrored into the audit `meta` to keep audit jsonb bounded).
+   */
+  setModeratorNotes: moderatorProcedure
+    .input(
+      z.object({
+        submissionId: z.uuid(),
+        notes: z.string().max(2000),
+      }),
+    )
+    .mutation(async ({ ctx, input }): Promise<{ success: true }> => {
+      const [submission] = await ctx.db
+        .select({ id: submissions.id })
+        .from(submissions)
+        .where(eq(submissions.id, input.submissionId))
+        .limit(1);
+      if (!submission) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Submission not found.' });
+      }
+
+      await ctx.db.transaction(async (tx) => {
+        await tx
+          .update(submissions)
+          .set({ moderatorNotes: input.notes, updatedAt: new Date() })
+          .where(eq(submissions.id, input.submissionId));
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: 'submission.notes_updated',
+          targetType: 'submission',
+          targetId: input.submissionId,
+          meta: { length: input.notes.length },
+        });
+      });
+
+      return { success: true };
+    }),
+
+  /**
    * Promote or demote a user's role.
    * Uses the Better Auth admin plugin API for 'user' role changes;
    * sets contributor/moderator roles directly via the DB (admin plugin only
