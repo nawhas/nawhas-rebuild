@@ -258,4 +258,58 @@ test.describe('Phase 2.4 W3 — contributor lifecycle', () => {
       page.getByRole('button', { name: /^Withdraw submission$/i }),
     ).toHaveCount(0);
   });
+
+  // -------------------------------------------------------------------------
+  // H4. Changes-requested banner surfaces feedback on the contributor's
+  //     submission detail page (Phase F/G placement: not on a contribute
+  //     edit page, but on /profile/contributions/[id]).
+  // -------------------------------------------------------------------------
+  test('changes-requested banner surfaces feedback on contribution detail page', async ({
+    page,
+    freshContributor,
+    freshModerator,
+  }) => {
+    // Contributor submits a reciter via the UI.
+    await signIn(page, freshContributor.email, freshContributor.password);
+    const reciterName = `CR Reciter ${suffix()}`;
+    await gotoExpectOk(page, '/contribute/reciter/new');
+    await page.fill('#name', reciterName);
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL('/profile/contributions', {
+      timeout: 20_000,
+    });
+    const submissionId = await getLatestSubmissionIdForEmail(
+      freshContributor.email,
+    );
+
+    // Seed the moderator's "changes_requested" decision directly in the DB.
+    // The mod review-actions UI's onClick is unreliable under dev-mode
+    // Turbopack hydration in the local Docker stack (per the rationale
+    // baked into m6-setup); CI runs prod where the click works, but the
+    // DB seed is deterministic in either environment and exercises the
+    // same getResubmitContext code path the banner depends on.
+    await setSubmissionStatus(submissionId, 'changes_requested');
+    await insertSubmissionReview({
+      submissionId,
+      reviewerEmail: freshModerator.email,
+      action: 'changes_requested',
+      comment: 'Add a publication year please.',
+    });
+
+    // Contributor opens the submission detail page → banner is visible
+    // with the moderator's feedback comment.
+    await gotoExpectOk(page, `/profile/contributions/${submissionId}`);
+    await expect(page.getByText(/Changes requested/i)).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText(/Add a publication year/i)).toBeVisible();
+
+    // Toggle the diff disclosure: collapsed → expanded → collapsed.
+    await page
+      .getByRole('button', { name: /See what's been changed/i })
+      .click();
+    await expect(
+      page.getByRole('button', { name: /Hide changes/i }),
+    ).toBeVisible({ timeout: 5_000 });
+  });
 });
