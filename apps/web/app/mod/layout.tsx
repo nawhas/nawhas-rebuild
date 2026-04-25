@@ -1,11 +1,30 @@
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
+import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
+import { createCallerFactory } from '@/server/trpc/trpc';
+import { appRouter } from '@/server/trpc/router';
 import { ModNav } from '@/components/mod/mod-nav';
 
 // Mark as dynamic since we use headers() for auth checks on every request
 export const dynamic = 'force-dynamic';
+
+const createCaller = createCallerFactory(appRouter);
+
+const getPendingCounts = cache(
+  async (
+    sessionData: NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>,
+  ): Promise<{ submissions: number; accessRequests: number }> => {
+    const caller = createCaller({
+      db,
+      session: sessionData.session,
+      user: sessionData.user,
+    });
+    return await caller.moderation.pendingCounts();
+  },
+);
 
 /**
  * Moderation layout — /mod/*
@@ -14,7 +33,8 @@ export const dynamic = 'force-dynamic';
  * Non-authenticated users are redirected to /login.
  * Authenticated non-moderators are redirected to /.
  *
- * Renders a shared horizontal sub-nav for all /mod routes.
+ * Renders a shared horizontal sub-nav for all /mod routes with per-tab
+ * pending counts (Queue + Access requests).
  */
 export default async function ModLayout({
   children,
@@ -35,10 +55,16 @@ export default async function ModLayout({
   }
 
   const t = await getTranslations('mod.nav');
+  const counts = await getPendingCounts(sessionData);
 
   const items = [
     { href: '/mod', label: t('overview') },
-    { href: '/mod/queue', label: t('queue') },
+    { href: '/mod/queue', label: t('queue'), count: counts.submissions },
+    {
+      href: '/mod/access-requests',
+      label: t('accessRequests'),
+      count: counts.accessRequests,
+    },
     { href: '/mod/users', label: t('users') },
     { href: '/mod/audit', label: t('audit') },
   ];
