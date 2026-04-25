@@ -1,8 +1,13 @@
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, or } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { accessRequests, auditLog } from '@nawhas/db';
-import { router, protectedProcedure } from '../trpc/trpc';
+import { accessRequests, auditLog, users } from '@nawhas/db';
+import { router, protectedProcedure, moderatorProcedure } from '../trpc/trpc';
+import { encodeCursor, decodeCursor } from '../lib/cursor';
+import type { AccessRequestDTO, AccessRequestQueueItemDTO, PaginatedResult } from '@nawhas/types';
+
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
 
 export const accessRequestsRouter = router({
   /**
@@ -82,5 +87,79 @@ export const accessRequestsRouter = router({
         });
       });
       return { ok: true };
+    }),
+
+  /**
+   * Owner-scoped read of the caller's most recent application (any status).
+   * Returns null when the caller has never applied. Powers /contribute and
+   * /contribute/apply state.
+   */
+  getMine: protectedProcedure.query(async ({ ctx }): Promise<AccessRequestDTO | null> => {
+    const [row] = await ctx.db
+      .select()
+      .from(accessRequests)
+      .where(eq(accessRequests.userId, ctx.user.id))
+      .orderBy(desc(accessRequests.createdAt))
+      .limit(1);
+    return (row ?? null) as AccessRequestDTO | null;
+  }),
+
+  /**
+   * Paginated /mod/access-requests queue.
+   * Default filter pending; status='all' returns everything.
+   */
+  queue: moderatorProcedure
+    .input(
+      z.object({
+        limit: z.number().int().min(1).max(MAX_LIMIT).optional().default(DEFAULT_LIMIT),
+        cursor: z.string().optional(),
+        status: z
+          .enum(['pending', 'approved', 'rejected', 'withdrawn', 'all'])
+          .optional()
+          .default('pending'),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<PaginatedResult<AccessRequestQueueItemDTO>> => {
+      const limit = input.limit;
+      const conditions = [];
+      if (input.status !== 'all') conditions.push(eq(accessRequests.status, input.status));
+      if (input.cursor) {
+        const { createdAt, id } = decodeCursor(input.cursor);
+        conditions.push(
+          or(
+            lt(accessRequests.createdAt, createdAt),
+            and(eq(accessRequests.createdAt, createdAt), gt(accessRequests.id, id)),
+          )!,
+        );
+      }
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const rows = await ctx.db
+        .select({
+          id: accessRequests.id,
+          userId: accessRequests.userId,
+          reason: accessRequests.reason,
+          status: accessRequests.status,
+          reviewedBy: accessRequests.reviewedBy,
+          reviewComment: accessRequests.reviewComment,
+          reviewedAt: accessRequests.reviewedAt,
+          withdrawnAt: accessRequests.withdrawnAt,
+          createdAt: accessRequests.createdAt,
+          updatedAt: accessRequests.updatedAt,
+          applicantName: users.name,
+          applicantEmail: users.email,
+          applicantCreatedAt: users.createdAt,
+        })
+        .from(accessRequests)
+        .innerJoin(users, eq(users.id, accessRequests.userId))
+        .where(where)
+        .orderBy(desc(accessRequests.createdAt), asc(accessRequests.id))
+        .limit(limit + 1);
+
+      const hasMore = rows.length > limit;
+      const items = (hasMore ? rows.slice(0, limit) : rows) as AccessRequestQueueItemDTO[];
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
+      return { items, nextCursor };
     }),
 });

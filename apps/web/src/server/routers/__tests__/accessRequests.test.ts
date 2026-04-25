@@ -126,3 +126,58 @@ describe('accessRequests.withdrawMine', () => {
     expect(rows.length).toBeGreaterThan(0);
   });
 });
+
+describe('accessRequests.getMine', () => {
+  it.skipIf(!dbAvailable)('returns null when the user has no application', async () => {
+    const userId = await seedUser('user');
+    const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const out = await caller.getMine();
+    expect(out).toBeNull();
+  });
+
+  it.skipIf(!dbAvailable)('returns the most recent application', async () => {
+    const userId = await seedUser('user');
+    const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await caller.create({ reason: 'first' });
+    await caller.withdrawMine({ id });
+    const { id: id2 } = await caller.create({ reason: 'second' });
+    const out = await caller.getMine();
+    expect(out?.id).toBe(id2);
+    expect(out?.status).toBe('pending');
+  });
+});
+
+describe('accessRequests.queue', () => {
+  it.skipIf(!dbAvailable)('lists pending requests, newest first', async () => {
+    const modId = await seedUser('moderator');
+    const u1 = await seedUser('user');
+    const u2 = await seedUser('user');
+    const c1 = makeAccessRequestsCaller(testDb.db, u1, 'user');
+    const c2 = makeAccessRequestsCaller(testDb.db, u2, 'user');
+    await c1.create({ reason: 'r1' });
+    await c2.create({ reason: 'r2' });
+    const mod = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
+    const out = await mod.queue({});
+    expect(out.items.length).toBeGreaterThanOrEqual(2);
+    // Newest first: u2 then u1
+    const ids = out.items.map((i) => i.userId);
+    expect(ids.indexOf(u2)).toBeLessThan(ids.indexOf(u1));
+  });
+
+  it.skipIf(!dbAvailable)('joins applicant name and email', async () => {
+    const modId = await seedUser('moderator');
+    const u = await seedUser('user');
+    const cu = makeAccessRequestsCaller(testDb.db, u, 'user');
+    await cu.create({ reason: null });
+    const mod = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
+    const out = await mod.queue({});
+    const item = out.items.find((i) => i.userId === u);
+    expect(item?.applicantEmail).toContain(u);
+  });
+
+  it.skipIf(!dbAvailable)('rejects role=user with FORBIDDEN', async () => {
+    const u = await seedUser('user');
+    const c = makeAccessRequestsCaller(testDb.db, u, 'user');
+    await expect(c.queue({})).rejects.toThrow(/FORBIDDEN/i);
+  });
+});
