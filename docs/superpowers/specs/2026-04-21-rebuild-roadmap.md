@@ -1,9 +1,9 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 spec'd (2026-04-24) · Phase 2.1c + 2.5 + 2.4 W2/W3 + Phase 3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 shipped (2026-04-25) · Phase 2.1c + 2.4 W2/W3 + Phase 3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
-**Last updated:** 2026-04-24
+**Last updated:** 2026-04-25
 
 ## Context
 
@@ -449,7 +449,7 @@ contribution heatmap, and `/dashboard` stats surfaced by Phase 2.5.
 
 Own spec and plan will land before execution.
 
-## Phase 2.5 — POC Design Port
+## Phase 2.5 — POC Design Port ✅ shipped 2026-04-25
 
 A separate prototype repository, [`nawhas/new-design-poc`](https://github.com/nawhas/new-design-poc),
 was built from a set of 12 design mockups into a fully functional Next.js 16 prototype on the same
@@ -461,9 +461,6 @@ This is a forward-looking aesthetic decision that supersedes the brand-hue / typ
 decisions resolved in the 2026-04-22 design audit (which were anchored on legacy production
 aesthetic). Both decisions are coherent in their own time.
 
-**Sequencing.** Phase 2.5 is the next thing to ship; W2 and W3 pause for its duration.
-Downstream phases (W2, W3, Phase 3, Phase 4) inherit the POC design system from the start.
-
 **Three POC-only surfaces** (public contributor profile + heatmap, public day-grouped changes
 feed, contributor dashboard with stats) are deferred from this roadmap and folded into W2 / W3
 where they thematically belong (see the W2 and W3 entries above).
@@ -471,8 +468,23 @@ where they thematically belong (see the W2 and W3 entries above).
 **Branch strategy.** Single long-running feature branch (`phase-2.5-poc-reskin`), batched merge
 to `main`, mirroring Phase 1's shape.
 
-Spec: [`2026-04-24-poc-design-port-design.md`](./2026-04-24-poc-design-port-design.md). Plan
-will land before execution.
+**What shipped (2026-04-21 → 2026-04-25 on `phase-2.5-poc-reskin`):**
+
+- **Phase A (Tokens + Fonts + Theme).** Token cascade swap from legacy red `#F44336` to POC accent `#c9302c`; Inter + Fraunces + NotoNastaliqUrdu replace Bellefair + RobotoSlab + RobotoMono; dark theme becomes the default via `next-themes` (`data-theme` attribute).
+- **Phase B (Components).** Footer, CoverArt, ReciterAvatar, TrackRow, Waveform, hashToIndex util ported from POC; PlayerBar restyled visual layer (player store untouched); `Input` primitive POC-tokenized; canonical `formatDuration` extracted to `@nawhas/ui/lib`; `AlbumCard` consolidated with `AlbumListCard`.
+- **Phase C — Pages Wave 1 (public entities).** Home, reciters listing + A-Z nav, reciter profile, albums listing, album detail, track detail (+ Waveform).
+- **Phase C — Pages Wave 2 (discovery + auth).** `/library/tracks`, `/search`, all 6 `(auth)/*` surfaces.
+- **Phase C — Pages Wave 3 (contribute + mod + protected + boundaries).** All 19 remaining routes: `error.tsx` / `not-found.tsx` / 5 `loading.tsx`; `(protected)/{profile, history, settings}`; `/contribute` landing + 6 wizard routes + 11 shared form components; `/mod` dashboard + queue/audit/users + submission detail (333-line review workspace) + 9 mod components; final mop-up of 14 chrome primitives that escaped W1/W2 explicit File maps.
+- **A11y + tokens hygiene.** WCAG 2.1 AA contrast fixed on `--text-faint` (light + dark) and `--color-primary-600` (dark). All interactive elements adopt `focus-visible:` (legacy `focus:ring-*` chains gone). `aria-busy` paired with `disabled` on async submits. `aria-current="page"` on active breadcrumbs / sub-navs. Hover-bg rule (cards in `--card-bg` containers hover to `--surface-2`, not `--surface`) codified in `docs/design/visual-vocabulary.md` after the dark-mode collision surfaced repeatedly across waves.
+- **Test coverage.** 17 new unit-test files (~2k LOC) covering tracks/albums/reciters/home component sections. 489 → 618 passing test cases.
+- **Cleanup.** `vibrantColor` field removed end-to-end (schema column dropped via migration `0011_large_martin_li.sql`, router selects + DTO type + 3 fixtures cleaned, `compute-vibrant-colors.ts` script + `node-vibrant` dep deleted). `placeholder-color.ts` dead util deleted. Visual vocab `--surface` vs `--card-bg` terminology reconciled with codebase reality.
+- **Lighthouse canary.** Phase B end (2026-04-24): performance 0.98 / accessibility 0.97 / FCP 1600ms / LCP 1600ms / CLS 0.063 — all five thresholds cleared. Recorded in `docs/design/visual-vocabulary.md`.
+
+Spec: [`2026-04-24-poc-design-port-design.md`](./2026-04-24-poc-design-port-design.md). Implementation
+plans: `docs/superpowers/plans/2026-04-24-phase-2-5-foundation-and-components.md`,
+`docs/superpowers/plans/2026-04-24-phase-2-5-pages-wave1-public-entities.md`,
+`docs/superpowers/plans/2026-04-24-phase-2-5-pages-wave2-discovery-and-auth.md`,
+`docs/superpowers/plans/2026-04-25-phase-2-5-pages-wave3-contribute-mod-protected-boundaries.md`.
 
 ## Phase 3 — Launch Prep
 
