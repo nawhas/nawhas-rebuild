@@ -37,7 +37,6 @@ const createCaller = createCallerFactory(appRouter);
  * - For action=edit: renders field-by-field diff of current vs. proposed values.
  * - For action=create: renders a preview of the proposed values.
  * - For pending/changes_requested: shows review action buttons.
- * - For approved: shows an Apply button.
  */
 export default async function SubmissionDetailPage({
   params,
