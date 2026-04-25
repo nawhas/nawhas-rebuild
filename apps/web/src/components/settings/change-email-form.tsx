@@ -35,17 +35,17 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailFormProps): React.J
 
   return (
     <section aria-labelledby="email-heading">
-      <h2 id="email-heading" className="text-base font-semibold text-foreground">
+      <h2 id="email-heading" className="font-serif text-2xl font-medium text-[var(--text)]">
         {t('emailHeading')}
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-[var(--text-dim)]">
         {t('emailCurrent')}{' '}
-        <span className="font-medium text-foreground">{currentEmail}</span>
+        <span className="font-medium text-[var(--text)]">{currentEmail}</span>
       </p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-4 max-w-sm space-y-3">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 max-w-sm space-y-6">
         <div>
-          <label htmlFor="new-email" className="block text-sm font-medium text-foreground">
+          <label htmlFor="new-email" className="block text-[13px] font-medium text-[var(--text-dim)] mb-2">
             {t('newEmailLabel')}
           </label>
           <input
@@ -60,23 +60,27 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailFormProps): React.J
             placeholder={t('newEmailPlaceholder')}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'new-email-error' : undefined}
-            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+            className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
           />
         </div>
 
         {error && (
-          <p id="new-email-error" role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p id="new-email-error" role="alert" className="text-[13px] text-[var(--color-error-500)] mt-2">
             {error}
           </p>
         )}
 
         {success && (
-          <p role="status" className="rounded-md bg-success-50 px-3 py-2 text-sm text-success-700 dark:bg-success-950 dark:text-success-300">
+          <p role="status" className="rounded-[8px] bg-[var(--color-success-50)] px-3 py-2 text-sm text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]">
             {t('updateEmailSuccess')}
           </p>
         )}
 
-        <Button type="submit" disabled={loading || !newEmail}>
+        <Button
+          type="submit"
+          disabled={loading || !newEmail}
+          className="bg-[var(--accent)] text-white hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 rounded-[8px] px-5 py-2.5 text-sm font-medium transition-colors"
+        >
           {loading ? t('updateEmailSubmitting') : t('updateEmailSubmit')}
         </Button>
       </form>
