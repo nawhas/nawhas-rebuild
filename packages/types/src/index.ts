@@ -328,6 +328,21 @@ export interface AuditLogDTO {
 }
 
 // ---------------------------------------------------------------------------
+// Public Changes Feed
+// ---------------------------------------------------------------------------
+
+export interface RecentChangeDTO {
+  id: string;
+  action: 'create' | 'edit';
+  entityType: 'reciter' | 'album' | 'track';
+  entityTitle: string;
+  entitySlugPath: string;
+  avatarUrl: string | null;
+  submitterName: string;
+  at: Date;
+}
+
+// ---------------------------------------------------------------------------
 // Moderation — Review Thread
 // ---------------------------------------------------------------------------
 

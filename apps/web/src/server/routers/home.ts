@@ -1,8 +1,10 @@
 import { z } from 'zod';
-import { desc, eq } from 'drizzle-orm';
-import { albums, reciters, tracks, userSavedTracks } from '@nawhas/db';
+import { and, asc, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
+import { albums, auditLog, reciters, submissions, tracks, userSavedTracks, users } from '@nawhas/db';
 import { router, protectedProcedure, publicProcedure } from '../trpc/trpc';
-import type { FeaturedDTO, TrackListItemDTO } from '@nawhas/types';
+import type { FeaturedDTO, PaginatedResult, RecentChangeDTO, TrackListItemDTO } from '@nawhas/types';
+import { encodeCursor, decodeCursor } from '../lib/cursor';
 
 // Number of featured items per category returned on the home page.
 const FEATURED_RECITERS_LIMIT = 6;
@@ -96,6 +98,162 @@ export const homeRouter = router({
         .innerJoin(reciters, eq(albums.reciterId, reciters.id))
         .orderBy(desc(tracks.createdAt))
         .limit(limit);
+    }),
+
+  /**
+   * Public day-grouped catalogue feed source. Surfaces only
+   * action='submission.applied' audit events, joined to the canonical
+   * entity for title + slug + cover/avatar URL, plus the submitter's
+   * display name. Internal moderator actions (role.changed, notes_updated,
+   * etc.) never surface here.
+   */
+  recentChanges: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().int().min(1).max(50).optional().default(20),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<PaginatedResult<RecentChangeDTO>> => {
+      const limit = input.limit;
+
+      const conditions: SQL[] = [eq(auditLog.action, 'submission.applied')];
+      if (input.cursor) {
+        const { createdAt, id } = decodeCursor(input.cursor);
+        conditions.push(
+          or(
+            lt(auditLog.createdAt, createdAt),
+            and(eq(auditLog.createdAt, createdAt), gt(auditLog.id, id)),
+          )!,
+        );
+      }
+
+      // Pull more than `limit` rows so we can still return `limit` after
+      // dropping rows whose canonical entity got deleted (the join would
+      // otherwise return fewer than `limit` items, falsely signaling "no more").
+      const rows = await ctx.db
+        .select({
+          id: auditLog.id,
+          createdAt: auditLog.createdAt,
+          targetType: auditLog.targetType,
+          targetId: auditLog.targetId,
+          submissionId: sql<string>`(${auditLog.meta}->>'submissionId')`,
+          submissionAction: sql<'create' | 'edit'>`(${auditLog.meta}->>'submissionAction')`,
+          submitterName: users.name,
+        })
+        .from(auditLog)
+        .innerJoin(submissions, sql`${submissions.id}::text = (${auditLog.meta}->>'submissionId')`)
+        .innerJoin(users, eq(submissions.submittedByUserId, users.id))
+        .where(and(...conditions))
+        .orderBy(desc(auditLog.createdAt), asc(auditLog.id))
+        .limit(limit + 1);
+
+      const reciterIds = rows.filter((r) => r.targetType === 'reciter').map((r) => r.targetId).filter((x): x is string => !!x);
+      const albumIds = rows.filter((r) => r.targetType === 'album').map((r) => r.targetId).filter((x): x is string => !!x);
+      const trackIds = rows.filter((r) => r.targetType === 'track').map((r) => r.targetId).filter((x): x is string => !!x);
+
+      const reciterMap = reciterIds.length === 0
+        ? new Map<string, { id: string; name: string; slug: string; avatarUrl: string | null }>()
+        : new Map(
+          (
+            await ctx.db
+              .select({ id: reciters.id, name: reciters.name, slug: reciters.slug, avatarUrl: reciters.avatarUrl })
+              .from(reciters)
+              .where(inArray(reciters.id, reciterIds))
+          ).map((r) => [r.id, r]),
+        );
+
+      const albumMap = albumIds.length === 0
+        ? new Map<string, { id: string; title: string; slug: string; artworkUrl: string | null; reciterSlug: string }>()
+        : new Map(
+          (
+            await ctx.db
+              .select({
+                id: albums.id,
+                title: albums.title,
+                slug: albums.slug,
+                artworkUrl: albums.artworkUrl,
+                reciterSlug: reciters.slug,
+              })
+              .from(albums)
+              .innerJoin(reciters, eq(reciters.id, albums.reciterId))
+              .where(inArray(albums.id, albumIds))
+          ).map((a) => [a.id, a]),
+        );
+
+      const trackMap = trackIds.length === 0
+        ? new Map<string, { id: string; title: string; slug: string; albumSlug: string; reciterSlug: string; artworkUrl: string | null }>()
+        : new Map(
+          (
+            await ctx.db
+              .select({
+                id: tracks.id,
+                title: tracks.title,
+                slug: tracks.slug,
+                albumSlug: albums.slug,
+                reciterSlug: reciters.slug,
+                artworkUrl: albums.artworkUrl,
+              })
+              .from(tracks)
+              .innerJoin(albums, eq(albums.id, tracks.albumId))
+              .innerJoin(reciters, eq(reciters.id, albums.reciterId))
+              .where(inArray(tracks.id, trackIds))
+          ).map((t) => [t.id, t]),
+        );
+
+      const items: RecentChangeDTO[] = [];
+      for (const r of rows) {
+        if (items.length >= limit) break;
+        if (!r.targetId) continue;
+        if (r.targetType === 'reciter') {
+          const ent = reciterMap.get(r.targetId);
+          if (!ent) continue;
+          items.push({
+            id: r.id,
+            action: r.submissionAction,
+            entityType: 'reciter',
+            entityTitle: ent.name,
+            entitySlugPath: `/reciters/${ent.slug}`,
+            avatarUrl: ent.avatarUrl ?? null,
+            submitterName: r.submitterName ?? 'A contributor',
+            at: r.createdAt,
+          });
+        } else if (r.targetType === 'album') {
+          const ent = albumMap.get(r.targetId);
+          if (!ent) continue;
+          items.push({
+            id: r.id,
+            action: r.submissionAction,
+            entityType: 'album',
+            entityTitle: ent.title,
+            entitySlugPath: `/reciters/${ent.reciterSlug}/albums/${ent.slug}`,
+            avatarUrl: ent.artworkUrl ?? null,
+            submitterName: r.submitterName ?? 'A contributor',
+            at: r.createdAt,
+          });
+        } else if (r.targetType === 'track') {
+          const ent = trackMap.get(r.targetId);
+          if (!ent) continue;
+          items.push({
+            id: r.id,
+            action: r.submissionAction,
+            entityType: 'track',
+            entityTitle: ent.title,
+            entitySlugPath: `/reciters/${ent.reciterSlug}/albums/${ent.albumSlug}/tracks/${ent.slug}`,
+            avatarUrl: ent.artworkUrl ?? null,
+            submitterName: r.submitterName ?? 'A contributor',
+            at: r.createdAt,
+          });
+        }
+      }
+
+      const lastIncludedSourceRow = rows[items.length - 1];
+      const hasMore = rows.length > items.length;
+      const nextCursor = hasMore && lastIncludedSourceRow
+        ? encodeCursor(lastIncludedSourceRow.createdAt, lastIncludedSourceRow.id)
+        : null;
+
+      return { items, nextCursor };
     }),
 
   /**
