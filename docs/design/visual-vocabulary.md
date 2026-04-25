@@ -117,6 +117,15 @@ This vocabulary is intentionally narrow. Anything not specified above defaults t
 - **Image / audio uploaders:** dropzone is `border-2 border-dashed border-[var(--border)] rounded-[12px] p-8 text-center text-[var(--text-dim)] hover:border-[var(--accent)] transition-colors`. Selected-file preview keeps existing thumb but swaps wrapper to `bg-[var(--surface-2)] rounded-[8px] p-3`.
 - **Lyrics tabs:** tab strip `border-b border-[var(--border)]`, each tab `px-4 py-2 text-sm text-[var(--text-dim)] data-[state=active]:text-[var(--text)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)]`.
 
+## Mod dashboard + listings (`/mod`, `/mod/{queue,audit,users}`)
+
+- **Page heading:** serif 36–48px weight 500.
+- **Sub-nav:** horizontal row of `Link`s under the heading, `text-[14px] text-[var(--text-dim)] data-[active]:text-[var(--text)] data-[active]:font-medium`. Separator: 12px gap.
+- **Stat cards (`/mod` landing):** `grid grid-cols-2 sm:grid-cols-4 gap-4`. Each card: `bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-6`. Stat number `font-serif text-3xl font-medium text-[var(--text)]`. Sub-label `text-sm text-[var(--text-dim)] mt-1`.
+- **Listing tables (`/mod/queue`, `/mod/audit`, `/mod/users`):** per existing Tables vocab. Container is the `--card-bg` card (`rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] overflow-hidden`); rows use `--surface-2` hover.
+- **Filters / search bar above the table:** `bg-[var(--input-bg)]` input per Forms; secondary-CTA buttons per CTA vocab.
+- **Role buttons (in users table):** Use the **Secondary CTA** classes for default, swap to **Primary CTA** classes for the active role. Active state visually persistent (no hover-only).
+
 ---
 
 ## Lighthouse canary — Phase B end (2026-04-24)

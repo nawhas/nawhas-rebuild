@@ -47,10 +47,10 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
   return (
     <>
       {items.map((user) => (
-        <tr key={user.id} className="border-t border-border">
+        <tr key={user.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]">
           <td className="px-4 py-3">
-            <p className="text-sm font-medium text-foreground">{user.name}</p>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
+            <p className="text-sm font-medium text-[var(--text)]">{user.name}</p>
+            <p className="text-xs text-[var(--text-faint)]">{user.email}</p>
           </td>
           <td className="px-4 py-3">
             <RoleBadge role={user.role} />
@@ -63,7 +63,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
       {error && (
         <tr>
           <td colSpan={3} className="px-4 py-3">
-            <p role="alert" className="text-sm text-destructive">{error}</p>
+            <p role="alert" className="text-sm text-[var(--color-error-500)]">{error}</p>
           </td>
         </tr>
       )}
@@ -75,7 +75,7 @@ export function LoadMoreUsers({ initialCursor, search }: LoadMoreUsersProps): Re
               onClick={handleLoadMore}
               disabled={isPending}
               aria-busy={isPending}
-              className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
+              className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-5 py-2.5 text-sm text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
             >
               {isPending ? tQueue('loadingMore') : tQueue('loadMore')}
             </button>

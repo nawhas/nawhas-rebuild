@@ -41,53 +41,56 @@ export default async function ModOverviewPage(): Promise<React.JSX.Element> {
   const t = await getTranslations('mod.overview');
 
   return (
-    <div className="max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
-
-      {/* Stats */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <p className="text-3xl font-bold text-foreground">
+    <div>
+      {/* Stat cards */}
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Link
+          href="/mod/queue"
+          className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+        >
+          <p className="font-serif text-3xl font-medium text-[var(--text)]">
             {queue.items.length}
             {queue.nextCursor ? '+' : ''}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{t('pendingSubmissions')}</p>
-          <Link
-            href="/mod/queue"
-            className="mt-2 inline-block text-xs text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
-          >
-            {t('viewQueue')}
-          </Link>
-        </div>
+          <p className="mt-1 text-sm text-[var(--text-dim)]">{t('pendingSubmissions')}</p>
+          <span className="mt-2 block text-xs text-[var(--text-faint)]">
+            {t('viewQueue')} →
+          </span>
+        </Link>
       </div>
 
       {/* Recent activity */}
       <section aria-label={t('recentActivitySectionLabel')}>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-foreground">{t('recentActivityHeading')}</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-2xl font-medium text-[var(--text)]">
+            {t('recentActivityHeading')}
+          </h2>
           <Link
             href="/mod/audit"
-            className="text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+            className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           >
             {t('viewAll')}
           </Link>
         </div>
 
         {auditLog.items.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">{t('noActivity')}</p>
+          <p className="py-4 text-sm text-[var(--text-dim)]">{t('noActivity')}</p>
         ) : (
           <ol
             aria-label={t('recentActivityListLabel')}
-            className="divide-y divide-border rounded-lg border border-border bg-card"
+            className="overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]"
           >
             {auditLog.items.map((entry) => (
-              <li key={entry.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                <span className="truncate text-sm font-mono text-foreground">
+              <li
+                key={entry.id}
+                className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 last:border-b-0 hover:bg-[var(--surface-2)]"
+              >
+                <span className="truncate font-mono text-sm text-[var(--text)]">
                   {entry.action}
                 </span>
                 <time
                   dateTime={String(entry.createdAt)}
-                  className="shrink-0 text-xs text-muted-foreground"
+                  className="shrink-0 text-xs text-[var(--text-faint)]"
                   title={new Date(entry.createdAt).toLocaleString()}
                 >
                   {new Date(entry.createdAt).toLocaleDateString(undefined, {

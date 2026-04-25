@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Card } from '@nawhas/ui/components/card';
 import { fetchQueuePage } from '@/server/actions/moderation-fetch';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
 import type { SubmissionDTO } from '@nawhas/types';
@@ -41,13 +40,13 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
     <>
       {items.map((submission) => (
         <li key={submission.id}>
-          <Card className="overflow-hidden">
+          <div className="overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]">
             <Link
               href={`/mod/submissions/${submission.id}`}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
+              className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="truncate text-sm font-medium text-foreground">
+                <span className="truncate text-sm font-medium text-[var(--text)]">
                   {getLabel(submission, tHistory)}
                 </span>
                 <div className="flex items-center gap-2">
@@ -58,7 +57,7 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
               </div>
               <time
                 dateTime={String(submission.createdAt)}
-                className="shrink-0 text-xs text-muted-foreground"
+                className="shrink-0 text-xs text-[var(--text-faint)]"
                 title={new Date(submission.createdAt).toLocaleString()}
               >
                 {new Date(submission.createdAt).toLocaleDateString(undefined, {
@@ -67,10 +66,14 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
                 })}
               </time>
             </Link>
-          </Card>
+          </div>
         </li>
       ))}
-      {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-[var(--color-error-500)]">
+          {error}
+        </p>
+      )}
       {cursor && (
         <li className="mt-4 text-center">
           <button
@@ -78,7 +81,7 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
             onClick={handleLoadMore}
             disabled={isPending}
             aria-busy={isPending}
-            className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
+            className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-5 py-2.5 text-sm text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
           >
             {isPending ? t('loadingMore') : t('loadMore')}
           </button>

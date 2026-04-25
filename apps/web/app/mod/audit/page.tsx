@@ -37,35 +37,37 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
   const t = await getTranslations('mod.audit');
 
   return (
-    <div className="max-w-5xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
+    <div>
+      <h2 className="mb-6 font-serif text-[28px] font-medium text-[var(--text)]">
+        {t('heading')}
+      </h2>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]">
         <table className="w-full table-fixed">
           <caption className="sr-only">{t('tableCaption')}</caption>
           <thead>
-            <tr className="border-b border-border bg-muted">
+            <tr>
               <th
                 scope="col"
-                className="w-2/5 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="w-2/5 border-b border-[var(--border-strong)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnAction')}
               </th>
               <th
                 scope="col"
-                className="w-1/5 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="w-1/5 border-b border-[var(--border-strong)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnTargetType')}
               </th>
               <th
                 scope="col"
-                className="w-1/5 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="w-1/5 border-b border-[var(--border-strong)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnTargetId')}
               </th>
               <th
                 scope="col"
-                className="w-1/5 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="w-1/5 border-b border-[var(--border-strong)] px-4 py-3 text-right text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnDate')}
               </th>
@@ -74,7 +76,7 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                <td colSpan={4} className="px-4 py-12 text-center text-sm text-[var(--text-dim)]">
                   {t('empty')}
                 </td>
               </tr>
@@ -95,15 +97,15 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
 
 function AuditTableRow({ entry }: { entry: AuditLogDTO }): React.JSX.Element {
   return (
-    <tr className="border-t border-border">
-      <td className="px-4 py-3 font-mono text-xs text-foreground">{entry.action}</td>
-      <td className="px-4 py-3 text-xs text-muted-foreground">
+    <tr className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]">
+      <td className="px-4 py-3 font-mono text-xs text-[var(--text)]">{entry.action}</td>
+      <td className="px-4 py-3 text-xs text-[var(--text-dim)]">
         {entry.targetType ?? '—'}
       </td>
-      <td className="max-w-0 truncate px-4 py-3 text-xs text-muted-foreground">
+      <td className="max-w-0 truncate px-4 py-3 text-xs text-[var(--text-dim)]">
         {entry.targetId ?? '—'}
       </td>
-      <td className="px-4 py-3 text-right text-xs text-muted-foreground">
+      <td className="px-4 py-3 text-right text-xs text-[var(--text-dim)]">
         <time
           dateTime={String(entry.createdAt)}
           title={new Date(entry.createdAt).toLocaleString()}

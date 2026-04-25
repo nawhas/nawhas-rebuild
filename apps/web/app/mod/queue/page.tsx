@@ -37,24 +37,23 @@ export default async function ModQueuePage(): Promise<React.JSX.Element> {
   const t = await getTranslations('mod.queue');
 
   return (
-    <div className="max-w-4xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
+    <div>
+      <h2 className="mb-6 font-serif text-[28px] font-medium text-[var(--text)]">
+        {t('heading')}
+      </h2>
 
       {items.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card px-6 py-12 text-center">
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+        <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] px-6 py-12 text-center">
+          <p className="text-sm text-[var(--text-dim)]">{t('empty')}</p>
         </div>
       ) : (
-        <>
-          <ol aria-label={t('listLabel')} className="space-y-3">
-            {items.map((submission) => (
-              <SubmissionRow key={submission.id} submission={submission} />
-            ))}
-          </ol>
+        <ol aria-label={t('listLabel')} className="space-y-3">
+          {items.map((submission) => (
+            <SubmissionRow key={submission.id} submission={submission} />
+          ))}
           {nextCursor && <LoadMoreQueue initialCursor={nextCursor} />}
-        </>
+        </ol>
       )}
     </div>
   );
 }
-
