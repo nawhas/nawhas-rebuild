@@ -579,6 +579,29 @@ export const moderationRouter = router({
     }),
 
   /**
+   * Typeahead search for the audit-log actor filter. Matches name or
+   * email by ilike (case-insensitive substring). Returns up to `limit`
+   * results, sorted by name.
+   */
+  searchUsers: moderatorProcedure
+    .input(
+      z.object({
+        query: z.string().min(1).max(64),
+        limit: z.number().int().min(1).max(20).optional().default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const pattern = `%${input.query}%`;
+      const rows = await ctx.db
+        .select({ id: users.id, name: users.name, email: users.email, role: users.role })
+        .from(users)
+        .where(or(ilike(users.name, pattern), ilike(users.email, pattern)))
+        .orderBy(asc(users.name))
+        .limit(input.limit);
+      return rows;
+    }),
+
+  /**
    * Promote or demote a user's role.
    * Uses the Better Auth admin plugin API for 'user' role changes;
    * sets contributor/moderator roles directly via the DB (admin plugin only

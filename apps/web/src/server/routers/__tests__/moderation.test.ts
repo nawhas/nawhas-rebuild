@@ -775,6 +775,91 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     });
   });
 
+  // ── moderation.searchUsers ────────────────────────────────────────────────
+
+  describe('moderation.searchUsers', () => {
+    const searchUserIds: string[] = [];
+
+    beforeAll(async () => {
+      const users_to_seed = [
+        {
+          id: `search-alice-${SUFFIX}`,
+          name: 'Alice Johnson',
+          email: `alice-${SUFFIX}@example.com`,
+          emailVerified: true,
+          role: 'contributor' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: `search-bob-${SUFFIX}`,
+          name: 'Bob Stevens',
+          email: `bobs-${SUFFIX}@example.com`,
+          emailVerified: true,
+          role: 'user' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: `search-charlie-${SUFFIX}`,
+          name: 'Charlie Brown',
+          email: `charlie.brown-${SUFFIX}@example.com`,
+          emailVerified: true,
+          role: 'contributor' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+      await db.insert(users).values(users_to_seed);
+      searchUserIds.push(...users_to_seed.map((u) => u.id));
+      seededUserIds.push(...users_to_seed.map((u) => u.id));
+    });
+
+    it('returns matches by name substring', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.searchUsers({ query: 'alic' });
+
+      expect(result.map((u) => u.email)).toContain(`alice-${SUFFIX}@example.com`);
+    });
+
+    it('returns matches by email substring', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.searchUsers({ query: 'bobs@' });
+
+      expect(result.map((u) => u.email)).toContain(`bobs-${SUFFIX}@example.com`);
+    });
+
+    it('returns sorted by name', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.searchUsers({ query: '' });
+
+      // Should return results including our three seeded users, sorted by name.
+      expect(result.length).toBeGreaterThan(0);
+      for (let i = 0; i < result.length - 1; i++) {
+        expect(result[i]!.name.localeCompare(result[i + 1]!.name)).toBeLessThanOrEqual(0);
+      }
+    });
+
+    it('respects limit parameter', async () => {
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.searchUsers({ query: '', limit: 2 });
+
+      expect(result.length).toBeLessThanOrEqual(2);
+    });
+
+    it('rejects non-moderators', async () => {
+      const { makeAuthCtx } = await import('./helpers');
+      const { createCallerFactory } = await import('../../trpc/trpc');
+      const { moderationRouter } = await import('../moderation');
+      const ctx = makeAuthCtx(db, contributorId, 'contributor');
+      const restrictedCaller = createCallerFactory(moderationRouter)(ctx);
+
+      await expect(
+        restrictedCaller.searchUsers({ query: 'a' }),
+      ).rejects.toThrow();
+    });
+  });
+
   // ── moderation.auditLog ───────────────────────────────────────────────────
 
   describe('moderation.auditLog', () => {
