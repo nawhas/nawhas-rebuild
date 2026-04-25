@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { submissions, reciters, albums, tracks, submissionReviews, auditLog } from '@nawhas/db';
 import { router, contributorProcedure, protectedProcedure } from '../trpc/trpc';
@@ -214,23 +214,28 @@ export const submissionRouter = router({
       z.object({
         limit: z.number().int().min(1).max(MAX_LIMIT).optional().default(DEFAULT_LIMIT),
         cursor: z.string().optional(),
+        status: z.enum(['all', 'pending', 'approved']).optional().default('all'),
       }),
     )
     .query(async ({ ctx, input }): Promise<PaginatedResult<SubmissionDTO>> => {
       const limit = input.limit;
 
-      const where = input.cursor
+      const baseFilters = [eq(submissions.submittedByUserId, ctx.user.id)];
+      if (input.status === 'pending') {
+        baseFilters.push(inArray(submissions.status, ['pending', 'changes_requested']));
+      } else if (input.status === 'approved') {
+        baseFilters.push(eq(submissions.status, 'applied'));
+      }
+      const cursorFilter = input.cursor
         ? (() => {
             const { createdAt, id } = decodeCursor(input.cursor);
-            return and(
-              eq(submissions.submittedByUserId, ctx.user.id),
-              or(
-                lt(submissions.createdAt, createdAt),
-                and(eq(submissions.createdAt, createdAt), gt(submissions.id, id)),
-              ),
+            return or(
+              lt(submissions.createdAt, createdAt),
+              and(eq(submissions.createdAt, createdAt), gt(submissions.id, id)),
             );
           })()
-        : eq(submissions.submittedByUserId, ctx.user.id);
+        : null;
+      const where = cursorFilter ? and(...baseFilters, cursorFilter) : and(...baseFilters);
 
       const rows = await ctx.db
         .select()

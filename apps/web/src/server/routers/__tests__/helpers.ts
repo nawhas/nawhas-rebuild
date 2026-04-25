@@ -22,6 +22,7 @@ import { moderationRouter } from '../moderation';
 import { searchRouter } from '../search';
 import { contributeRouter } from '../contribute';
 import { accessRequestsRouter } from '../accessRequests';
+import { dashboardRouter } from '../dashboard';
 
 export type TestDb = PostgresJsDatabase<typeof schema>;
 
@@ -138,6 +139,10 @@ export function makeAccessRequestsCaller(
   role: 'user' | 'contributor' | 'moderator' = 'user',
 ) {
   return createCallerFactory(accessRequestsRouter)(makeAuthCtx(db, userId, role));
+}
+
+export function makeDashboardCaller(db: TestDb, userId: string) {
+  return createCallerFactory(dashboardRouter)(makeAuthCtx(db, userId, 'contributor'));
 }
 
 export function makeAuthCtx(
