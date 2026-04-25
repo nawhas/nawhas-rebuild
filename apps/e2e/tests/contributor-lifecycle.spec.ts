@@ -216,4 +216,46 @@ test.describe('Phase 2.4 W3 — contributor lifecycle', () => {
       page.getByPlaceholder(/Tell us a bit about how you'd like to help/i),
     ).toBeVisible({ timeout: 10_000 });
   });
+
+  // -------------------------------------------------------------------------
+  // H3. Withdraw a pending submission (two-step confirm)
+  // -------------------------------------------------------------------------
+  test('contributor can withdraw a pending submission', async ({
+    page,
+    freshContributor,
+  }) => {
+    await signIn(page, freshContributor.email, freshContributor.password);
+
+    // Submit a reciter via the new-reciter form. The form redirects to
+    // /profile/contributions (the list view), not a per-id detail page.
+    const reciterName = `Withdraw Test ${suffix()}`;
+    await gotoExpectOk(page, '/contribute/reciter/new');
+    await page.fill('#name', reciterName);
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL('/profile/contributions', {
+      timeout: 20_000,
+    });
+
+    // Look up the new submission's id and navigate to its detail page.
+    const submissionId = await getLatestSubmissionIdForEmail(
+      freshContributor.email,
+    );
+    await gotoExpectOk(page, `/profile/contributions/${submissionId}`);
+
+    // Two-step withdraw: click "Withdraw submission" → "Confirm withdraw".
+    await page.getByRole('button', { name: /^Withdraw submission$/i }).click();
+    await expect(page.getByText(/Are you sure\?/i)).toBeVisible({
+      timeout: 5_000,
+    });
+    await page.getByRole('button', { name: /^Confirm withdraw$/i }).click();
+
+    // Page refreshes; the status badge flips to "Withdrawn" and the
+    // withdraw button is no longer rendered.
+    await expect(page.getByText(/^Withdrawn$/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByRole('button', { name: /^Withdraw submission$/i }),
+    ).toHaveCount(0);
+  });
 });
