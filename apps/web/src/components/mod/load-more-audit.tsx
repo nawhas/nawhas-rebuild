@@ -42,7 +42,7 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
       {error && (
         <tr>
           <td colSpan={4} className="px-4 py-3">
-            <p role="alert" className="text-sm text-destructive">{error}</p>
+            <p role="alert" className="text-sm text-[var(--color-error-500)]">{error}</p>
           </td>
         </tr>
       )}
@@ -54,7 +54,7 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
               onClick={handleLoadMore}
               disabled={isPending}
               aria-busy={isPending}
-              className="rounded-md border border-border px-5 py-2 text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:opacity-50"
+              className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-5 py-2.5 text-sm text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
             >
               {isPending ? tQueue('loadingMore') : tQueue('loadMore')}
             </button>
@@ -67,15 +67,15 @@ export function LoadMoreAudit({ initialCursor }: LoadMoreAuditProps): React.JSX.
 
 function AuditRow({ entry }: { entry: AuditLogDTO }): React.JSX.Element {
   return (
-    <tr className="border-t border-border">
-      <td className="px-4 py-3 font-mono text-xs text-foreground">{entry.action}</td>
-      <td className="px-4 py-3 text-xs text-muted-foreground">
+    <tr className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]">
+      <td className="px-4 py-3 font-mono text-xs text-[var(--text)]">{entry.action}</td>
+      <td className="px-4 py-3 text-xs text-[var(--text-dim)]">
         {entry.targetType ?? '—'}
       </td>
-      <td className="px-4 py-3 max-w-xs truncate text-xs text-muted-foreground">
+      <td className="max-w-xs truncate px-4 py-3 text-xs text-[var(--text-dim)]">
         {entry.targetId ?? '—'}
       </td>
-      <td className="px-4 py-3 text-right text-xs text-muted-foreground">
+      <td className="px-4 py-3 text-right text-xs text-[var(--text-dim)]">
         <time
           dateTime={String(entry.createdAt)}
           title={new Date(entry.createdAt).toLocaleString()}

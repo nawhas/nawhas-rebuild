@@ -34,11 +34,11 @@ export function EmptyState({
       {/* Icon placeholder */}
       <div
         aria-hidden="true"
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-muted"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface)]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8 text-muted-foreground"
+          className="h-8 w-8 text-[var(--text-dim)]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -54,8 +54,8 @@ export function EmptyState({
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="text-base font-semibold text-foreground">{title}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-base font-semibold text-[var(--text)]">{title}</p>
+        <p className="text-sm text-[var(--text-dim)]">{description}</p>
       </div>
 
       {action && (

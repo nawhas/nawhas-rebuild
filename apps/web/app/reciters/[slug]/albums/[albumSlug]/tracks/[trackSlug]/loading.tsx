@@ -8,22 +8,22 @@ export default function TrackLoading(): React.JSX.Element {
       <Container size="md">
         {/* Track header skeleton */}
         <div className="py-8 flex flex-col gap-3">
-          <div aria-hidden="true" className="h-9 w-72 animate-pulse rounded bg-muted" />
-          <div aria-hidden="true" className="h-4 w-48 animate-pulse rounded bg-muted" />
+          <div aria-hidden="true" className="h-9 w-72 animate-pulse rounded-[8px] bg-[var(--surface)]" />
+          <div aria-hidden="true" className="h-4 w-48 animate-pulse rounded-[8px] bg-[var(--surface)]" />
         </div>
 
         {/* Audio player reserved space skeleton */}
-        <div aria-hidden="true" className="mt-2 h-14 animate-pulse rounded-lg bg-muted" />
+        <div aria-hidden="true" className="mt-2 h-14 animate-pulse rounded-[16px] bg-[var(--surface)]" />
 
         {/* Lyrics skeleton */}
         <div className="mt-10">
-          <div aria-hidden="true" className="mb-6 h-7 w-16 animate-pulse rounded bg-muted" />
+          <div aria-hidden="true" className="mb-6 h-7 w-16 animate-pulse rounded-[8px] bg-[var(--surface)]" />
           <div className="space-y-2">
             {LYRIC_LINE_WIDTHS.map((width, i) => (
               <div
                 key={i}
                 aria-hidden="true"
-                className="h-5 animate-pulse rounded bg-muted"
+                className="h-5 animate-pulse rounded-[8px] bg-[var(--surface)]"
                 style={{ width: `${width}%` }}
               />
             ))}

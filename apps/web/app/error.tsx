@@ -31,23 +31,23 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
   return (
     <main
       id="main-content"
-      className="flex flex-1 items-center justify-center py-20"
+      className="flex flex-1 items-center justify-center py-16 px-6"
     >
       <Container size="sm">
         <div className="flex flex-col items-center gap-6 text-center">
           {/* Visual indicator */}
           <div
             aria-hidden="true"
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-error-50 text-4xl font-bold text-error-400 dark:bg-error-950 dark:text-error-300"
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-error-50)] text-4xl font-bold text-[var(--color-error-500)] dark:bg-[var(--color-error-950)]"
           >
             500
           </div>
 
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold text-foreground">
+            <h1 className="font-serif text-[36px] font-medium text-[var(--text)]">
               {t('somethingWentWrong')}
             </h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-[var(--text-dim)]">
               {t('unexpectedError')}
             </p>
           </div>
@@ -56,13 +56,13 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.E
             <button
               type="button"
               onClick={reset}
-              className="rounded-md bg-foreground px-5 py-2.5 text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className="rounded-[8px] bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               {t('tryAgain')}
             </button>
             <Link
               href="/"
-              className="rounded-md border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-5 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               {t('goToHome')}
             </Link>

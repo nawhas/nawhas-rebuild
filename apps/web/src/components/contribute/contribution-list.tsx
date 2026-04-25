@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Button } from '@nawhas/ui/components/button';
-import { Card } from '@nawhas/ui/components/card';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
 import { ResubmitForm } from '@/components/contribute/resubmit-form';
 import type { SubmissionDTO } from '@nawhas/types';
@@ -23,7 +21,7 @@ export function ContributionList({ initialItems }: ContributionListProps): React
 
   if (initialItems.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-sm text-[var(--text-dim)]">
         {t('empty')}
       </p>
     );
@@ -58,76 +56,72 @@ function SubmissionCard({
   const panelId = `submission-panel-${submission.id}`;
 
   return (
-    <li>
-      <Card>
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          aria-expanded={expanded}
-          aria-controls={panelId}
-          className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
+    <li className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+      >
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="truncate text-sm font-medium text-[var(--text)]">{label}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <SubmissionTypeBadge type={submission.type} />
+            <SubmissionActionBadge action={submission.action} />
+            <SubmissionStatusBadge status={submission.status} />
+          </div>
+        </div>
+        <time
+          dateTime={String(submission.createdAt)}
+          className="shrink-0 text-xs text-[var(--text-faint)]"
+          title={new Date(submission.createdAt).toLocaleString()}
         >
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="truncate text-sm font-medium text-foreground">{label}</span>
-            <div className="flex flex-wrap items-center gap-2">
-              <SubmissionTypeBadge type={submission.type} />
-              <SubmissionActionBadge action={submission.action} />
-              <SubmissionStatusBadge status={submission.status} />
+          {new Date(submission.createdAt).toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+          })}
+        </time>
+        <span aria-hidden="true" className={`ml-1 shrink-0 text-[var(--text-dim)] transition-transform ${expanded ? 'rotate-180' : ''}`}>
+          ▾
+        </span>
+      </button>
+
+      {expanded && (
+        <div id={panelId} className="border-t border-[var(--border)] px-5 py-4">
+          {submission.notes && (
+            <div className="mb-3 rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+              <p className="mb-0.5 text-xs font-medium text-[var(--text-dim)]">{t('moderatorNotesHeading')}</p>
+              <p className="text-sm text-[var(--text)]">{submission.notes}</p>
             </div>
-          </div>
-          <time
-            dateTime={String(submission.createdAt)}
-            className="shrink-0 text-xs text-muted-foreground"
-            title={new Date(submission.createdAt).toLocaleString()}
-          >
-            {new Date(submission.createdAt).toLocaleDateString(undefined, {
-              month: 'short',
-              day: 'numeric',
-            })}
-          </time>
-          <span aria-hidden="true" className={`ml-1 shrink-0 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`}>
-            ▾
-          </span>
-        </button>
+          )}
+          <p className="text-xs text-[var(--text-faint)]">
+            {t('submissionId')} <span className="font-mono">{submission.id}</span>
+          </p>
 
-        {expanded && (
-          <div id={panelId} className="border-t border-border px-5 py-4">
-            {submission.notes && (
-              <div className="mb-3 rounded bg-info-50 px-3 py-2 dark:bg-info-950">
-                <p className="mb-0.5 text-xs font-medium text-info-600 dark:text-info-400">{t('moderatorNotesHeading')}</p>
-                <p className="text-sm text-info-900 dark:text-info-100">{submission.notes}</p>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {t('submissionId')} <span className="font-mono">{submission.id}</span>
-            </p>
+          {canResubmit && !resubmitting && (
+            <button
+              type="button"
+              onClick={() => setResubmitting(true)}
+              className="mt-3 rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+            >
+              {t('editAndResubmit')}
+            </button>
+          )}
 
-            {canResubmit && !resubmitting && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setResubmitting(true)}
-                className="mt-3"
-              >
-                {t('editAndResubmit')}
-              </Button>
-            )}
-
-            {canResubmit && resubmitting && (
-              <ResubmitForm
-                submission={submission}
-                onSuccess={() => {
-                  setResubmitting(false);
-                  setExpanded(false);
-                  onResubmitSuccess();
-                }}
-                onCancel={() => setResubmitting(false)}
-              />
-            )}
-          </div>
-        )}
-      </Card>
+          {canResubmit && resubmitting && (
+            <ResubmitForm
+              submission={submission}
+              onSuccess={() => {
+                setResubmitting(false);
+                setExpanded(false);
+                onResubmitSuccess();
+              }}
+              onCancel={() => setResubmitting(false)}
+            />
+          )}
+        </div>
+      )}
     </li>
   );
 }

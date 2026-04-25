@@ -5,18 +5,11 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { SavedTrackDTO, TrackDTO } from '@nawhas/types';
 import { Button } from '@nawhas/ui/components/button';
-import { SectionTitle } from '@nawhas/ui/components/section-title';
 import { usePlayerStore } from '@/store/player';
 import { LoadMore } from '@/components/pagination/load-more';
 import { SaveButton } from '@/components/SaveButton';
 import { fetchMoreLibraryTracks, playAllLibraryTracks } from '@/server/actions/library';
-
-/** Format seconds as m:ss */
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+import { formatDuration } from '@nawhas/ui/lib/format-duration';
 
 function PlayAllIcon(): React.JSX.Element {
   return (
@@ -80,11 +73,11 @@ export function LibraryTracksList({
   if (items.length === 0) {
     return (
       <div className="py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-dim)]">
           <MusicNoteIcon />
         </div>
-        <SectionTitle className="mb-2 text-lg font-semibold">{t('emptyTitle')}</SectionTitle>
-        <p className="mb-6 text-sm text-muted-foreground">
+        <h2 className="mb-2 font-serif text-2xl font-medium text-[var(--text)]">{t('emptyTitle')}</h2>
+        <p className="mb-6 text-sm text-[var(--text-dim)]">
           {t('emptyDescription')}
         </p>
         <Button asChild>
@@ -98,7 +91,7 @@ export function LibraryTracksList({
     <div>
       {/* Play All button */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-[var(--text-dim)]">
           {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
         </p>
         <Button
@@ -115,7 +108,7 @@ export function LibraryTracksList({
       {/* Track list */}
       <ol
         aria-label={items.length === 1 ? t('savedTracksListLabel', { count: items.length }) : t('savedTracksListLabelPlural', { count: items.length })}
-        className="divide-y divide-border rounded-lg border border-border bg-card"
+        className="divide-y divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card-bg)]"
       >
         {items.map((item) => (
           <LibraryTrackRow
@@ -149,17 +142,17 @@ function LibraryTrackRow({ item, onUnsave }: LibraryTrackRowProps): React.JSX.El
   const { track } = item;
 
   return (
-    <li className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+    <li className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-2)]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-dim)]">
         <MusicNoteIcon />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{track.title}</p>
+        <p className="truncate text-sm font-medium text-[var(--text)]">{track.title}</p>
       </div>
 
       {track.duration != null && (
-        <span className="shrink-0 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
+        <span className="shrink-0 text-xs tabular-nums text-[var(--text-faint)]" aria-hidden="true">
           {formatDuration(track.duration)}
         </span>
       )}
@@ -170,7 +163,6 @@ function LibraryTrackRow({ item, onUnsave }: LibraryTrackRowProps): React.JSX.El
         onSavedChange={(saved) => {
           if (!saved) onUnsave(track.id);
         }}
-        className="hover:bg-muted"
       />
     </li>
   );

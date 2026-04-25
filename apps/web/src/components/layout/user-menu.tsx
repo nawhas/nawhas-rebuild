@@ -48,19 +48,19 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Account menu for ${user.name ?? user.email}`}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--text)] text-xs font-semibold text-[var(--bg)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       >
         {initials}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {/* User info header */}
-        <div className="border-b border-border px-2 py-1.5">
+        <div className="border-b border-[var(--border)] px-2 py-1.5">
           {user.name && (
-            <p className="truncate text-sm font-medium text-foreground">
+            <p className="truncate text-sm font-medium text-[var(--text)]">
               {user.name}
             </p>
           )}
-          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          <p className="truncate text-xs text-[var(--text-dim)]">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

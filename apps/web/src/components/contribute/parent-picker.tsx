@@ -132,19 +132,19 @@ export function ParentPicker({
         onKeyDown={handleKeyDown}
         disabled={disabled}
         aria-invalid={error ? true : undefined}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+        className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
       />
       {open && results.length > 0 && (
         <ul
           id={`${id}-listbox`}
           role="listbox"
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover shadow-lg"
+          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-[8px] border border-[var(--border)] bg-[var(--card-bg)] shadow-lg"
         >
           {renderGrouped(results, activeIdx, pick, id)}
         </ul>
       )}
       {open && query && results.length === 0 && (
-        <p className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover px-3 py-2 text-sm text-muted-foreground shadow-lg">
+        <p className="absolute z-10 mt-1 w-full rounded-[8px] border border-[var(--border)] bg-[var(--card-bg)] px-4 py-3 text-sm text-[var(--text-dim)] shadow-lg">
           {t('noMatches')}
         </p>
       )}
@@ -166,7 +166,7 @@ function renderGrouped(
         id={`${idPrefix}-opt-${i}`}
         role="option"
         aria-selected={i === activeIdx}
-        className={`cursor-pointer px-3 py-2 text-sm ${i === activeIdx ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
+        className={`cursor-pointer px-4 py-3 text-sm text-[var(--text)] ${i === activeIdx ? 'bg-[var(--surface-2)]' : 'hover:bg-[var(--surface-2)]'}`}
         onClick={() => onPick(r)}
       >
         {r.label}
@@ -186,7 +186,7 @@ function renderGrouped(
       <li
         key={`group-${groupKey}`}
         role="presentation"
-        className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        className="px-4 py-1 text-xs font-semibold uppercase tracking-wider text-[var(--text-faint)]"
       >
         {groupKey}
       </li>,
@@ -199,7 +199,7 @@ function renderGrouped(
           id={`${idPrefix}-opt-${i}`}
           role="option"
           aria-selected={i === activeIdx}
-          className={`cursor-pointer px-3 py-2 pl-6 text-sm ${i === activeIdx ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
+          className={`cursor-pointer px-4 py-3 pl-6 text-sm text-[var(--text)] ${i === activeIdx ? 'bg-[var(--surface-2)]' : 'hover:bg-[var(--surface-2)]'}`}
           onClick={() => onPick(opt)}
         >
           {opt.label}

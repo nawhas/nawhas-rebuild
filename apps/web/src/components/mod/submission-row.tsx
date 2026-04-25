@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Card } from '@nawhas/ui/components/card';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
 import type { SubmissionDTO } from '@nawhas/types';
 
@@ -22,14 +21,14 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
 
   return (
     <li>
-      <Card className="overflow-hidden">
+      <div className="overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]">
         <Link
           href={href}
           prefetch={false}
-          className="flex items-center gap-4 px-5 py-4 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
+          className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:-outline-offset-2"
         >
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="truncate text-sm font-medium text-foreground">{label}</span>
+            <span className="truncate text-sm font-medium text-[var(--text)]">{label}</span>
             <div className="flex items-center gap-2">
               <SubmissionTypeBadge type={submission.type} />
               <SubmissionActionBadge action={submission.action} />
@@ -38,7 +37,7 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
           </div>
           <time
             dateTime={String(submission.createdAt)}
-            className="shrink-0 text-xs text-muted-foreground"
+            className="shrink-0 text-xs text-[var(--text-faint)]"
             title={new Date(submission.createdAt).toLocaleString()}
           >
             {new Date(submission.createdAt).toLocaleDateString(undefined, {
@@ -47,7 +46,7 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
             })}
           </time>
         </Link>
-      </Card>
+      </div>
     </li>
   );
 }

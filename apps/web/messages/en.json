@@ -17,6 +17,30 @@
     "contribute": "Contribute",
     "moderatorDashboard": "Moderator Dashboard"
   },
+  "coverArt": {
+    "albumAlt": "Cover art for {label}",
+    "placeholderLabel": "Album cover"
+  },
+  "waveform": {
+    "ariaLabel": "Audio waveform — click to seek",
+    "decorativeAriaLabel": "Audio waveform (visual only)",
+    "barLabel": "Seek to {percent}%"
+  },
+  "footer": {
+    "product": "Product",
+    "browse": "Browse",
+    "reciters": "Reciters",
+    "albums": "Albums",
+    "community": "Community",
+    "recentChanges": "Recent Changes",
+    "dashboard": "Dashboard",
+    "contribute": "Contribute",
+    "admin": "Admin",
+    "moderation": "Moderation",
+    "about": "About",
+    "aboutBody": "Nawhas is a community-driven library of Islamic devotional recitation and poetry.",
+    "copyright": "© {year} Nawhas. All rights reserved."
+  },
   "home": {
     "hero": {
       "ariaLabel": "Hero",
@@ -652,7 +676,6 @@
     "toggleThemeLabel": "Toggle theme",
     "switchToLight": "Switch to light mode",
     "switchToDark": "Switch to dark mode",
-    "switchToSystem": "Switch to system mode",
     "reciters": "Reciters",
     "albums": "Albums"
   }

@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Button } from '@nawhas/ui/components/button';
 import { reviewSubmission } from '@/server/actions/moderation';
 
 interface ReviewActionsProps {
@@ -48,8 +47,8 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
     const label = expanded === 'rejected' ? t('reject') : t('requestChanges');
 
     return (
-      <div className="mt-4 space-y-3">
-        <label htmlFor="review-comment" className="block text-sm font-medium text-foreground">
+      <div className="mt-6 space-y-3">
+        <label htmlFor="review-comment" className="block text-[13px] font-medium text-[var(--text-dim)]">
           {t('commentLabel')}
         </label>
         <textarea
@@ -61,61 +60,73 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
           placeholder={t('commentPlaceholder')}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? 'review-comment-error' : undefined}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
+          className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
         />
         {error && (
-          <p id="review-comment-error" role="alert" className="text-xs text-destructive">{error}</p>
+          <p id="review-comment-error" role="alert" className="text-[13px] text-[var(--color-error-500)]">{error}</p>
         )}
-        <div className="flex gap-3">
-          <Button
+        <div className="flex items-center gap-3">
+          <button
             type="button"
-            variant={expanded === 'rejected' ? 'destructive' : 'outline'}
             onClick={() => handleAction(expanded)}
             disabled={isPending}
+            aria-busy={isPending || undefined}
+            className={
+              expanded === 'rejected'
+                ? 'rounded-[8px] bg-[var(--color-error-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-error-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-error-500)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                : 'rounded-[8px] bg-[var(--input-bg)] border border-[var(--border)] px-5 py-2.5 text-sm font-medium text-[var(--text)] hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            }
           >
             {isPending ? t('submitting') : label}
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            variant="ghost"
             onClick={handleCancel}
             disabled={isPending}
+            className="rounded-[8px] text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--input-bg)] px-4 py-2.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('cancel')}
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-4 flex flex-wrap gap-3">
+    <div className="mt-6 flex flex-wrap items-center gap-3">
       {error && (
-        <p role="alert" className="w-full text-xs text-destructive">{error}</p>
+        <p role="alert" className="w-full text-[13px] text-[var(--color-error-500)]">{error}</p>
       )}
-      <Button
+      {/* Approve — primary CTA */}
+      <button
         type="button"
         onClick={() => handleAction('approved')}
         disabled={isPending}
+        aria-busy={isPending || undefined}
+        className="rounded-[8px] bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? t('submitting') : t('approve')}
-      </Button>
-      <Button
+      </button>
+      {/* Request Changes — secondary CTA */}
+      <button
         type="button"
-        variant="outline"
         onClick={() => handleAction('changes_requested')}
         disabled={isPending}
+        aria-busy={isPending || undefined}
+        className="rounded-[8px] bg-[var(--input-bg)] border border-[var(--border)] px-5 py-2.5 text-sm font-medium text-[var(--text)] hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {t('requestChanges')}
-      </Button>
-      <Button
+      </button>
+      {/* Reject — destructive CTA */}
+      <button
         type="button"
-        variant="destructive"
         onClick={() => handleAction('rejected')}
         disabled={isPending}
+        aria-busy={isPending || undefined}
+        className="rounded-[8px] bg-[var(--color-error-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-error-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-error-500)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {t('reject')}
-      </Button>
+      </button>
     </div>
   );
 }

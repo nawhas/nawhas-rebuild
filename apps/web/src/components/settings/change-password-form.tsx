@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@nawhas/ui/components/button';
 import { changePassword } from '@/server/actions/account';
 
 export function ChangePasswordForm(): React.JSX.Element {
@@ -33,13 +32,13 @@ export function ChangePasswordForm(): React.JSX.Element {
 
   return (
     <section aria-labelledby="password-heading">
-      <h2 id="password-heading" className="text-base font-semibold text-foreground">
+      <h2 id="password-heading" className="font-serif text-2xl font-medium text-[var(--text)]">
         {t('passwordHeading')}
       </h2>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-4 max-w-sm space-y-3">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 max-w-sm space-y-6">
         <div>
-          <label htmlFor="current-password" className="block text-sm font-medium text-foreground">
+          <label htmlFor="current-password" className="block text-[13px] font-medium text-[var(--text-dim)] mb-2">
             {t('currentPasswordLabel')}
           </label>
           <input
@@ -53,12 +52,12 @@ export function ChangePasswordForm(): React.JSX.Element {
             disabled={loading}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'change-password-error' : undefined}
-            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+            className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
           />
         </div>
 
         <div>
-          <label htmlFor="new-password" className="block text-sm font-medium text-foreground">
+          <label htmlFor="new-password" className="block text-[13px] font-medium text-[var(--text-dim)] mb-2">
             {t('newPasswordLabel')}
           </label>
           <input
@@ -73,26 +72,31 @@ export function ChangePasswordForm(): React.JSX.Element {
             disabled={loading}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'new-password-hint change-password-error' : 'new-password-hint'}
-            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+            className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
           />
-          <p id="new-password-hint" className="mt-1 text-xs text-muted-foreground">{t('passwordMinLength')}</p>
+          <p id="new-password-hint" className="mt-2 text-[13px] text-[var(--text-faint)]">{t('passwordMinLength')}</p>
         </div>
 
         {error && (
-          <p id="change-password-error" role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p id="change-password-error" role="alert" className="text-[13px] text-[var(--color-error-500)] mt-2">
             {error}
           </p>
         )}
 
         {success && (
-          <p role="status" className="rounded-md bg-success-50 px-3 py-2 text-sm text-success-700 dark:bg-success-950 dark:text-success-300">
+          <p role="status" className="rounded-[8px] bg-[var(--color-success-50)] px-3 py-2 text-sm text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]">
             {t('updatePasswordSuccess')}
           </p>
         )}
 
-        <Button type="submit" disabled={loading || !currentPassword || !newPassword}>
+        <button
+          type="submit"
+          disabled={loading || !currentPassword || !newPassword}
+          aria-busy={loading || undefined}
+          className="rounded-[8px] bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {loading ? t('updatePasswordSubmitting') : t('updatePasswordSubmit')}
-        </Button>
+        </button>
       </form>
     </section>
   );

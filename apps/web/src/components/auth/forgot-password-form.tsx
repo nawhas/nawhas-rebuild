@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
-import { Card } from '@nawhas/ui/components/card';
 import { Input } from '@nawhas/ui/components/input';
 import { requestPasswordReset } from '@/lib/auth-client';
 
@@ -28,15 +27,19 @@ export function ForgotPasswordForm(): React.JSX.Element {
 
   if (submitted) {
     return (
-      <Card className="px-8 py-10" role="status" aria-live="polite">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+      <div
+        className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] px-8 py-10"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface-2)]">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="h-6 w-6 text-foreground"
+            className="h-6 w-6 text-[var(--text)]"
             aria-hidden="true"
           >
             <path
@@ -47,33 +50,33 @@ export function ForgotPasswordForm(): React.JSX.Element {
           </svg>
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold text-foreground">{t('successHeading')}</h1>
-        <p className="mb-8 text-sm text-muted-foreground">
+        <h1 className="mb-2 font-serif text-[1.75rem] font-medium text-[var(--text)]">{t('successHeading')}</h1>
+        <p className="mb-8 text-sm text-[var(--text-dim)]">
           {t.rich('successDescription', {
             email,
-            strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+            strong: (chunks) => <span className="font-medium text-[var(--text)]">{chunks}</span>,
           })}
         </p>
 
-        <p className="text-center text-sm text-muted-foreground">
-          <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
+        <p className="text-center text-sm text-[var(--text-dim)]">
+          <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
             {t('backToSignIn')}
           </Link>
         </p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="px-8 py-10">
-      <h1 className="mb-2 text-2xl font-semibold text-foreground">{t('heading')}</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] px-8 py-10">
+      <h1 className="mb-2 font-serif text-[1.75rem] font-medium text-[var(--text)]">{t('heading')}</h1>
+      <p className="mb-6 text-sm text-[var(--text-dim)]">
         {t('description')}
       </p>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-6">
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
             {t('emailLabel')}
           </label>
           <Input
@@ -93,11 +96,11 @@ export function ForgotPasswordForm(): React.JSX.Element {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
+      <p className="mt-6 text-center text-sm text-[var(--text-dim)]">
+        <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
           {t('backToSignIn')}
         </Link>
       </p>
-    </Card>
+    </div>
   );
 }

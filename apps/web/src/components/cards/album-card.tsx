@@ -1,76 +1,67 @@
 import Link from 'next/link';
-import { Card } from '@nawhas/ui/components/card';
-import { AppImage } from '@/components/ui/image';
-import type { AlbumDTO } from '@nawhas/types';
-import { getPlaceholderStyle, PLACEHOLDER_CLASSES } from '@/lib/placeholder-color';
+import { CoverArt } from '@nawhas/ui';
+import type { AlbumDTO, AlbumListItemDTO } from '@nawhas/types';
 
 interface AlbumCardProps {
-  album: AlbumDTO;
-  priority?: boolean;
+  /**
+   * Album shape. Pass an `AlbumDTO` for the bare card (home/recent-albums,
+   * reciter discography). Pass an `AlbumListItemDTO` to also render the
+   * reciter name and track-count meta line (/albums listing).
+   */
+  album: AlbumDTO | AlbumListItemDTO;
 }
 
 /**
- * Card displaying an album's cover art, title, and year.
- * Links to the album detail page.
+ * Album card primitive — cover art, title, and meta line linking to the
+ * album detail page. The meta line auto-extends when the album object
+ * carries reciter + track-count data.
  *
- * Server Component — no interactivity required.
+ * Server Component — no interactivity.
  */
-export function AlbumCard({ album, priority = false }: AlbumCardProps): React.JSX.Element {
+export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
+  const reciterName = 'reciterName' in album ? album.reciterName : undefined;
+  const trackCount = 'trackCount' in album ? album.trackCount : undefined;
+
+  const ariaLabel = reciterName
+    ? `View album: ${album.title} by ${reciterName}${album.year ? `, ${album.year}` : ''}`
+    : `View album: ${album.title}${album.year ? `, ${album.year}` : ''}`;
+
   return (
     <Link
       href={`/albums/${album.slug}`}
-      className="group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      aria-label={`View album: ${album.title}${album.year ? `, ${album.year}` : ''}`}
+      className="group flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+      aria-label={ariaLabel}
     >
-      <Card className="flex flex-col gap-3 overflow-hidden transition-shadow group-hover:shadow-md">
-        {/* Album artwork */}
-        <div
-          style={album.artworkUrl ? undefined : getPlaceholderStyle(album.slug)}
-          className={`relative aspect-square w-full overflow-hidden ${album.artworkUrl ? 'bg-muted' : PLACEHOLDER_CLASSES}`}
-        >
-          {album.artworkUrl ? (
-            <AppImage
-              src={album.artworkUrl}
-              alt={`${album.title} album cover`}
-              fill
-              priority={priority}
-              className="object-cover transition-transform duration-200 group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            />
-          ) : (
-            <div
-              aria-hidden="true"
-              className="flex h-full w-full items-center justify-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1}
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                />
-              </svg>
-            </div>
-          )}
-        </div>
-
-        {/* Album metadata */}
-        <div className="flex flex-col gap-0.5 px-3 pb-3">
-          <span className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-muted-foreground">
-            {album.title}
-          </span>
-          {album.year && (
-            <span className="text-xs text-muted-foreground">{album.year}</span>
-          )}
-        </div>
-      </Card>
+      <div className="aspect-square w-full overflow-hidden rounded-xl">
+        <CoverArt
+          slug={album.slug}
+          artworkUrl={album.artworkUrl}
+          label={album.title}
+          size="md"
+          fluid
+        />
+      </div>
+      <div className="flex flex-col gap-0.5 px-1">
+        <span className="line-clamp-2 text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
+          {album.title}
+        </span>
+        {reciterName && (
+          <span className="text-xs text-[var(--text-dim)]">{reciterName}</span>
+        )}
+        {(album.year != null || (trackCount != null && trackCount > 0)) && (
+          <div className="flex items-center gap-2 text-xs text-[var(--text-faint)]">
+            {album.year != null && <span>{album.year}</span>}
+            {album.year != null && trackCount != null && trackCount > 0 && (
+              <span aria-hidden="true">·</span>
+            )}
+            {trackCount != null && trackCount > 0 && (
+              <span>
+                {trackCount} {trackCount === 1 ? 'track' : 'tracks'}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </Link>
   );
 }

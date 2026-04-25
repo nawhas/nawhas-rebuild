@@ -61,16 +61,16 @@ export function SavedStrip(): React.JSX.Element | null {
           <li key={track.id}>
             <Link
               href={`/reciters/${track.reciterSlug}/albums/${track.albumSlug}/tracks/${track.slug}`}
-              className="group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group block rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
             >
               <div
                 aria-hidden="true"
-                className="aspect-square rounded-lg bg-muted transition group-hover:shadow-md"
+                className="aspect-square rounded-xl bg-[var(--surface)] transition group-hover:opacity-90"
               />
-              <p className="mt-2 truncate text-sm font-medium text-foreground">
+              <p className="mt-2 truncate text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
                 {track.title}
               </p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-xs text-[var(--text-dim)]">
                 {track.reciterName}
               </p>
             </Link>

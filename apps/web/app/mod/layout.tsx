@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { auth } from '@/lib/auth';
+import { ModNav } from '@/components/mod/mod-nav';
 
 // Mark as dynamic since we use headers() for auth checks on every request
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
  * Non-authenticated users are redirected to /login.
  * Authenticated non-moderators are redirected to /.
  *
- * Renders a shared sidebar nav for all /mod routes.
+ * Renders a shared horizontal sub-nav for all /mod routes.
  */
 export default async function ModLayout({
   children,
@@ -44,31 +44,19 @@ export default async function ModLayout({
   ];
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar nav */}
-      <nav
-        aria-label={t('label')}
-        className="w-56 shrink-0 border-r border-border bg-muted px-4 py-6"
-      >
-        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('heading')}
-        </p>
-        <ul className="space-y-1">
-          {items.map(({ href, label }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-background hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <div className="min-h-screen bg-[var(--bg)]">
+      {/* Sub-nav header */}
+      <div className="border-b border-[var(--border)] bg-[var(--bg)] px-6 pt-8 pb-0">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="mb-4 font-serif text-4xl font-medium text-[var(--text)]">
+            {t('heading')}
+          </h1>
+          <ModNav items={items} />
+        </div>
+      </div>
 
       {/* Main content */}
-      <main id="main-content" className="flex-1 overflow-y-auto p-6">
+      <main id="main-content" className="mx-auto max-w-5xl px-6 py-8">
         {children}
       </main>
     </div>

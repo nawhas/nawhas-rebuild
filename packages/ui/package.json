@@ -13,6 +13,10 @@
       "import": "./dist/lib/utils.js",
       "types": "./dist/lib/utils.d.ts"
     },
+    "./lib/format-duration": {
+      "import": "./dist/lib/format-duration.js",
+      "types": "./dist/lib/format-duration.d.ts"
+    },
     "./components/*": {
       "import": "./dist/components/*.js",
       "types": "./dist/components/*.d.ts"
@@ -25,6 +29,8 @@
     "lint": "eslint src"
   },
   "peerDependencies": {
+    "next": "^16.2.4",
+    "next-intl": "^4.9.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

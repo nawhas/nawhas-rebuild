@@ -161,7 +161,7 @@ jobs:
       # Starts all infra deps (postgres, typesense, minio, mailpit) then builds the production
       # Next.js app and serves it inside the web container. --wait blocks until the web
       # healthcheck passes (defined in docker-compose.ci.yml, up to ~300s total).
-      # Port 3000 is published to the host so lhci can reach http://localhost:3000.
+      # Port 3100 is published to the host so lhci can reach http://localhost:3100.
       - name: Start production stack
         run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait web
 

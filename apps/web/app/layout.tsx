@@ -1,14 +1,8 @@
 import type { Metadata } from 'next';
-import {
-  Inter,
-  Bellefair,
-  Roboto_Slab,
-  Roboto_Mono,
-  Noto_Naskh_Arabic,
-  Noto_Nastaliq_Urdu,
-} from 'next/font/google';
+import { Inter, Fraunces, Noto_Nastaliq_Urdu } from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
+import { Footer } from '@nawhas/ui';
 import { SiteHeaderDynamic } from '@/components/layout/header';
 import { PageLayout } from '@/components/layout/page-layout';
 import { AudioProvider } from '@/components/providers/audio-provider';
@@ -22,53 +16,33 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
 
-// Load Inter for primary UI text.
-// display: 'optional' avoids layout shift (CLS = 0) — the browser uses the
-// fallback if the font is not cached, and swaps silently once it is ready.
+// Inter — primary UI sans (--font-sans token).
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-  display: 'optional',
+  display: 'swap',
 });
 
-// Load Bellefair for display/serif accents (--font-serif token).
-const bellefair = Bellefair({
+// Fraunces — display serif for headings, branding (--font-serif / --font-fraunces).
+// Pinned weights only; `axes: ['opsz']` was dropped during the Phase B Lighthouse
+// canary because Next.js 16 / Turbopack rejects `axes` when `weight` is set
+// (Axes can only be defined for variable fonts when weight is `variable`).
+// Pinned weights win here — every heading/brand surface uses one of 300/400/500/600,
+// and we'd rather ship those than swap to weight: 'variable' for the optical-size axis.
+const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-bellefair',
-  display: 'optional',
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-fraunces',
+  display: 'swap',
 });
 
-// Load Roboto Slab for body/slab typography (--font-slab token).
-const robotoSlab = Roboto_Slab({
-  subsets: ['latin'],
-  weight: ['100', '300', '400', '500', '700'],
-  variable: '--font-roboto-slab',
-  display: 'optional',
-});
-
-// Load Roboto Mono for monospace/metadata (--font-mono token).
-const robotoMono = Roboto_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-roboto-mono',
-  display: 'optional',
-});
-
-// Load Noto Naskh Arabic for Arabic RTL content blocks.
-const notoNaskhArabic = Noto_Naskh_Arabic({
-  subsets: ['arabic'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-noto-naskh-arabic',
-  display: 'optional',
-});
-
-// Load Noto Nastaliq Urdu for Urdu RTL content blocks (Nastaliq calligraphic style).
+// Noto Nastaliq Urdu — Urdu RTL content (Nastaliq calligraphic style).
+// Loaded only because the [lang="ur"] selector targets it on lyric blocks.
 const notoNastaliqUrdu = Noto_Nastaliq_Urdu({
   subsets: ['arabic'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-noto-nastaliq-urdu',
-  display: 'optional',
+  display: 'swap',
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://nawhas.com';
@@ -109,13 +83,13 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${inter.variable} ${bellefair.variable} ${robotoSlab.variable} ${robotoMono.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable}`}
+      className={`${inter.variable} ${fraunces.variable} ${notoNastaliqUrdu.variable}`}
     >
       <body suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
             <AudioProvider>
-              <PageLayout header={<SiteHeaderDynamic />} footer={<></>}>
+              <PageLayout header={<SiteHeaderDynamic />} footer={<Footer />}>
                 {children}
               </PageLayout>
               <PlayerPanels />

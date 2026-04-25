@@ -290,7 +290,12 @@ test.describe('Approve and apply', () => {
       page.getByRole('button', { name: /Apply to database/i }),
     ).toBeVisible({ timeout: 10_000 });
     await page.getByRole('button', { name: /Apply to database/i }).click();
-    await expect(page.getByText(/Applied successfully/i)).toBeVisible({ timeout: 15_000 });
+    // After router.refresh() the ApplyButton unmounts (canApply becomes false
+    // once status = 'applied'), so its inline "Applied successfully" badge
+    // disappears. The natural success signal is the status pill flipping to
+    // "Applied" — that pill renders twice (header + sidebar) on the
+    // submission detail page, so .first() picks either.
+    await expect(page.getByText(/^Applied$/i).first()).toBeVisible({ timeout: 15_000 });
 
     const email = await pollForEmailWithSubject(
       contributor.email,
@@ -422,7 +427,10 @@ test.describe('Request changes → resubmit', () => {
       await modPage.getByRole('button', { name: /^Request Changes$/i }).click();
       // Wait for router.refresh() to complete — the status badge switches from
       // "Pending" to "Changes Requested" only after the server confirms the mutation.
-      await modPage.getByText('Changes Requested').waitFor({ state: 'visible', timeout: 10_000 });
+      // Wave 3 added a metadata sidebar that mirrors the header status badge, so
+      // this string appears twice on the page; .first() picks either, both prove
+      // the state change.
+      await modPage.getByText('Changes Requested').first().waitFor({ state: 'visible', timeout: 10_000 });
     } finally {
       await modCtx.close();
     }
@@ -466,7 +474,10 @@ test.describe('Request changes → resubmit', () => {
       await modPage.getByRole('button', { name: /^Request Changes$/i }).click();
       // Wait for router.refresh() to complete — the status badge switches from
       // "Pending" to "Changes Requested" only after the server confirms the mutation.
-      await modPage.getByText('Changes Requested').waitFor({ state: 'visible', timeout: 10_000 });
+      // Wave 3 added a metadata sidebar that mirrors the header status badge, so
+      // this string appears twice on the page; .first() picks either, both prove
+      // the state change.
+      await modPage.getByText('Changes Requested').first().waitFor({ state: 'visible', timeout: 10_000 });
     } finally {
       await modCtx.close();
     }
@@ -567,7 +578,12 @@ test.describe('Audit log', () => {
       page.getByRole('button', { name: /Apply to database/i }),
     ).toBeVisible({ timeout: 10_000 });
     await page.getByRole('button', { name: /Apply to database/i }).click();
-    await expect(page.getByText(/Applied successfully/i)).toBeVisible({ timeout: 15_000 });
+    // After router.refresh() the ApplyButton unmounts (canApply becomes false
+    // once status = 'applied'), so its inline "Applied successfully" badge
+    // disappears. The natural success signal is the status pill flipping to
+    // "Applied" — that pill renders twice (header + sidebar) on the
+    // submission detail page, so .first() picks either.
+    await expect(page.getByText(/^Applied$/i).first()).toBeVisible({ timeout: 15_000 });
     // Wait for the apply server action and any subsequent router.refresh() RSC fetch to settle
     // before navigating, so the audit log entry is guaranteed visible on the next page load.
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => null);

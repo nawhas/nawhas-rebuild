@@ -27,28 +27,28 @@ export default async function SettingsPage(): Promise<React.JSX.Element> {
     <main id="main-content" className="py-10">
       <Container>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Account Settings</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage your email, password, and preferences.</p>
+          <h1 className="font-serif text-4xl font-medium text-[var(--text)]">Account Settings</h1>
+          <p className="mt-2 text-sm text-[var(--text-dim)]">Manage your email, password, and preferences.</p>
         </header>
 
-        <div className="divide-y divide-border rounded-lg border border-border bg-card">
+        <div className="space-y-6">
           {/* Email */}
-          <div className="px-6 py-8">
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8">
             <ChangeEmailForm currentEmail={user.email} />
           </div>
 
           {/* Password */}
-          <div className="px-6 py-8">
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8">
             <ChangePasswordForm />
           </div>
 
           {/* Notifications */}
-          <div className="px-6 py-8">
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8">
             <NotificationsSection />
           </div>
 
           {/* Danger Zone */}
-          <div className="px-6 py-8">
+          <div className="rounded-[16px] border border-[var(--color-error-500)]/30 bg-[var(--card-bg)] p-8">
             <DeleteAccountSection />
           </div>
         </div>

@@ -45,16 +45,16 @@ function MoonIcon(): React.JSX.Element {
 }
 
 const NEXT_THEME: Record<string, string> = {
-  system: 'light',
   light: 'dark',
-  dark: 'system',
+  dark: 'light',
 };
 
 /**
- * Keyboard-accessible theme toggle button — cycles system → light → dark → system.
+ * Keyboard-accessible theme toggle button — cycles light ↔ dark.
  *
- * Uses `theme` (not `resolvedTheme`) so the 3-way cycle is testable and the
- * aria-label always reflects the stored preference, not the OS-resolved value.
+ * Uses `theme` (not `resolvedTheme`) so the cycle is testable and the
+ * aria-label always reflects the stored preference. System mode is
+ * intentionally not offered (POC design system defaults dark).
  *
  * Client Component — requires useTheme() from next-themes.
  * Uses a `mounted` guard to avoid hydration mismatch (server has no theme state).
@@ -75,25 +75,24 @@ export function ThemeToggle(): React.JSX.Element {
         type="button"
         disabled
         aria-label={t('toggleThemeLabel')}
-        className="rounded p-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="rounded-[6px] p-2 text-[var(--text-dim)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       >
         <span className="block h-5 w-5" aria-hidden="true" />
       </button>
     );
   }
 
-  const currentTheme = theme ?? 'system';
+  const currentTheme = theme ?? 'dark';
 
   const ARIA_LABEL_MAP: Record<string, string> = {
-    system: t('switchToLight'),
     light: t('switchToDark'),
-    dark: t('switchToSystem'),
+    dark: t('switchToLight'),
   };
 
-  const ariaLabel = ARIA_LABEL_MAP[currentTheme] ?? t('switchToLight');
+  const ariaLabel = ARIA_LABEL_MAP[currentTheme] ?? t('switchToDark');
 
   function handleClick(): void {
-    setTheme(NEXT_THEME[currentTheme] ?? 'light');
+    setTheme(NEXT_THEME[currentTheme] ?? 'dark');
   }
 
   return (
@@ -101,7 +100,7 @@ export function ThemeToggle(): React.JSX.Element {
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
-      className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      className="rounded-[6px] p-2 text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
     >
       {currentTheme === 'light' ? <MoonIcon /> : <SunIcon />}
     </button>

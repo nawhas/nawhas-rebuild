@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Button } from '@nawhas/ui/components/button';
-import { Card } from '@nawhas/ui/components/card';
 
 // Dynamic rendering required for searchParams access
 export const dynamic = 'force-dynamic';
@@ -22,15 +21,15 @@ export default async function VerifyEmailPage({
   if (error) {
     const isExpired = error === 'TOKEN_EXPIRED';
     return (
-      <Card className="px-8 py-10">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] px-8 py-10">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-error-500)]/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="h-6 w-6 text-destructive"
+            className="h-6 w-6 text-[var(--color-error-500)]"
             aria-hidden="true"
           >
             <path
@@ -41,10 +40,10 @@ export default async function VerifyEmailPage({
           </svg>
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold text-foreground">
+        <h1 className="mb-2 font-serif text-[1.75rem] font-medium text-[var(--text)]">
           {isExpired ? t('errorExpiredHeading') : t('errorInvalidHeading')}
         </h1>
-        <p className="mb-6 text-sm text-muted-foreground">
+        <p className="mb-6 text-sm text-[var(--text-dim)]">
           {isExpired
             ? t('errorExpiredDescription')
             : t('errorInvalidDescription')}
@@ -54,17 +53,17 @@ export default async function VerifyEmailPage({
           <Link href="/check-email">{t('resendButton')}</Link>
         </Button>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/login" className="font-medium text-foreground underline hover:no-underline">
+        <p className="mt-6 text-center text-sm text-[var(--text-dim)]">
+          <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
             {t('backToSignIn')}
           </Link>
         </p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="px-8 py-10">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] px-8 py-10">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success-100 dark:bg-success-900/30">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -79,14 +78,14 @@ export default async function VerifyEmailPage({
         </svg>
       </div>
 
-      <h1 className="mb-2 text-2xl font-semibold text-foreground">{t('successHeading')}</h1>
-      <p className="mb-8 text-sm text-muted-foreground">
+      <h1 className="mb-2 font-serif text-[1.75rem] font-medium text-[var(--text)]">{t('successHeading')}</h1>
+      <p className="mb-8 text-sm text-[var(--text-dim)]">
         {t('successDescription')}
       </p>
 
       <Button asChild className="w-full">
         <Link href="/">{t('goToNawhas')}</Link>
       </Button>
-    </Card>
+    </div>
   );
 }

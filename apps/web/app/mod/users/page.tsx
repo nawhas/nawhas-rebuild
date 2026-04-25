@@ -39,32 +39,34 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
   const t = await getTranslations('mod.users');
 
   return (
-    <div className="max-w-4xl">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">{t('heading')}</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
+    <div>
+      <h2 className="mb-2 font-serif text-[28px] font-medium text-[var(--text)]">
+        {t('heading')}
+      </h2>
+      <p className="mb-6 text-sm text-[var(--text-dim)]">
         {t('intro')}
       </p>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]">
         <table className="w-full">
           <caption className="sr-only">{t('tableCaption')}</caption>
           <thead>
-            <tr className="border-b border-border bg-muted">
+            <tr>
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="border-b border-[var(--border-strong)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnUser')}
               </th>
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="border-b border-[var(--border-strong)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnRole')}
               </th>
               <th
                 scope="col"
-                className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="border-b border-[var(--border-strong)] px-4 py-3 text-right text-[13px] font-semibold text-[var(--text-dim)]"
               >
                 {t('columnChangeRole')}
               </th>
@@ -73,17 +75,17 @@ export default async function ModUsersPage(): Promise<React.JSX.Element> {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                <td colSpan={3} className="px-4 py-12 text-center text-sm text-[var(--text-dim)]">
                   {t('empty')}
                 </td>
               </tr>
             ) : (
               <>
                 {items.map((user) => (
-                  <tr key={user.id} className="border-t border-border">
+                  <tr key={user.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]">
                     <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-foreground">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                      <p className="text-sm font-medium text-[var(--text)]">{user.name}</p>
+                      <p className="text-xs text-[var(--text-faint)]">{user.email}</p>
                     </td>
                     <td className="px-4 py-3">
                       <RoleBadge role={user.role} />

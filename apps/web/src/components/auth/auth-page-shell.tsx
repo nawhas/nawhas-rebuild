@@ -34,14 +34,14 @@ export function AuthPageShell({
     // ~12% from the top, so short forms still breathe but the void above is
     // gone; pb-12 keeps the footer link off the fold when the virtual keyboard
     // opens on mobile.
-    <div className="flex min-h-screen flex-col items-center bg-background px-4 pb-12 pt-[12vh]">
+    <div className="flex min-h-screen flex-col items-center bg-[var(--bg)] px-4 pb-12 pt-[12vh]">
       <div className="w-full max-w-md">
         {reason ? (
           <div className="mb-6 text-center">
-            <h1 className="mb-2 text-2xl font-semibold text-foreground">
+            <h1 className="mb-2 font-serif text-[1.75rem] font-medium text-[var(--text)]">
               {t(`reasonHeading.${reason}`)}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[var(--text-dim)]">
               {t(`reasonSubtext.${reason}`)}
             </p>
           </div>

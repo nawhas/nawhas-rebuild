@@ -3,8 +3,6 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@nawhas/ui/components/badge';
-import { Button } from '@nawhas/ui/components/button';
 import { applySubmission } from '@/server/actions/moderation';
 
 interface ApplyButtonProps {
@@ -37,25 +35,30 @@ export function ApplyButton({ submissionId }: ApplyButtonProps): React.JSX.Eleme
 
   if (applied) {
     return (
-      <Badge
-        variant="secondary"
+      <span
         role="status"
         aria-live="polite"
-        className="bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200"
+        className="inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-medium bg-[var(--color-success-50)] text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]"
       >
         {t('applied')}
-      </Badge>
+      </span>
     );
   }
 
   return (
-    <div className="mt-4">
+    <div className="mt-6">
       {error && (
-        <p role="alert" className="mb-2 text-xs text-destructive">{error}</p>
+        <p role="alert" className="mb-2 text-[13px] text-[var(--color-error-500)]">{error}</p>
       )}
-      <Button type="button" onClick={handleApply} disabled={isPending}>
+      <button
+        type="button"
+        onClick={handleApply}
+        disabled={isPending}
+        aria-busy={isPending || undefined}
+        className="rounded-[8px] bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-wait"
+      >
         {isPending ? t('applying') : t('button')}
-      </Button>
+      </button>
     </div>
   );
 }

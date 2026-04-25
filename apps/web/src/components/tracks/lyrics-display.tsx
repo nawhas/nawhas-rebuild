@@ -63,7 +63,7 @@ function LyricContent({ lyric }: LyricContentProps): React.JSX.Element {
   return (
     <p
       lang={langAttrFor(lyric.language)}
-      className="whitespace-pre-wrap text-base leading-loose text-foreground"
+      className="whitespace-pre-wrap text-base leading-loose text-[var(--text)]"
     >
       {lyric.text}
     </p>
@@ -129,7 +129,10 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
 
   return (
     <section aria-labelledby="lyrics-heading">
-      <h2 id="lyrics-heading" className="mb-6 text-xl font-semibold text-foreground">
+      <h2
+        id="lyrics-heading"
+        className="mb-6 font-serif text-2xl font-medium tracking-tight text-[var(--text)]"
+      >
         Lyrics
       </h2>
 
@@ -137,13 +140,13 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
         {showTabs && (
           <TabsList
             aria-label="Lyrics language"
-            className="mb-6 h-auto w-full justify-start gap-0 rounded-none border-b border-border bg-transparent p-0"
+            className="mb-6 h-auto w-full justify-start gap-0 rounded-none border-b border-[var(--border)] bg-transparent p-0"
           >
             {availableLanguages.map((lang) => (
               <TabsTrigger
                 key={lang}
                 value={lang}
-                className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-muted-foreground shadow-none data-[state=active]:border-primary-600 data-[state=active]:bg-transparent data-[state=active]:text-primary-700 data-[state=active]:shadow-none"
+                className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-[var(--text-dim)] shadow-none transition-colors hover:text-[var(--text)] data-[state=active]:border-[var(--accent)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--accent)] data-[state=active]:shadow-none"
               >
                 {LANGUAGE_LABELS[lang] ?? lang.toUpperCase()}
               </TabsTrigger>

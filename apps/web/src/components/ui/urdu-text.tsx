@@ -15,7 +15,7 @@ export function UrduText({ children, className }: UrduTextProps): React.JSX.Elem
     <div
       dir="rtl"
       lang="ur"
-      className={['font-urdu text-[1.125rem] leading-[2.0] text-foreground whitespace-pre-wrap', className ?? '']
+      className={['font-urdu text-[1.125rem] leading-[2.0] text-[var(--text)] whitespace-pre-wrap', className ?? '']
         .join(' ')
         .trim()}
     >

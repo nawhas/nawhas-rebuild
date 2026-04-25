@@ -53,9 +53,10 @@ describe('ReciterGrid', () => {
     expect(screen.getByText('Reciter Two')).toBeDefined();
   });
 
-  it('renders a list with role="list"', () => {
+  it('renders a list with role="list" per letter section', () => {
     render(<ReciterGrid initialItems={TWO_RECITERS} initialCursor={null} />);
-    expect(screen.getByRole('list', { name: 'Reciters' })).toBeDefined();
+    // Both reciters start with 'R', so a single per-letter list is emitted.
+    expect(screen.getByRole('list', { name: /reciters starting with R/i })).toBeDefined();
   });
 
   it('does not show Load More button when there is no cursor', () => {
@@ -108,5 +109,57 @@ describe('ReciterGrid', () => {
     render(<ReciterGrid initialItems={TWO_RECITERS} initialCursor={null} />);
     const link = screen.getByRole('link', { name: /reciter one/i });
     expect(link.getAttribute('href')).toBe('/reciters/reciter-one');
+  });
+
+  it('renders A–Z anchor nav with one link per occupied letter', () => {
+    render(
+      <ReciterGrid
+        initialItems={[makeReciter('1', 'Ali Safdar'), makeReciter('2', 'Bashir Hussain')]}
+        initialCursor={null}
+      />,
+    );
+    const nav = screen.getByRole('navigation', { name: /reciters by letter/i });
+    expect(nav).toBeDefined();
+    expect(screen.getByRole('link', { name: 'A' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'B' })).toBeDefined();
+  });
+
+  it('groups non-alpha names under # and places it at the end of the directory', () => {
+    render(
+      <ReciterGrid
+        initialItems={[
+          makeReciter('1', 'Ali Safdar'),
+          makeReciter('2', '€uro Reciter'),
+        ]}
+        initialCursor={null}
+      />,
+    );
+    expect(screen.getByRole('link', { name: '#' })).toBeDefined();
+    expect(screen.getByRole('region', { name: /reciters starting with #/i })).toBeDefined();
+    const navLinks = screen
+      .getAllByRole('link')
+      .filter((link) => /^(#|[A-Z])$/.test(link.textContent ?? ''));
+    expect(navLinks.map((link) => link.textContent)).toEqual(['A', '#']);
+  });
+
+  it('re-groups Load More entries into their letter sections', async () => {
+    mockFetchMoreReciters.mockResolvedValue({
+      items: [makeReciter('3', 'Carlos Reciter')],
+      nextCursor: null,
+    });
+
+    render(
+      <ReciterGrid
+        initialItems={[makeReciter('1', 'Ali Safdar'), makeReciter('2', 'Bashir Hussain')]}
+        initialCursor="cursor-abc"
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Load More' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'C' })).toBeDefined();
+    });
+    const cSection = screen.getByRole('region', { name: /reciters starting with C/i });
+    expect(cSection.textContent).toContain('Carlos Reciter');
   });
 });

@@ -23,11 +23,11 @@ services:
   web:
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas_test
-      - INTERNAL_LISTEN_PORT=3000
-      - BETTER_AUTH_URL=http://nawhas.test:3000
-      - BETTER_AUTH_TRUSTED_ORIGINS=http://nawhas.test:3000,http://localhost:3000
+      - INTERNAL_LISTEN_PORT=3100
+      - BETTER_AUTH_URL=http://nawhas.test:3100
+      - BETTER_AUTH_TRUSTED_ORIGINS=http://nawhas.test:3100,http://localhost:3100
       # Align client auth baseURL with browser origin in E2E (matches BETTER_AUTH_URL).
-      - NEXT_PUBLIC_APP_URL=http://nawhas.test:3000
+      - NEXT_PUBLIC_APP_URL=http://nawhas.test:3100
       # Better Auth enables rate limiting when NODE_ENV=production (CI prod-like web).
       - E2E_DISABLE_AUTH_RATE_LIMIT=true
       # Limit the DB pool per getDb() instance to 3. Next.js dev HMR can re-evaluate
@@ -57,7 +57,7 @@ services:
       - /app/node_modules
       - /app/apps/e2e/node_modules
     environment:
-      - BASE_URL=http://nawhas.test:3000
+      - BASE_URL=http://nawhas.test:3100
       - DOCKER=true
       - CI=${CI:-}
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas_test

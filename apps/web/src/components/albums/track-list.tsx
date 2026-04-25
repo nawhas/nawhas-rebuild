@@ -1,6 +1,5 @@
 import type { TrackDTO } from '@nawhas/types';
-import { SectionTitle } from '@nawhas/ui/components/section-title';
-import { TrackListItem } from '@/components/albums/track-list-item';
+import { TrackListRow } from './track-list-row';
 
 interface TrackListProps {
   tracks: TrackDTO[];
@@ -12,34 +11,40 @@ interface TrackListProps {
  * Ordered track list for the album detail page.
  *
  * Server Component — data is passed as props from the album page.
- * Each row is rendered as a TrackListItem client component to handle
- * play affordances and active-track highlighting.
+ * Each row is rendered via the TrackListRow client wrapper, which
+ * threads the per-row TrackPlayButton + add-to-queue affordances
+ * around the canonical <TrackRow> primitive from @nawhas/ui.
+ *
+ * Borders between rows come from `divide-y` on this <ol> — TrackRow
+ * itself is borderless (consumers own the divider style so it works
+ * regardless of how rows are wrapped).
  */
 export function TrackList({ tracks, reciterSlug, albumSlug }: TrackListProps): React.JSX.Element {
   return (
     <section aria-labelledby="track-list-heading">
-      <SectionTitle id="track-list-heading">Tracks</SectionTitle>
+      <h2
+        id="track-list-heading"
+        className="mb-6 font-serif text-2xl font-medium text-[var(--text)]"
+      >
+        Tracks
+      </h2>
 
       {tracks.length === 0 ? (
-        <p className="text-muted-foreground">No tracks available yet.</p>
+        <p className="text-[var(--text-dim)]">No tracks available yet.</p>
       ) : (
         <ol
           aria-label={`${tracks.length} track${tracks.length !== 1 ? 's' : ''}`}
-          className="divide-y divide-border rounded-lg border border-border"
+          className="flex flex-col divide-y divide-[var(--border)]"
         >
-          {tracks.map((track, index) => {
-            const trackNumber = track.trackNumber ?? index + 1;
-            const href = `/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${track.slug}`;
-
-            return (
-              <TrackListItem
-                key={track.id}
-                track={track}
-                trackNumber={trackNumber}
-                href={href}
-              />
-            );
-          })}
+          {tracks.map((track, index) => (
+            <TrackListRow
+              key={track.id}
+              track={track}
+              trackNumber={track.trackNumber ?? index + 1}
+              href={`/reciters/${reciterSlug}/albums/${albumSlug}/tracks/${track.slug}`}
+              reciterSlug={reciterSlug}
+            />
+          ))}
         </ol>
       )}
     </section>

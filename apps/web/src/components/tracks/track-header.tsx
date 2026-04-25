@@ -1,40 +1,32 @@
 import Link from 'next/link';
 import type { TrackWithRelationsDTO } from '@nawhas/types';
-
-/** Format a duration in seconds as m:ss */
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+import { formatDuration } from '@nawhas/ui/lib/format-duration';
 
 interface TrackHeaderProps {
   track: TrackWithRelationsDTO;
 }
 
 /**
- * Track detail header: title, linked reciter name, linked album title,
- * year, track number, and duration.
+ * Track detail header: Fraunces serif title, breadcrumb-style reciter / album
+ * links, year + track number + duration metadata.
  *
  * Server Component — no interactivity required.
  */
 export function TrackHeader({ track }: TrackHeaderProps): React.JSX.Element {
   const linkClass =
-    'font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded';
+    'font-medium text-[var(--text-dim)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] rounded transition-colors';
 
   return (
     <header className="py-8">
-      <h1 className="font-slab text-[2rem] md:text-[2.75rem] font-bold tracking-tight text-foreground">
+      <h1 className="font-serif text-[2.5rem] font-medium tracking-tight text-[var(--text)] md:text-[3.5rem]">
         {track.title}
       </h1>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--text-faint)]">
         <Link href={`/reciters/${track.reciter.slug}`} className={linkClass}>
           {track.reciter.name}
         </Link>
-
         <span aria-hidden="true">·</span>
-
         <Link href={`/albums/${track.album.slug}`} className={linkClass}>
           {track.album.title}
         </Link>

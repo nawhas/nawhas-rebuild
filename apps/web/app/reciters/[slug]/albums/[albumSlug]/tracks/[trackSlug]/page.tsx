@@ -9,6 +9,7 @@ import { TrackActions } from '@/components/tracks/track-actions';
 import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
 import { MediaToggle } from '@/components/tracks/media-toggle';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
+import { Waveform } from '@nawhas/ui';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildTrackJsonLd } from '@/lib/jsonld';
@@ -72,6 +73,10 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
         ) : (
           <TrackDetailPlayButton track={track} lyrics={track.lyrics} />
         )}
+
+        <div className="mt-6">
+          <Waveform slug={track.slug} durationSec={track.duration ?? undefined} />
+        </div>
 
         {track.lyrics.length > 0 && (
           <div className="mt-10">

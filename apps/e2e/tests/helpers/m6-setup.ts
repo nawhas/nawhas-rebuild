@@ -17,7 +17,7 @@ import { gotoExpectOk } from './goto-expect-ok';
 import { clickLoginSubmitAndWaitForAuth } from './submit-login';
 import postgres from 'postgres';
 
-export const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:3000';
+export const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:3100';
 export const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://mailpit:8025';
 const _dbUrl = process.env['DATABASE_URL'];
 if (!_dbUrl) {

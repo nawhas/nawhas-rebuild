@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@nawhas/ui/components/button';
 
 interface AudioUploadProps {
   value: string | null;
@@ -53,27 +52,27 @@ export function AudioUpload({ value, onChange, disabled, label }: AudioUploadPro
         </audio>
       )}
       <div className="flex items-center gap-2">
-        <Button
+        <button
           type="button"
-          variant="outline"
           disabled={disabled || uploading}
           onClick={() => inputRef.current?.click()}
+          className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
         >
           {uploading ? t('uploading') : value ? t('replaceAudio') : label}
-        </Button>
+        </button>
         {value && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
             disabled={disabled || uploading}
             onClick={() => onChange({ url: null, duration: null })}
+            className="rounded-[8px] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--input-bg)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
           >
             {t('remove')}
-          </Button>
+          </button>
         )}
       </div>
       {error && (
-        <p role="alert" className="text-xs text-error-600 dark:text-error-400">
+        <p role="alert" className="text-[13px] text-[var(--color-error-500)]">
           {error}
         </p>
       )}

@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        arabic: ['var(--font-noto-naskh-arabic)', 'serif'],
+        serif: ['var(--font-fraunces)', 'ui-serif', 'Georgia', 'serif'],
         urdu: ['var(--font-noto-nastaliq-urdu)', 'serif'],
       },
     },

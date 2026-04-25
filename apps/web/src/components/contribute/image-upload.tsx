@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { Button } from '@nawhas/ui/components/button';
 
 interface ImageUploadProps {
   /** Current image URL (for pre-fill on edit). Null = no image. */
@@ -49,7 +48,7 @@ export function ImageUpload({ value, onChange, disabled, label }: ImageUploadPro
 
   return (
     <div className="flex items-start gap-4">
-      <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+      <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)]">
         {value ? (
           <Image
             src={value}
@@ -59,32 +58,32 @@ export function ImageUpload({ value, onChange, disabled, label }: ImageUploadPro
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+          <div className="flex h-full w-full items-center justify-center text-xs text-[var(--text-faint)]">
             {t('noImage')}
           </div>
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <Button
+        <button
           type="button"
-          variant="outline"
           disabled={disabled || uploading}
           onClick={() => inputRef.current?.click()}
+          className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
         >
           {uploading ? t('uploading') : value ? t('replace') : label}
-        </Button>
+        </button>
         {value && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
             disabled={disabled || uploading}
             onClick={() => onChange(null)}
+            className="rounded-[8px] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--input-bg)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
           >
             {t('remove')}
-          </Button>
+          </button>
         )}
         {error && (
-          <p role="alert" className="text-xs text-error-600 dark:text-error-400">
+          <p role="alert" className="text-[13px] text-[var(--color-error-500)]">
             {error}
           </p>
         )}

@@ -62,7 +62,7 @@ async function extractVerificationUrl(messageId: string): Promise<string> {
 }
 
 function toVerificationFetchUrl(fullUrl: string): string {
-  const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+  const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3100';
   const { pathname, search } = new URL(fullUrl);
   return `${baseUrl}${pathname}${search}`;
 }
@@ -82,7 +82,7 @@ type WorkerFixtures = { verifiedUser: VerifiedUser };
 const test = base.extend<Record<string, never>, WorkerFixtures>({
   verifiedUser: [
     async ({}, use) => {
-      const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3000';
+      const baseUrl = process.env['BASE_URL'] ?? 'http://localhost:3100';
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const email = `protected-e2e-${suffix}@example.com`;
       const password = 'ProtectedTest99!';

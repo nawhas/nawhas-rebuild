@@ -33,23 +33,23 @@ async function SiteHeaderBase({
     <nav
       role="navigation"
       aria-label={t('mainNavLabel')}
-      className="relative sticky top-0 z-40 border-b border-border bg-card text-card-foreground"
+      className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--header-bg)] backdrop-blur supports-[backdrop-filter]:bg-[var(--header-bg)]"
     >
       {/* Skip link for keyboard users — visible only on focus */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:ring-2 focus:ring-ring"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-[var(--surface)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text)] focus:ring-2 focus:ring-[var(--accent)]"
       >
         {t('skipToMainContent')}
       </a>
 
       <Container>
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+          {/* Wordmark — Fraunces serif in POC accent red */}
           <Link
             href="/"
             aria-label={t('logoLabel')}
-            className="rounded text-lg font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+            className="rounded font-serif text-2xl font-medium text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
           >
             {t('logoText')}
           </Link>
@@ -68,7 +68,7 @@ async function SiteHeaderBase({
             ) : (
               <Link
                 href="/login"
-                className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
               >
                 {t('signIn')}
               </Link>

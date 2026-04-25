@@ -75,13 +75,14 @@ export function DisplayNameEdit({ initialName }: DisplayNameEditProps): React.JS
           maxLength={100}
           disabled={isPending}
           aria-label={t('displayNameLabel')}
-          className="rounded-md border border-input bg-card px-2 py-1 text-lg font-semibold text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
+          className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-2 py-1 text-lg font-medium text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={isPending || !draft.trim()}
+          aria-busy={isPending || undefined}
           aria-label={t('saveNameLabel')}
-          className="rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:bg-foreground/90 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+          className="rounded-[8px] bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-soft)] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors"
         >
           {t('save')}
         </button>
@@ -90,23 +91,23 @@ export function DisplayNameEdit({ initialName }: DisplayNameEditProps): React.JS
           onClick={handleCancel}
           disabled={isPending}
           aria-label={t('cancelEditingLabel')}
-          className="text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:underline"
+          className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:underline"
         >
           {t('cancel')}
         </button>
-        {error && <p role="alert" className="text-xs text-error-600 dark:text-error-400">{error}</p>}
+        {error && <p role="alert" className="text-xs text-[var(--color-error-500)]">{error}</p>}
       </form>
     );
   }
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xl font-semibold text-foreground">{name}</span>
+      <span className="text-xl font-medium text-[var(--text)]">{name}</span>
       <button
         type="button"
         onClick={handleEditClick}
         aria-label={t('editDisplayNameLabel')}
-        className="rounded p-1 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+        className="rounded p-1 text-[var(--text-dim)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       >
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
           <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />

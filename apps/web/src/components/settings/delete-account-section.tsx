@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Button } from '@nawhas/ui/components/button';
 import {
   Dialog,
   DialogClose,
@@ -55,18 +54,21 @@ export function DeleteAccountSection(): React.JSX.Element {
 
   return (
     <section aria-labelledby="danger-heading">
-      <h2 id="danger-heading" className="text-base font-semibold text-destructive">
+      <h2 id="danger-heading" className="font-serif text-2xl font-medium text-[var(--text)]">
         {t('dangerZoneHeading')}
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-[var(--text-dim)]">
         {t('dangerZoneDescription')}
       </p>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
-          <Button type="button" variant="outline" className="mt-4 border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive">
+          <button
+            type="button"
+            className="mt-4 rounded-[8px] border border-[var(--color-error-500)]/40 bg-transparent px-5 py-2.5 text-sm font-medium text-[var(--color-error-500)] transition-colors hover:bg-[var(--color-error-600)] hover:text-white hover:border-[var(--color-error-600)] focus-visible:outline-2 focus-visible:outline-[var(--color-error-500)] focus-visible:outline-offset-2"
+          >
             {t('deleteMyAccount')}
-          </Button>
+          </button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -74,11 +76,11 @@ export function DeleteAccountSection(): React.JSX.Element {
             <DialogDescription>{t('deleteModalDescription')}</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleDelete} noValidate className="space-y-3">
+          <form onSubmit={handleDelete} noValidate className="space-y-6">
             <div>
               <label
                 htmlFor="delete-password"
-                className="block text-sm font-medium text-foreground"
+                className="block text-[13px] font-medium text-[var(--text-dim)] mb-2"
               >
                 {t('deletePasswordLabel')}
               </label>
@@ -90,29 +92,34 @@ export function DeleteAccountSection(): React.JSX.Element {
                 required
                 autoComplete="current-password"
                 disabled={loading}
-                className="mt-1"
+                className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-50"
               />
             </div>
 
             {error && (
-              <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <p role="alert" className="text-[13px] text-[var(--color-error-500)] mt-2">
                 {error}
               </p>
             )}
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="ghost" disabled={loading}>
+                <button
+                  type="button"
+                  disabled={loading}
+                  className="rounded-[8px] bg-[var(--input-bg)] border border-[var(--border)] px-5 py-2.5 text-sm font-medium text-[var(--text)] hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50"
+                >
                   {t('deleteCancel')}
-                </Button>
+                </button>
               </DialogClose>
-              <Button
+              <button
                 type="submit"
-                variant="destructive"
                 disabled={loading || !password}
+                aria-busy={loading || undefined}
+                className="rounded-[8px] bg-[var(--color-error-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-error-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-error-500)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? t('deleteSubmitting') : t('deleteSubmit')}
-              </Button>
+              </button>
             </DialogFooter>
           </form>
         </DialogContent>

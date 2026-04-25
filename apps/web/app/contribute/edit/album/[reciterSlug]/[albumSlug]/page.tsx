@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
+import { Container } from '@/components/layout/container';
 import { AlbumForm } from '@/components/contribute/album-form';
 
 export const dynamic = 'force-dynamic';
@@ -40,24 +42,39 @@ export default async function EditAlbumPage({
   const t = await getTranslations('contribute.pages');
 
   return (
-    <main id="main-content" className="mx-auto max-w-xl py-10 px-4">
-      <h1 className="mb-1 text-2xl font-bold text-foreground">
-        {t('editAlbumTitle', { title: album.title })}
-      </h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        {t('editAlbumSubtitle')}
-      </p>
-      <AlbumForm
-        action="edit"
-        targetId={album.id}
-        initialValues={{
-          title: album.title,
-          reciter: { id: album.reciterId, label: reciter.name },
-          year: album.year !== null ? String(album.year) : '',
-          description: album.description ?? '',
-          artworkUrl: album.artworkUrl ?? null,
-        }}
-      />
+    <main id="main-content" className="py-10">
+      <Container size="md">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex items-center gap-2 text-[13px]">
+            <li>
+              <Link href="/contribute" className="text-[var(--text-dim)] hover:text-[var(--text)]">
+                Contribute
+              </Link>
+            </li>
+            <li className="text-[var(--text-faint)]">/</li>
+            <li aria-current="page" className="text-[var(--text)]">Edit album</li>
+          </ol>
+        </nav>
+        <h1 className="mt-4 font-serif text-4xl font-medium text-[var(--text)]">
+          {t('editAlbumTitle', { title: album.title })}
+        </h1>
+        <p className="mt-2 text-base text-[var(--text-dim)]">
+          {t('editAlbumSubtitle')}
+        </p>
+        <div className="mt-6 rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8">
+          <AlbumForm
+            action="edit"
+            targetId={album.id}
+            initialValues={{
+              title: album.title,
+              reciter: { id: album.reciterId, label: reciter.name },
+              year: album.year !== null ? String(album.year) : '',
+              description: album.description ?? '',
+              artworkUrl: album.artworkUrl ?? null,
+            }}
+          />
+        </div>
+      </Container>
     </main>
   );
 }

@@ -6,15 +6,15 @@ The full dev stack starts with a single command:
 ./dev up
 ```
 
-This brings up five services:
+This brings up five services. **Only the `web` container publishes a host port** — Postgres, Typesense, MinIO, and Mailpit live on the internal docker network. To reach them, exec into the container (`./dev exec <service> <cmd>`) or proxy through the `web` app.
 
-| Service      | URL / Port                         | Purpose                           |
-|--------------|------------------------------------|-----------------------------------|
-| web          | http://localhost:3000              | Next.js app (hot-reload)          |
-| postgres     | localhost:5432                     | PostgreSQL database               |
-| typesense    | localhost:8108                     | Full-text search engine           |
-| minio        | http://localhost:9001 (console)    | S3-compatible object storage      |
-| mailpit      | http://localhost:8025 (UI)         | Transactional email catcher       |
+| Service      | URL / Port                                | Purpose                           |
+|--------------|-------------------------------------------|-----------------------------------|
+| web          | http://localhost:3100                     | Next.js app (hot-reload)          |
+| postgres     | internal-only — `./dev exec postgres psql -U postgres nawhas` | PostgreSQL database               |
+| typesense    | internal-only — `./dev exec typesense curl http://localhost:8108/health` | Full-text search engine           |
+| minio        | internal-only — console at `http://minio:9001` from inside the docker network | S3-compatible object storage      |
+| mailpit      | internal-only — UI at `http://mailpit:8025` from inside the docker network | Transactional email catcher       |
 
 ---
 
@@ -33,23 +33,23 @@ Two buckets are created automatically on first startup:
 
 ### Console
 
-Access the MinIO browser UI at **http://localhost:9001**.
+The MinIO console is **not directly reachable from the host** — port 9001 is no longer published. To inspect buckets, either temporarily add `ports: ["9001:9001"]` back under the `minio` service in `docker-compose.yml` for a one-off debug session, or use `./dev exec minio mc ls local/` for CLI access.
 
 - Username: `minioadmin`
 - Password: `minioadmin`
 
-### Environment variables (dev defaults)
+### Environment variables (dev defaults — set automatically inside the `web` container)
 
 ```env
-S3_ENDPOINT=http://localhost:9000
+S3_ENDPOINT=http://minio:9000
 S3_ACCESS_KEY_ID=minioadmin
 S3_SECRET_ACCESS_KEY=minioadmin
 S3_BUCKET_AUDIO=nawhas-audio
 S3_BUCKET_IMAGES=nawhas-images
-S3_PUBLIC_BASE_URL=http://localhost:9000/nawhas-audio
+S3_PUBLIC_BASE_URL=http://minio:9000/nawhas-audio
 ```
 
-These are already set in `docker-compose.yml` for the `web` service. Copy `.env.example` to `.env.local` if you run the app outside Docker.
+These are pre-set in `docker-compose.yml` for the `web` service using internal docker hostnames. Browser audio playback that points to `S3_PUBLIC_BASE_URL` will not resolve from the host — see "Audio playback in dev" in the Troubleshooting section below.
 
 ### Seeding fixtures
 
@@ -82,9 +82,7 @@ Mailpit captures all outbound email from the app so you can inspect it without s
 
 ### Web UI
 
-View all captured emails at **http://localhost:8025**.
-
-Emails appear here as soon as the app sends them (registration confirmation, password reset, etc.).
+The Mailpit UI is **not directly reachable from the host** — port 8025 is no longer published. To inspect emails, either temporarily add `ports: ["8025:8025"]` back under the `mailpit` service in `docker-compose.yml` for a one-off debug session, or query the API from inside the docker network: `./dev exec web wget -qO- http://mailpit:8025/api/v1/messages | jq`.
 
 ### Environment variables
 
@@ -122,23 +120,23 @@ Vitest inherits `DATABASE_URL` and Typesense env from the container when present
 
 ## Health checks
 
-Use these commands to verify all services are running after `./dev up`:
+Use these commands to verify all services are running after `./dev up`. The `web` container is the only one with a host port; everything else is checked via `./dev exec`:
 
 ```bash
-# Next.js web app
-curl -f http://localhost:3000
+# Next.js web app (host)
+curl -f http://localhost:3100
 
 # PostgreSQL
 ./dev exec postgres pg_isready -U postgres
 
 # Typesense
-curl -f http://localhost:8108/health
+./dev exec typesense wget -qO- http://localhost:8108/health
 
-# MinIO (open http://localhost:9001 in a browser, or check the API)
-curl -f http://localhost:9000/minio/health/live
+# MinIO
+./dev exec minio mc ready local
 
-# Mailpit (open http://localhost:8025 in a browser)
-curl -f http://localhost:8025
+# Mailpit
+./dev exec mailpit wget -qO- http://localhost:8025/livez
 ```
 
 All should return `200 OK` (or a success message). If a service is not yet ready, wait a few seconds and retry — the `web` container waits for `postgres` and `typesense` to be healthy before starting.
@@ -151,28 +149,32 @@ All should return `200 OK` (or a success message). If a service is not yet ready
 
 If any service fails to start because a port is already in use:
 
+Only `web` exposes a host port now, so this is the only realistic conflict:
+
 | Service | Default port | Common conflict |
 |---------|-------------|-----------------|
-| web | 3000 | Another Next.js dev server |
-| postgres | 5432 | A local PostgreSQL installation |
-| typesense | 8108 | Rarely conflicts |
-| minio API | 9000 | Other S3-compatible tools |
-| minio console | 9001 | Other MinIO instances |
-| mailpit UI | 8025 | Other mail catchers |
+| web | 3100 | Another Next.js dev server, or another stack on 3100 |
 
 To find what is using a port: `lsof -i :<port>` (macOS/Linux) or `netstat -ano | findstr :<port>` (Windows).
 
-### E2E (`./dev test:e2e`) and port 3000
+### Audio playback in dev
+
+The `web` container exposes `S3_PUBLIC_BASE_URL=http://minio:9000/nawhas-audio` for browser audio. `minio:9000` only resolves on the docker network, so `<audio src="...">` tags will fail to load from a host browser. Two workarounds:
+
+- **Quick fix:** add `ports: ["9000:9000"]` back under the `minio` service and override `S3_PUBLIC_BASE_URL=http://localhost:9000/nawhas-audio` in `.env.local`.
+- **Long-term:** proxy audio through Next.js so playback uses `/api/media/...` and the browser never touches MinIO directly. Tracked separately.
+
+### E2E (`./dev test:e2e`) and port 3100
 
 End-to-end tests use [`docker-compose.test.yml`](../docker-compose.test.yml) on top of [`docker-compose.yml`](../docker-compose.yml): test DB (`nawhas_test`), `nawhas.test` aliases, and the **Playwright** service (profile `testing`) all live in the test overlay. **`./dev test:e2e --ci`** and CI add [`docker-compose.ci.yml`](../docker-compose.ci.yml), which includes [`docker-compose.web-prod.yml`](../docker-compose.web-prod.yml) so `web` runs **`next build` + `next start`** instead of `next dev`.
 
-The base `web` service maps **host port 3000** (`ports: "3000:3000"`). Playwright (in Docker) uses `http://nawhas.test:3000` on the **container** network; the host publish is for `http://localhost:3000` from your machine.
+The base `web` service maps **host port 3100** (`ports: "3100:3100"`). Playwright (in Docker) uses `http://nawhas.test:3100` on the **container** network; the host publish is for `http://localhost:3100` from your machine.
 
-If you see **`failed to bind host port 0.0.0.0:3000: address already in use`**, something on the host is already listening on 3000. Typical cases:
+If you see **`failed to bind host port 0.0.0.0:3100: address already in use`**, something on the host is already listening on 3100. Typical cases:
 
 - A **local** `pnpm dev` / `next dev` (not in Docker) for this or another project
 - A **leftover** stack — run `./dev down` and retry
-- Another tool using 3000 — check with `ss -tlnp | grep 3000` or `sudo lsof -i :3000`
+- Another tool using 3100 — check with `ss -tlnp | grep 3100` or `sudo lsof -i :3100`
 
 Inside the repo, prefer **either** `./dev up` **or** E2E in Docker, not both a host Next server and a fresh `web` container fighting for the same port.
 
@@ -236,6 +238,6 @@ If the Typesense container was restarted after seeding, the index persists in th
 Better-Auth validates the `BETTER_AUTH_TRUSTED_ORIGINS` environment variable. If you see origin mismatch errors, ensure your `.env.local` (or `docker-compose.yml` for the `web` service) includes your local hostname:
 
 ```env
-BETTER_AUTH_URL=http://localhost:3000
-BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3100
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:3100
 ```

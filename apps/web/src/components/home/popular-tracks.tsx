@@ -1,20 +1,23 @@
-import { Card } from '@nawhas/ui/components/card';
 import { SectionTitle } from '@nawhas/ui/components/section-title';
 import type { TrackDTO } from '@nawhas/types';
+import { formatDuration } from '@nawhas/ui/lib/format-duration';
 
 interface PopularTracksProps {
   tracks: TrackDTO[];
 }
 
-/** Format a duration in seconds as m:ss */
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 /**
  * Home page section displaying popular tracks as a numbered list.
+ *
+ * Stays bespoke (does not consume <TrackRow>) for two reasons:
+ * 1. TrackDTO (from home.getFeatured) lacks reciter/album slugs, so the
+ *    title link can't be built without enriching the DTO.
+ * 2. Same compact-ranking rationale as TopNawhasTable — the column-grid
+ *    treatment in TrackRow is for table-density browsing, not top-N lists.
+ *
+ * If popularity metrics replace the "newest" proxy and the section moves
+ * to TrackListItemDTO, consolidate with TopNawhasTable instead of
+ * adopting TrackRow.
  *
  * Server Component — pure presentation, no interactivity.
  */
@@ -27,10 +30,10 @@ export function PopularTracks({ tracks }: PopularTracksProps): React.JSX.Element
     <section aria-labelledby="popular-tracks-heading">
       <SectionTitle id="popular-tracks-heading">Popular Tracks</SectionTitle>
 
-      <Card className="overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card-bg)]">
         <ol
           aria-label="Popular tracks"
-          className="divide-y divide-border"
+          className="divide-y divide-[var(--border)]"
         >
           {tracks.map((track, index) => (
             <li
@@ -40,19 +43,19 @@ export function PopularTracks({ tracks }: PopularTracksProps): React.JSX.Element
               {/* Track number */}
               <span
                 aria-hidden="true"
-                className="w-6 shrink-0 text-center text-sm text-muted-foreground"
+                className="w-6 shrink-0 text-center text-sm text-[var(--text-dim)]"
               >
                 {index + 1}
               </span>
 
               {/* Track title */}
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--text)]">
                 {track.title}
               </span>
 
               {/* Duration */}
               {track.duration != null && (
-                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                <span className="shrink-0 text-xs tabular-nums text-[var(--text-faint)]">
                   <span className="sr-only">Duration: </span>
                   {formatDuration(track.duration)}
                 </span>
@@ -60,7 +63,7 @@ export function PopularTracks({ tracks }: PopularTracksProps): React.JSX.Element
             </li>
           ))}
         </ol>
-      </Card>
+      </div>
     </section>
   );
 }

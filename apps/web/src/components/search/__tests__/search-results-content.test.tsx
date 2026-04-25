@@ -43,11 +43,33 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-// AppImage — render a simple img to avoid Next.js Image setup complexity.
-vi.mock('@/components/ui/image', () => ({
-  AppImage: ({ src, alt }: { src: string; alt: string }) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} />
+// CoverArt + ReciterAvatar (from @nawhas/ui) call useTranslations('coverArt')
+// internally. The web-app vitest.setup.ts mocks next-intl for app-resolved
+// imports, but @nawhas/ui resolves via a different module URL in workspace
+// test runs so the mock doesn't catch. Stub both primitives directly; their
+// real renders are covered in packages/ui.
+vi.mock('@nawhas/ui', () => ({
+  CoverArt: ({
+    slug,
+    artworkUrl,
+    label,
+  }: {
+    slug: string;
+    artworkUrl?: string | null;
+    label?: string;
+  }) =>
+    artworkUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element -- test stub, not production code
+      <img src={artworkUrl} alt={label ?? 'cover'} data-testid="cover-img" />
+    ) : (
+      <div data-cover-variant="cov-1" data-slug={slug} aria-label={label}>
+        {label}
+      </div>
+    ),
+  ReciterAvatar: ({ name }: { name: string }) => (
+    <div data-testid="reciter-avatar" aria-label={name}>
+      {name}
+    </div>
   ),
 }));
 
@@ -274,7 +296,9 @@ describe('SearchResultsContent', () => {
         />,
       );
 
-      expect(screen.getByText(/Safar/i)).toBeDefined();
+      // "Safar" appears twice — once as the CoverArt placeholder label,
+      // once as the visible title text inside the link.
+      expect(screen.getAllByText(/Safar/i).length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText(/Hussain Al Akrami/i)).toBeDefined();
     });
 

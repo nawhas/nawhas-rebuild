@@ -15,6 +15,10 @@ interface RoleButtonProps {
 /**
  * Dropdown to promote/demote a user's role.
  * Moderator-to-moderator promotion is NOT exposed — ops-only via DB for M6.
+ *
+ * Visual treatment per vocab:
+ * - Default (non-moderator, not pending): secondary CTA style
+ * - Disabled (moderator or isPending): opacity-50 cursor-not-allowed
  */
 export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.Element {
   const t = useTranslations('mod.users');
@@ -27,6 +31,8 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
     { value: 'user', label: t('roleUser') },
     { value: 'contributor', label: t('roleContributor') },
   ];
+
+  const isDisabled = isPending || role === 'moderator';
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>): void {
     const newRole = e.target.value as Role;
@@ -52,9 +58,15 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
       <select
         value={role}
         onChange={handleChange}
-        disabled={isPending || role === 'moderator'}
+        disabled={isDisabled}
         aria-label={t('changeRoleLabel')}
-        className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+        className={[
+          'rounded-[8px] border px-3 py-1.5 text-xs transition-colors',
+          'focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2',
+          isDisabled
+            ? 'cursor-not-allowed opacity-50 border-[var(--border)] bg-[var(--input-bg)] text-[var(--text)]'
+            : 'border-[var(--border)] bg-[var(--input-bg)] text-[var(--text)] hover:border-[var(--border-strong)]',
+        ].join(' ')}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -68,8 +80,12 @@ export function RoleButton({ userId, currentRole }: RoleButtonProps): React.JSX.
           </option>
         )}
       </select>
-      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
-      <span role="status" aria-live="polite" className="text-xs text-muted-foreground">
+      {error && (
+        <p role="alert" className="text-xs text-[var(--color-error-500)]">
+          {error}
+        </p>
+      )}
+      <span role="status" aria-live="polite" className="text-xs text-[var(--text-dim)]">
         {isPending ? t('saving') : ''}
       </span>
     </div>

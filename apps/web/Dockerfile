@@ -55,7 +55,7 @@ RUN /app/node_modules/.bin/tsc --build packages/types/tsconfig.json && \
     /app/node_modules/.bin/tsc --build packages/db/tsconfig.json && \
     /app/node_modules/.bin/tsc --build packages/ui/tsconfig.json && \
     BETTER_AUTH_SECRET=build-placeholder \
-    BETTER_AUTH_URL=http://localhost:3000 \
+    BETTER_AUTH_URL=http://localhost:3100 \
     DATABASE_URL=postgresql://localhost/nawhas \
     TYPESENSE_HOST=localhost \
     TYPESENSE_PORT=8108 \
@@ -74,7 +74,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3100
 ENV HOSTNAME="0.0.0.0"
 
 # Non-root user for security
@@ -129,6 +129,6 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules/math-intrinsics ./node_
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 3100
 
 CMD ["node", "apps/web/server.js"]

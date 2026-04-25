@@ -83,8 +83,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps): Pro
     return (
       <div className="py-10">
         <Container>
-          <h1 className="mb-2 text-2xl font-bold text-foreground">{t('heading')}</h1>
-          <p className="mt-2 text-muted-foreground">
+          <h1 className="mb-2 font-serif text-[2.5rem] font-medium tracking-tight text-[var(--text)]">{t('heading')}</h1>
+          <p className="mt-2 text-[var(--text-dim)]">
             {t('emptyQueryPrompt')}
           </p>
         </Container>
@@ -113,10 +113,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps): Pro
   return (
     <div className="py-10">
       <Container>
-        <h1 className="mb-6 text-2xl font-bold text-foreground">
+        <h1 className="mb-6 font-serif text-[2.5rem] font-medium tracking-tight text-[var(--text)]">
           {t.rich('resultsHeading', {
             query,
-            italic: (chunks) => <span className="italic text-muted-foreground">&ldquo;{chunks}&rdquo;</span>,
+            italic: (chunks) => <span className="italic text-[var(--text-dim)]">&ldquo;{chunks}&rdquo;</span>,
           })}
         </h1>
         <SearchResultsContent
