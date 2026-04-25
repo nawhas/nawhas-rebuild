@@ -181,3 +181,68 @@ describe('accessRequests.queue', () => {
     await expect(c.queue({})).rejects.toThrow(/FORBIDDEN/i);
   });
 });
+
+describe('accessRequests.review', () => {
+  it.skipIf(!dbAvailable)('approves: flips status, sets reviewed fields, promotes user role', async () => {
+    const modId = await seedUser('moderator');
+    const userId = await seedUser('user');
+    const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await userCaller.create({ reason: null });
+
+    const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
+    await modCaller.review({ id, action: 'approved', comment: 'Welcome!' });
+
+    const [row] = await testDb.db.select().from(accessRequests).where(eq(accessRequests.id, id));
+    expect(row?.status).toBe('approved');
+    expect(row?.reviewedBy).toBe(modId);
+    expect(row?.reviewedAt).toBeInstanceOf(Date);
+    expect(row?.reviewComment).toBe('Welcome!');
+
+    const [user] = await testDb.db.select().from(users).where(eq(users.id, userId));
+    expect(user?.role).toBe('contributor');
+  });
+
+  it.skipIf(!dbAvailable)('rejects: flips status, does not change role, comment required', async () => {
+    const modId = await seedUser('moderator');
+    const userId = await seedUser('user');
+    const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await userCaller.create({ reason: null });
+
+    const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
+    await modCaller.review({ id, action: 'rejected', comment: 'Need more context.' });
+
+    const [row] = await testDb.db.select().from(accessRequests).where(eq(accessRequests.id, id));
+    expect(row?.status).toBe('rejected');
+
+    const [user] = await testDb.db.select().from(users).where(eq(users.id, userId));
+    expect(user?.role).toBe('user');
+  });
+
+  it.skipIf(!dbAvailable)('rejects double-review with BAD_REQUEST', async () => {
+    const modId = await seedUser('moderator');
+    const userId = await seedUser('user');
+    const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await userCaller.create({ reason: null });
+
+    const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
+    await modCaller.review({ id, action: 'approved', comment: null });
+    await expect(modCaller.review({ id, action: 'rejected', comment: 'oops' })).rejects.toThrow(
+      /BAD_REQUEST|status/i,
+    );
+  });
+
+  it.skipIf(!dbAvailable)('writes an audit_log row', async () => {
+    const modId = await seedUser('moderator');
+    const userId = await seedUser('user');
+    const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
+    const { id } = await userCaller.create({ reason: null });
+    const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
+    await modCaller.review({ id, action: 'approved', comment: null });
+
+    const rows = await testDb.db
+      .select()
+      .from(auditLog)
+      .where(and(eq(auditLog.action, 'access_request.approved'), eq(auditLog.targetId, id)));
+    expect(rows.length).toBeGreaterThan(0);
+  });
+});

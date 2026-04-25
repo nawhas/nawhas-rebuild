@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { accessRequests, auditLog, users } from '@nawhas/db';
 import { router, protectedProcedure, moderatorProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
+import { sendAccessRequestApproved, sendAccessRequestRejected } from '@/lib/email';
 import type { AccessRequestDTO, AccessRequestQueueItemDTO, PaginatedResult } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
@@ -161,5 +162,97 @@ export const accessRequestsRouter = router({
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
       return { items, nextCursor };
+    }),
+
+  /**
+   * Approve or reject an application.
+   * Approve: flips access_requests.status='approved', updates users.role='contributor',
+   * writes audit_log, sends approval email. All in one transaction.
+   * Reject: flips status='rejected', writes audit_log, sends rejection email.
+   * Comment is required for rejection (UX is poor without it).
+   */
+  review: moderatorProcedure
+    .input(
+      z.object({
+        id: z.uuid(),
+        action: z.enum(['approved', 'rejected']),
+        comment: z.string().max(2000).nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }): Promise<{ ok: true }> => {
+      if (input.action === 'rejected' && !input.comment?.trim()) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'A comment is required when rejecting an application.',
+        });
+      }
+
+      const result = await ctx.db.transaction(async (tx) => {
+        const [row] = await tx
+          .select()
+          .from(accessRequests)
+          .where(eq(accessRequests.id, input.id))
+          .limit(1);
+        if (!row) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (row.status !== 'pending') {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Only pending applications can be reviewed (current status: ${row.status}).`,
+          });
+        }
+
+        await tx
+          .update(accessRequests)
+          .set({
+            status: input.action,
+            reviewedBy: ctx.user.id,
+            reviewedAt: new Date(),
+            reviewComment: input.comment,
+            updatedAt: new Date(),
+          })
+          .where(eq(accessRequests.id, input.id));
+
+        if (input.action === 'approved') {
+          await tx
+            .update(users)
+            .set({ role: 'contributor', updatedAt: new Date() })
+            .where(eq(users.id, row.userId));
+        }
+
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action:
+            input.action === 'approved'
+              ? 'access_request.approved'
+              : 'access_request.rejected',
+          targetType: 'user',
+          targetId: input.id,
+          meta: { applicantUserId: row.userId, comment: input.comment },
+        });
+
+        // Read the applicant's email + name for the post-tx email send.
+        const [applicant] = await tx
+          .select({ email: users.email, name: users.name })
+          .from(users)
+          .where(eq(users.id, row.userId));
+        return { applicant };
+      });
+
+      // Fire-and-forget post-commit email.
+      if (result.applicant) {
+        if (input.action === 'approved') {
+          sendAccessRequestApproved({
+            to: result.applicant.email,
+            name: result.applicant.name,
+          });
+        } else {
+          sendAccessRequestRejected({
+            to: result.applicant.email,
+            name: result.applicant.name,
+            comment: input.comment,
+          });
+        }
+      }
+      return { ok: true };
     }),
 });

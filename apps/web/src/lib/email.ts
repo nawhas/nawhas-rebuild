@@ -221,3 +221,76 @@ export function sendSubmissionFeedback(params: {
       console.error('[email] sendSubmissionFeedback failed', err);
     });
 }
+
+/**
+ * Notify applicant that their contributor access request was approved.
+ * Fire-and-forget: logs errors, never throws.
+ */
+export function sendAccessRequestApproved(params: {
+  to: string;
+  name: string;
+}): void {
+  const transport = createTransport();
+  transport
+    .sendMail({
+      from: FROM,
+      to: params.to,
+      subject: "You're now a Nawhas.com contributor",
+      text: [
+        `Hi ${params.name},`,
+        '',
+        'Your application has been approved! You can now submit reciters, albums, and tracks for review.',
+        '',
+        'Visit https://nawhas.com/contribute to get started.',
+        '',
+        '— The Nawhas.com team',
+      ].join('\n'),
+      html: `
+        <p>Hi ${escapeHtml(params.name)},</p>
+        <p>Your application has been approved! You can now submit reciters, albums, and tracks for review.</p>
+        <p><a href="https://nawhas.com/contribute" style="display:inline-block;padding:10px 20px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-weight:500">Start contributing</a></p>
+        <p style="color:#9ca3af;font-size:12px">— The Nawhas.com team</p>
+      `,
+    })
+    .catch((err: unknown) => {
+      console.error('[email] sendAccessRequestApproved failed', err);
+    });
+}
+
+/**
+ * Notify applicant that their contributor access request was rejected.
+ * Fire-and-forget: logs errors, never throws.
+ */
+export function sendAccessRequestRejected(params: {
+  to: string;
+  name: string;
+  comment: string | null;
+}): void {
+  const transport = createTransport();
+  transport
+    .sendMail({
+      from: FROM,
+      to: params.to,
+      subject: 'About your Nawhas.com contributor application',
+      text: [
+        `Hi ${params.name},`,
+        '',
+        'Your application to become a contributor was not approved at this time.',
+        '',
+        ...(params.comment ? [`Reviewer comment: ${params.comment}`, ''] : []),
+        'You can apply again later if you have more context to share.',
+        '',
+        '— The Nawhas.com team',
+      ].join('\n'),
+      html: `
+        <p>Hi ${escapeHtml(params.name)},</p>
+        <p>Your application to become a contributor was not approved at this time.</p>
+        ${params.comment ? `<blockquote style="border-left:3px solid #e5e7eb;padding-left:12px;color:#374151">${escapeHtml(params.comment)}</blockquote>` : ''}
+        <p>You can apply again later if you have more context to share.</p>
+        <p style="color:#9ca3af;font-size:12px">— The Nawhas.com team</p>
+      `,
+    })
+    .catch((err: unknown) => {
+      console.error('[email] sendAccessRequestRejected failed', err);
+    });
+}
