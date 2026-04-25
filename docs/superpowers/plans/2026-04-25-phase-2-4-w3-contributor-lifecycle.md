@@ -528,11 +528,11 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     if (!dbAvailable) return;
   });
 
-  describe('accessRequests.apply', () => {
+  describe('accessRequests.create', () => {
     it.skipIf(!dbAvailable)('inserts a pending row with reason', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const out = await caller.apply({ reason: 'I want to help with Urdu translations.' });
+      const out = await caller.create({ reason: 'I want to help with Urdu translations.' });
       expect(out.id).toBeDefined();
 
       const [row] = await testDb.db.select().from(accessRequests).where(eq(accessRequests.id, out.id));
@@ -544,21 +544,21 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     it.skipIf(!dbAvailable)('accepts a null reason', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const out = await caller.apply({ reason: null });
+      const out = await caller.create({ reason: null });
       expect(out.id).toBeDefined();
     });
 
     it.skipIf(!dbAvailable)('rejects role=contributor with FORBIDDEN', async () => {
       const userId = await seedUser('contributor');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'contributor');
-      await expect(caller.apply({ reason: null })).rejects.toThrow(TRPCError);
+      await expect(caller.create({ reason: null })).rejects.toThrow(TRPCError);
     });
 
     it.skipIf(!dbAvailable)('rejects a duplicate pending application with CONFLICT', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      await caller.apply({ reason: null });
-      await expect(caller.apply({ reason: null })).rejects.toThrow(/already.*pending|CONFLICT/i);
+      await caller.create({ reason: null });
+      await expect(caller.create({ reason: null })).rejects.toThrow(/already.*pending|CONFLICT/i);
     });
   });
   ```
@@ -592,7 +592,16 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
      * The partial unique index (status='pending') enforces one-pending-per-user;
      * Postgres surfaces collisions as `23505` which we map to TRPC CONFLICT.
      */
-    apply: protectedProcedure
+    /**
+     * Submit an application to become a contributor.
+     * Caller must be role='user' (the procedure body rejects contributors+).
+     * The partial unique index (status='pending') enforces one-pending-per-user;
+     * Postgres surfaces collisions as `23505` which we map to TRPC CONFLICT.
+     *
+     * Note: named `create` rather than `apply` — tRPC v11 reserves `apply`,
+     * `call`, and `then` as router-level reserved words.
+     */
+    create: protectedProcedure
       .input(z.object({ reason: z.string().max(1000).nullable() }))
       .mutation(async ({ ctx, input }): Promise<{ id: string }> => {
         if (ctx.user.role !== 'user') {
@@ -646,7 +655,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
           apps/web/src/server/routers/__tests__/accessRequests.test.ts \
           apps/web/src/server/routers/__tests__/helpers.ts \
           apps/web/src/server/trpc/router.ts
-  git commit -m "feat(server): add accessRequests.apply procedure + mount router"
+  git commit -m "feat(server): add accessRequests.create procedure + mount router"
   ```
 
 ### Task C2: Add `accessRequests.withdrawMine`
@@ -664,7 +673,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     it.skipIf(!dbAvailable)('flips status to withdrawn and stamps withdrawn_at', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await caller.apply({ reason: null });
+      const { id } = await caller.create({ reason: null });
       await caller.withdrawMine({ id });
       const [row] = await testDb.db.select().from(accessRequests).where(eq(accessRequests.id, id));
       expect(row?.status).toBe('withdrawn');
@@ -675,7 +684,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const ownerId = await seedUser('user');
       const otherId = await seedUser('user');
       const ownerCaller = makeAccessRequestsCaller(testDb.db, ownerId, 'user');
-      const { id } = await ownerCaller.apply({ reason: null });
+      const { id } = await ownerCaller.create({ reason: null });
       const otherCaller = makeAccessRequestsCaller(testDb.db, otherId, 'user');
       await expect(otherCaller.withdrawMine({ id })).rejects.toThrow(/NOT_FOUND/i);
     });
@@ -683,7 +692,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     it.skipIf(!dbAvailable)('rejects withdrawing an already-withdrawn row with BAD_REQUEST', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await caller.apply({ reason: null });
+      const { id } = await caller.create({ reason: null });
       await caller.withdrawMine({ id });
       await expect(caller.withdrawMine({ id })).rejects.toThrow(/BAD_REQUEST|status/i);
     });
@@ -691,7 +700,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     it.skipIf(!dbAvailable)('writes an audit_log row', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await caller.apply({ reason: null });
+      const { id } = await caller.create({ reason: null });
       await caller.withdrawMine({ id });
       const rows = await testDb.db.select().from(auditLog).where(
         and(eq(auditLog.action, 'access_request.withdrawn'), eq(auditLog.targetId, id))
@@ -792,9 +801,9 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     it.skipIf(!dbAvailable)('returns the most recent application', async () => {
       const userId = await seedUser('user');
       const caller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await caller.apply({ reason: 'first' });
+      const { id } = await caller.create({ reason: 'first' });
       await caller.withdrawMine({ id });
-      const { id: id2 } = await caller.apply({ reason: 'second' });
+      const { id: id2 } = await caller.create({ reason: 'second' });
       const out = await caller.getMine();
       expect(out?.id).toBe(id2);
       expect(out?.status).toBe('pending');
@@ -808,8 +817,8 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const u2 = await seedUser('user');
       const c1 = makeAccessRequestsCaller(testDb.db, u1, 'user');
       const c2 = makeAccessRequestsCaller(testDb.db, u2, 'user');
-      await c1.apply({ reason: 'r1' });
-      await c2.apply({ reason: 'r2' });
+      await c1.create({ reason: 'r1' });
+      await c2.create({ reason: 'r2' });
       const mod = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
       const out = await mod.queue({});
       expect(out.items.length).toBeGreaterThanOrEqual(2);
@@ -822,7 +831,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const modId = await seedUser('moderator');
       const u = await seedUser('user');
       const cu = makeAccessRequestsCaller(testDb.db, u, 'user');
-      await cu.apply({ reason: null });
+      await cu.create({ reason: null });
       const mod = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
       const out = await mod.queue({});
       const item = out.items.find((i) => i.userId === u);
@@ -1026,7 +1035,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const modId = await seedUser('moderator');
       const userId = await seedUser('user');
       const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await userCaller.apply({ reason: null });
+      const { id } = await userCaller.create({ reason: null });
 
       const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
       await modCaller.review({ id, action: 'approved', comment: 'Welcome!' });
@@ -1045,7 +1054,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const modId = await seedUser('moderator');
       const userId = await seedUser('user');
       const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await userCaller.apply({ reason: null });
+      const { id } = await userCaller.create({ reason: null });
 
       const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
       await modCaller.review({ id, action: 'rejected', comment: 'Need more context.' });
@@ -1061,7 +1070,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const modId = await seedUser('moderator');
       const userId = await seedUser('user');
       const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await userCaller.apply({ reason: null });
+      const { id } = await userCaller.create({ reason: null });
 
       const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
       await modCaller.review({ id, action: 'approved', comment: null });
@@ -1072,7 +1081,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
       const modId = await seedUser('moderator');
       const userId = await seedUser('user');
       const userCaller = makeAccessRequestsCaller(testDb.db, userId, 'user');
-      const { id } = await userCaller.apply({ reason: null });
+      const { id } = await userCaller.create({ reason: null });
       const modCaller = makeAccessRequestsCaller(testDb.db, modId, 'moderator');
       await modCaller.review({ id, action: 'approved', comment: null });
 
@@ -3115,7 +3124,7 @@ shared primitives `<TrustLevelPill>`, `<Heatmap>`, `<ContributorHero>`,
     const router = useRouter();
     const [reason, setReason] = React.useState('');
     const [submitting, setSubmitting] = React.useState(false);
-    const apply = trpc.accessRequests.apply.useMutation();
+    const apply = trpc.accessRequests.create.useMutation();
 
     async function onSubmit(e: React.FormEvent): Promise<void> {
       e.preventDefault();
