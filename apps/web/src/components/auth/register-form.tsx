@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@nawhas/ui/components/button';
 import { Input } from '@nawhas/ui/components/input';
 import { signUp } from '@/lib/auth-client';
-import { usernameSchema } from '@/lib/auth';
+import { usernameSchema } from '@/lib/username';
 import { SocialButtons } from './social-buttons';
 import type { EnabledSocialProvider } from '@/lib/social-providers';
 

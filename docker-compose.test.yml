@@ -23,6 +23,10 @@ services:
   web:
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/nawhas_test
+      # `next dev` reads PORT directly; INTERNAL_LISTEN_PORT is consumed by
+      # the proxy/middleware loopback resolver. Both must agree (3100) so the
+      # 3100:3100 port mapping in docker-compose.yml actually points at next.
+      - PORT=3100
       - INTERNAL_LISTEN_PORT=3100
       - BETTER_AUTH_URL=http://nawhas.test:3100
       - BETTER_AUTH_TRUSTED_ORIGINS=http://nawhas.test:3100,http://localhost:3100

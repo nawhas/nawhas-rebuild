@@ -3,27 +3,14 @@ import { admin } from 'better-auth/plugins/admin';
 import { role } from 'better-auth/plugins/access';
 import type { SocialProviders } from 'better-auth/social-providers';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { z } from 'zod';
 import { db, users, sessions, accounts, verificationTokens } from '@nawhas/db';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email';
 
-/**
- * Public username schema. Lowercased server-side via the `users_username_idx`
- * functional unique index — collisions surface as Postgres 23505 and are
- * mapped to a friendly "Username already taken" error in the signup form.
- *
- * Constraints:
- *   - 3–32 chars, letters / digits / underscore only.
- *   - Case-insensitive uniqueness (enforced by lower() unique index).
- */
-export const usernameSchema = z
-  .string()
-  .min(3, 'Username must be at least 3 characters.')
-  .max(32, 'Username must be 32 characters or fewer.')
-  .regex(
-    /^[a-z0-9_]+$/i,
-    'Username may contain only letters, numbers, and underscores.',
-  );
+// usernameSchema lives in its own module (./username) so client components
+// (e.g. <RegisterForm>) can import it without dragging server-only deps
+// (nodemailer, postgres) into the browser bundle. Re-export the symbol here
+// so existing imports of `@/lib/auth` keep working.
+export { usernameSchema } from './username';
 
 /**
  * Build the socialProviders config from env vars.
