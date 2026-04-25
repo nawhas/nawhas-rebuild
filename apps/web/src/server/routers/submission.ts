@@ -159,7 +159,7 @@ export const submissionRouter = router({
       sendSubmissionReceived({ to: ctx.user.email, submissionId: row.id, type: input.type });
 
       // Contributors never see moderator-only notes.
-      return { ...row, notes: null } as SubmissionDTO;
+      return { ...row, moderatorNotes: null } as SubmissionDTO;
     }),
 
   /**
@@ -203,7 +203,7 @@ export const submissionRouter = router({
       }
 
       // Contributors never see moderator-only notes.
-      return { ...updated, notes: null } as SubmissionDTO;
+      return { ...updated, moderatorNotes: null } as SubmissionDTO;
     }),
 
   /**
@@ -245,7 +245,7 @@ export const submissionRouter = router({
       const nextCursor = hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
 
       // Strip moderator-only notes from all history items.
-      return { items: items.map((item) => ({ ...item, notes: null })) as SubmissionDTO[], nextCursor };
+      return { items: items.map((item) => ({ ...item, moderatorNotes: null })) as SubmissionDTO[], nextCursor };
     }),
 
   /**
@@ -265,7 +265,7 @@ export const submissionRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
       // Strip moderator-only notes field for contributors.
-      return { ...row, notes: null } as SubmissionDTO;
+      return { ...row, moderatorNotes: null } as SubmissionDTO;
     }),
 
   /**
@@ -294,7 +294,7 @@ export const submissionRouter = router({
 
       // Strip moderator-only notes field for non-moderators.
       if (role !== 'moderator') {
-        return { ...row, notes: null } as SubmissionDTO;
+        return { ...row, moderatorNotes: null } as SubmissionDTO;
       }
 
       return row as SubmissionDTO;
