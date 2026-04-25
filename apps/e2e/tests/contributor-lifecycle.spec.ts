@@ -312,4 +312,54 @@ test.describe('Phase 2.4 W3 — contributor lifecycle', () => {
       page.getByRole('button', { name: /Hide changes/i }),
     ).toBeVisible({ timeout: 5_000 });
   });
+
+  // -------------------------------------------------------------------------
+  // H5. Public /contributor/[username] profile + 404
+  // -------------------------------------------------------------------------
+  //
+  // No fixture is used here: this test creates its own contributor with an
+  // explicit username (the worker-fixture helper auto-derives a username
+  // from the email-local-part, but we want a stable, predictable handle the
+  // public URL can be asserted against).
+  test('public /contributor/[username] renders profile + heatmap', async ({
+    page,
+  }) => {
+    const handle = `prof_${Date.now().toString(36)}`;
+    const user: TestUser = {
+      email: `w3-prof-${suffix()}@example.com`,
+      password: 'W3LifecycleTest99!', // gitguardian:ignore — test-only credential, not a real secret
+      name: 'W3 Public Profile',
+      username: handle,
+    };
+    await registerAndVerify(user);
+    await setRole(user.email, 'contributor');
+    try {
+      // Seed at least one submission so the profile has something to render.
+      await createPendingReciterSubmission(
+        user.email,
+        `Profile Reciter ${suffix()}`,
+      );
+
+      // Navigate to the public profile (no auth required).
+      const res = await page.goto(`/contributor/${handle}`);
+      expect(res?.status()).toBeLessThan(400);
+
+      // Heading shows the user's display name; the activity section + heatmap
+      // both render.
+      await expect(
+        page.getByRole('heading', { name: user.name, level: 1 }),
+      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(/Contribution Activity/i)).toBeVisible();
+      await expect(
+        page.getByRole('img', { name: /Contribution activity heatmap/i }),
+      ).toBeVisible({ timeout: 10_000 });
+    } finally {
+      await deleteUsers([user.email]);
+    }
+  });
+
+  test('public /contributor/[bogus] returns 404', async ({ page }) => {
+    const res = await page.goto('/contributor/no-such-user-xyz-123');
+    expect(res?.status()).toBe(404);
+  });
 });
