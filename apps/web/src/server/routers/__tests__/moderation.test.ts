@@ -824,7 +824,8 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
 
     it('returns matches by email substring', async () => {
       const caller = makeModerationCaller(db, moderatorId);
-      const result = await caller.searchUsers({ query: 'bobs@' });
+      // The seeded email is bobs-{SUFFIX}@example.com; substring 'bobs-' matches.
+      const result = await caller.searchUsers({ query: 'bobs-' });
 
       expect(result.map((u) => u.email)).toContain(`bobs-${SUFFIX}@example.com`);
     });
