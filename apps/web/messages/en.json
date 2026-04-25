@@ -504,7 +504,19 @@
       "columnTargetType": "Target type",
       "columnTargetId": "Target ID",
       "columnDate": "Date",
-      "loadFailed": "Failed to load more."
+      "loadFailed": "Failed to load more.",
+      "filterActor": "Actor",
+      "filterActorPlaceholder": "Search users…",
+      "filterAction": "Action",
+      "filterActionAny": "Any action",
+      "filterTargetType": "Target type",
+      "filterTargetTypeAny": "Any target type",
+      "filterFrom": "From",
+      "filterTo": "To",
+      "filterApply": "Apply",
+      "filterClear": "Clear",
+      "metaToggleExpand": "Show details",
+      "metaToggleCollapse": "Hide details"
     },
     "users": {
       "heading": "User Management",

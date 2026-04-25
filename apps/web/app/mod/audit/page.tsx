@@ -7,7 +7,8 @@ import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { buildMetadata } from '@/lib/metadata';
 import { LoadMoreAudit } from '@/components/mod/load-more-audit';
-import type { AuditLogDTO } from '@nawhas/types';
+import { AuditFilters } from '@/components/mod/audit-filters';
+import { AuditRow } from '@/components/mod/audit-row';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Audit Log',
@@ -19,11 +20,22 @@ export const dynamic = 'force-dynamic';
 const createCaller = createCallerFactory(appRouter);
 
 /**
- * /mod/audit — paginated moderation audit log.
+ * /mod/audit — paginated moderation audit log with filter strip.
  *
  * Server-renders the first page; LoadMoreAudit handles additional pages.
  */
-export default async function ModAuditPage(): Promise<React.JSX.Element> {
+export default async function ModAuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    actor?: string;
+    action?: string;
+    targetType?: string;
+    from?: string;
+    to?: string;
+  }>;
+}): Promise<React.JSX.Element> {
+  const sp = await searchParams;
   const reqHeaders = await headers();
   const sessionData = await auth.api.getSession({ headers: reqHeaders });
 
@@ -33,7 +45,23 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
     user: sessionData?.user ?? null,
   });
 
-  const { items, nextCursor } = await caller.moderation.auditLog({ limit: 20 });
+  const { items, nextCursor } = await caller.moderation.auditLog({
+    limit: 20,
+    ...(sp.actor ? { actor: sp.actor } : {}),
+    ...(sp.action ? { action: sp.action } : {}),
+    ...(sp.targetType
+      ? {
+          targetType: sp.targetType as
+            | 'submission'
+            | 'reciter'
+            | 'album'
+            | 'track'
+            | 'user',
+        }
+      : {}),
+    ...(sp.from ? { from: sp.from } : {}),
+    ...(sp.to ? { to: sp.to } : {}),
+  });
   const t = await getTranslations('mod.audit');
 
   return (
@@ -42,11 +70,25 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
         {t('heading')}
       </h2>
 
+      <AuditFilters
+        initial={sp}
+        actions={[
+          'submission.applied',
+          'submission.approved',
+          'submission.rejected',
+          'submission.changes_requested',
+          'submission.notes_updated',
+          'submission.withdrawn',
+          'role.changed',
+        ]}
+      />
+
       <div className="overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]">
         <table className="w-full table-fixed">
           <caption className="sr-only">{t('tableCaption')}</caption>
           <thead>
             <tr>
+              <th scope="col" className="w-8" />
               <th
                 scope="col"
                 className="w-2/5 border-b border-[var(--border-strong)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--text-dim)]"
@@ -76,14 +118,14 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-sm text-[var(--text-dim)]">
+                <td colSpan={5} className="px-4 py-12 text-center text-sm text-[var(--text-dim)]">
                   {t('empty')}
                 </td>
               </tr>
             ) : (
               <>
                 {items.map((entry) => (
-                  <AuditTableRow key={entry.id} entry={entry} />
+                  <AuditRow key={entry.id} entry={entry} />
                 ))}
                 {nextCursor && <LoadMoreAudit initialCursor={nextCursor} />}
               </>
@@ -92,31 +134,5 @@ export default async function ModAuditPage(): Promise<React.JSX.Element> {
         </table>
       </div>
     </div>
-  );
-}
-
-function AuditTableRow({ entry }: { entry: AuditLogDTO }): React.JSX.Element {
-  return (
-    <tr className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]">
-      <td className="px-4 py-3 font-mono text-xs text-[var(--text)]">{entry.action}</td>
-      <td className="px-4 py-3 text-xs text-[var(--text-dim)]">
-        {entry.targetType ?? '—'}
-      </td>
-      <td className="max-w-0 truncate px-4 py-3 text-xs text-[var(--text-dim)]">
-        {entry.targetId ?? '—'}
-      </td>
-      <td className="px-4 py-3 text-right text-xs text-[var(--text-dim)]">
-        <time
-          dateTime={String(entry.createdAt)}
-          title={new Date(entry.createdAt).toLocaleString()}
-        >
-          {new Date(entry.createdAt).toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </time>
-      </td>
-    </tr>
   );
 }
