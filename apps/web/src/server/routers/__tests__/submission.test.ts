@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq, inArray } from 'drizzle-orm';
-import { albums, reciters, submissions, users } from '@nawhas/db';
+import { albums, auditLog, reciters, submissionReviews, submissions, users } from '@nawhas/db';
 import {
   createTestDb,
   isDbAvailable,
@@ -69,6 +69,11 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
 
   afterAll(async () => {
     if (!close) return;
+    // audit_log.actor_user_id has on-delete=restrict, so delete those rows
+    // before deleting the seeded users.
+    await db
+      .delete(auditLog)
+      .where(inArray(auditLog.actorUserId, [contributorId, otherUserId, moderatorId]));
     if (seededSubmissionIds.length > 0) {
       await db.delete(submissions).where(inArray(submissions.id, seededSubmissionIds));
     }
@@ -490,6 +495,83 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
     expect((res.data as { lyrics?: Record<string, string> }).lyrics).toEqual({
       ar: 'اللغة العربية',
       en: 'English text',
+    });
+  });
+
+  // ── submission.withdrawMine ───────────────────────────────────────────────
+
+  describe('submission.withdrawMine', () => {
+    it('flips pending → withdrawn', async () => {
+      const caller = makeSubmissionCaller(db, contributorId);
+      const created = await caller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: `Withdrawable ${SUFFIX}` },
+      });
+      seededSubmissionIds.push(created.id);
+
+      await caller.withdrawMine({ id: created.id });
+      const [row] = await db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, created.id));
+      expect(row?.status).toBe('withdrawn');
+    });
+
+    it('flips changes_requested → withdrawn', async () => {
+      const [seeded] = await db
+        .insert(submissions)
+        .values({
+          type: 'reciter',
+          action: 'create',
+          data: { name: `CR ${SUFFIX}` },
+          status: 'changes_requested',
+          submittedByUserId: contributorId,
+        })
+        .returning();
+      seededSubmissionIds.push(seeded!.id);
+
+      const caller = makeSubmissionCaller(db, contributorId);
+      await caller.withdrawMine({ id: seeded!.id });
+      const [updated] = await db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, seeded!.id));
+      expect(updated?.status).toBe('withdrawn');
+    });
+
+    it('rejects withdrawing applied submission with BAD_REQUEST', async () => {
+      const [seeded] = await db
+        .insert(submissions)
+        .values({
+          type: 'reciter',
+          action: 'create',
+          data: { name: `Applied ${SUFFIX}` },
+          status: 'applied',
+          submittedByUserId: contributorId,
+        })
+        .returning();
+      seededSubmissionIds.push(seeded!.id);
+
+      const caller = makeSubmissionCaller(db, contributorId);
+      await expect(caller.withdrawMine({ id: seeded!.id })).rejects.toThrow(
+        /BAD_REQUEST|status/i,
+      );
+    });
+
+    it('rejects withdrawing another user\'s submission with NOT_FOUND', async () => {
+      const owner = makeSubmissionCaller(db, contributorId);
+      const created = await owner.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: `OtherOwner ${SUFFIX}` },
+      });
+      seededSubmissionIds.push(created.id);
+
+      const other = makeSubmissionCaller(db, otherUserId);
+      await expect(other.withdrawMine({ id: created.id })).rejects.toThrow(
+        /NOT_FOUND|FORBIDDEN/i,
+      );
     });
   });
 });

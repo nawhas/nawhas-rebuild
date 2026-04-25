@@ -362,4 +362,42 @@ export const submissionRouter = router({
         appliedAt: appliedRow?.createdAt ?? null,
       };
     }),
+
+  /**
+   * Withdraw the caller's own pending or changes_requested submission.
+   * Terminal: cannot resubmit a withdrawn row (status motion is one-way).
+   * Writes audit_log so moderators see the trail.
+   */
+  withdrawMine: contributorProcedure
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ ctx, input }): Promise<{ ok: true }> => {
+      const [row] = await ctx.db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, input.id))
+        .limit(1);
+      if (!row || row.submittedByUserId !== ctx.user.id) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      if (row.status !== 'pending' && row.status !== 'changes_requested') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Only pending or changes_requested submissions can be withdrawn (current status: ${row.status}).`,
+        });
+      }
+      await ctx.db.transaction(async (tx) => {
+        await tx
+          .update(submissions)
+          .set({ status: 'withdrawn', updatedAt: new Date() })
+          .where(eq(submissions.id, input.id));
+        await tx.insert(auditLog).values({
+          actorUserId: ctx.user.id,
+          action: 'submission.withdrawn',
+          targetType: 'submission',
+          targetId: input.id,
+          meta: { submissionType: row.type, priorStatus: row.status },
+        });
+      });
+      return { ok: true };
+    }),
 });
