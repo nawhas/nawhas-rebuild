@@ -15,6 +15,7 @@ import {
 } from '@/components/mod/badges';
 import { FieldDiff, DataPreview } from '@/components/mod/field-diff';
 import { ReviewActions } from '@/components/mod/review-actions';
+import { ModeratorNotes } from '@/components/mod/moderator-notes';
 import type {
   ReciterSubmissionData,
   AlbumSubmissionData,
@@ -127,6 +128,11 @@ export default async function SubmissionDetailPage({
             t={t}
           />
         </section>
+
+        {/* Moderator notes */}
+        {canReview && (
+          <ModeratorNotes submissionId={submission.id} initialNotes={submission.moderatorNotes ?? ''} />
+        )}
 
         {/* Review actions */}
         {canReview && <ReviewActions submissionId={submission.id} />}

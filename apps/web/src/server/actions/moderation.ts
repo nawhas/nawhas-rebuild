@@ -34,6 +34,18 @@ export async function reviewSubmission(
 }
 
 /**
+ * Set internal moderator notes on a submission.
+ * Moderator only.
+ */
+export async function setSubmissionModeratorNotes(
+  submissionId: string,
+  notes: string,
+): Promise<void> {
+  const caller = await getModeratorCaller('moderation.setSubmissionModeratorNotes');
+  await caller.moderation.setModeratorNotes({ submissionId, notes });
+}
+
+/**
  * Promote or demote a user's role.
  * Moderator only.
  */

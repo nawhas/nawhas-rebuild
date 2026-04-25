@@ -313,6 +313,7 @@ export interface SubmissionDTO {
   status: SubmissionStatus;
   submittedByUserId: string;
   notes: string | null;
+  moderatorNotes: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

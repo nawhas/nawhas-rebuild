@@ -545,7 +545,13 @@
       "fieldBirthYearLabel": "Birth year",
       "fieldDescriptionLabel": "Description",
       "fieldAvatarUrlLabel": "Avatar",
-      "fieldLyricsLabel": "Lyrics"
+      "fieldLyricsLabel": "Lyrics",
+      "moderatorNotesLabel": "Moderator notes",
+      "moderatorNotesHint": "Internal — only visible to moderators.",
+      "moderatorNotesPlaceholder": "Add internal notes about this submission…",
+      "moderatorNotesSaving": "Saving…",
+      "moderatorNotesSaved": "Saved",
+      "moderatorNotesError": "Couldn't save notes."
     },
     "reviewActions": {
       "commentLabel": "Comment (optional)",
