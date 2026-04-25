@@ -294,3 +294,70 @@ export function sendAccessRequestRejected(params: {
       console.error('[email] sendAccessRequestRejected failed', err);
     });
 }
+
+/**
+ * Throttled digest sent hourly to moderators when there are new pending
+ * submissions or access requests since the last digest.
+ * Throws on send error so the cron exits non-zero (the script handles
+ * idempotency via the notified_at column).
+ */
+export async function sendModeratorDigest(params: {
+  to: string;
+  moderatorName: string;
+  newSubmissions: Array<{ id: string; type: 'reciter' | 'album' | 'track'; action: 'create' | 'edit'; contributorName: string; createdAt: Date }>;
+  newAccessRequests: Array<{ id: string; applicantName: string; applicantEmail: string; createdAt: Date }>;
+  appOrigin: string;
+}): Promise<void> {
+  const transport = createTransport();
+  const totalCount = params.newSubmissions.length + params.newAccessRequests.length;
+
+  const fmtDate = (d: Date) => d.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+
+  const submissionsHtml = params.newSubmissions
+    .map(
+      (s) =>
+        `<li><strong>${escapeHtml(s.type)} ${escapeHtml(s.action)}</strong> by ${escapeHtml(s.contributorName)} — <a href="${params.appOrigin}/mod/submissions/${s.id}">review</a> (${fmtDate(s.createdAt)})</li>`,
+    )
+    .join('');
+
+  const accessRequestsHtml = params.newAccessRequests
+    .map(
+      (a) =>
+        `<li><strong>${escapeHtml(a.applicantName)}</strong> (${escapeHtml(a.applicantEmail)}) — <a href="${params.appOrigin}/mod/access-requests/${a.id}">review</a> (${fmtDate(a.createdAt)})</li>`,
+    )
+    .join('');
+
+  const submissionsText = params.newSubmissions
+    .map((s) => `  - ${s.type} ${s.action} by ${s.contributorName} (${fmtDate(s.createdAt)})\n    ${params.appOrigin}/mod/submissions/${s.id}`)
+    .join('\n');
+
+  const accessRequestsText = params.newAccessRequests
+    .map((a) => `  - ${a.applicantName} (${a.applicantEmail}) (${fmtDate(a.createdAt)})\n    ${params.appOrigin}/mod/access-requests/${a.id}`)
+    .join('\n');
+
+  await transport.sendMail({
+    from: FROM,
+    to: params.to,
+    subject: `Nawhas moderation: ${totalCount} new item${totalCount === 1 ? '' : 's'} pending review`,
+    text: [
+      `Hi ${params.moderatorName},`,
+      '',
+      `${totalCount} new item${totalCount === 1 ? '' : 's'} pending moderator review:`,
+      '',
+      ...(params.newSubmissions.length > 0
+        ? [`Submissions (${params.newSubmissions.length}):`, submissionsText, '']
+        : []),
+      ...(params.newAccessRequests.length > 0
+        ? [`Access requests (${params.newAccessRequests.length}):`, accessRequestsText, '']
+        : []),
+      '— Nawhas.com automated digest',
+    ].join('\n'),
+    html: `
+      <p>Hi ${escapeHtml(params.moderatorName)},</p>
+      <p>${totalCount} new item${totalCount === 1 ? '' : 's'} pending moderator review:</p>
+      ${params.newSubmissions.length > 0 ? `<h3 style="font-size:14px">Submissions (${params.newSubmissions.length})</h3><ul>${submissionsHtml}</ul>` : ''}
+      ${params.newAccessRequests.length > 0 ? `<h3 style="font-size:14px">Access requests (${params.newAccessRequests.length})</h3><ul>${accessRequestsHtml}</ul>` : ''}
+      <p style="color:#9ca3af;font-size:12px">— Nawhas.com automated digest</p>
+    `,
+  });
+}
