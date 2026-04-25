@@ -104,7 +104,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded: onUploadedProp }: Ava
         </span>
       </button>
 
-      {error && <p role="alert" className="text-xs text-error-600 dark:text-error-400">{error}</p>}
+      {error && <p role="alert" className="text-xs text-[var(--color-error-500)]">{error}</p>}
 
       <input
         ref={inputRef}

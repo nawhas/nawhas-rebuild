@@ -90,11 +90,11 @@ export function DisplayNameEdit({ initialName }: DisplayNameEditProps): React.JS
           onClick={handleCancel}
           disabled={isPending}
           aria-label={t('cancelEditingLabel')}
-          className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] focus:outline-none focus:underline"
+          className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:underline"
         >
           {t('cancel')}
         </button>
-        {error && <p role="alert" className="text-xs text-error-600 dark:text-error-400">{error}</p>}
+        {error && <p role="alert" className="text-xs text-[var(--color-error-500)]">{error}</p>}
       </form>
     );
   }
