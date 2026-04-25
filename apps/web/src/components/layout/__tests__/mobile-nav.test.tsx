@@ -38,7 +38,7 @@ vi.mock('@/components/theme/ThemeToggle', () => ({
 
 const LINKS = [
   { href: '/', label: 'Home' },
-  { href: '/reciters', label: 'Browse Reciters' },
+  { href: '/reciters', label: 'Reciters' },
 ];
 
 const mockUser = {
@@ -89,7 +89,7 @@ describe('MobileNav', () => {
     render(<MobileNav links={LINKS} user={null} />);
     fireEvent.click(screen.getByRole('button'));
     expect(screen.getByRole('link', { name: 'Home' })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Browse Reciters' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Reciters' })).toBeDefined();
   });
 
   it('shows Sign In link when user is null', () => {
@@ -141,28 +141,28 @@ describe('MobileNav', () => {
     ).toBe('true');
   });
 
-  it('hides Contribute and Moderator Dashboard for role=user', () => {
+  it('hides Contribute and Moderation queue for role=user', () => {
     render(<MobileNav links={LINKS} user={mockUser} />);
     fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
-    expect(screen.queryByRole('link', { name: 'Contribute' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Moderator Dashboard' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^Contribute/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Moderation queue/i })).toBeNull();
   });
 
-  it('shows Contribute for role=contributor but not Moderator Dashboard', () => {
+  it('shows Contribute for role=contributor but not Moderation queue', () => {
     const user = { ...mockUser, role: 'contributor' as const };
     render(<MobileNav links={LINKS} user={user} />);
     fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
-    const contribute = screen.getByRole('link', { name: 'Contribute' });
+    const contribute = screen.getByRole('link', { name: /^Contribute/i });
     expect(contribute.getAttribute('href')).toBe('/contribute');
-    expect(screen.queryByRole('link', { name: 'Moderator Dashboard' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Moderation queue/i })).toBeNull();
   });
 
-  it('shows both Contribute and Moderator Dashboard for role=moderator', () => {
+  it('shows both Contribute and Moderation queue for role=moderator', () => {
     const user = { ...mockUser, role: 'moderator' as const };
     render(<MobileNav links={LINKS} user={user} />);
     fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
-    expect(screen.getByRole('link', { name: 'Contribute' }).getAttribute('href')).toBe('/contribute');
-    expect(screen.getByRole('link', { name: 'Moderator Dashboard' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: /^Contribute/i }).getAttribute('href')).toBe('/contribute');
+    expect(screen.getByRole('link', { name: /Moderation queue/i }).getAttribute('href')).toBe(
       '/mod',
     );
   });

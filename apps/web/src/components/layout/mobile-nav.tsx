@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { signOut } from '@/lib/auth-client';
 import { NavLinks } from './nav-links';
+import { RoleBadge } from './role-badge';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { PendingCountBadge } from '@/components/mod/pending-count-badge';
 import type { User } from '@/lib/auth';
@@ -98,54 +99,13 @@ export function MobileNav({ links, user, pendingCount = 0 }: MobileNavProps): Re
 
           <div className="border-t border-[var(--border)] pt-4">
             {user ? (
-              <div className="space-y-1">
-                <div className="px-3 py-2">
-                  {user.name && (
-                    <p className="text-sm font-medium text-[var(--text)]">{user.name}</p>
-                  )}
-                  <p className="text-xs text-[var(--text-dim)]">{user.email}</p>
-                </div>
-                <Link
-                  href="/profile"
-                  onClick={close}
-                  className="block rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
-                >
-                  {t('profile')}
-                </Link>
-                {(user.role === 'contributor' || user.role === 'moderator') && (
-                  <Link
-                    href="/contribute"
-                    onClick={close}
-                    className="block rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
-                  >
-                    {t('contribute')}
-                  </Link>
-                )}
-                {user.role === 'moderator' && (
-                  <Link
-                    href="/mod"
-                    onClick={close}
-                    className="flex items-center justify-between rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
-                  >
-                    <span>{t('moderatorDashboard')}</span>
-                    {pendingCount > 0 ? (
-                      <PendingCountBadge
-                        count={pendingCount}
-                        label={`${pendingCount} items pending moderation`}
-                      />
-                    ) : (
-                      <PendingCountBadge count={pendingCount} />
-                    )}
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="block w-full rounded-[6px] px-3 py-2 text-left text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
-                >
-                  {t('signOut')}
-                </button>
-              </div>
+              <UserSection
+                user={user}
+                pendingCount={pendingCount}
+                onClose={close}
+                onSignOut={handleSignOut}
+                t={t}
+              />
             ) : (
               <Link
                 href="/login"
@@ -159,5 +119,120 @@ export function MobileNav({ links, user, pendingCount = 0 }: MobileNavProps): Re
         </div>
       )}
     </div>
+  );
+}
+
+interface UserSectionProps {
+  user: User;
+  pendingCount: number;
+  onClose: () => void;
+  onSignOut: () => void;
+  t: ReturnType<typeof useTranslations<'nav'>>;
+}
+
+/**
+ * Authenticated user block inside the mobile slide-out — mirrors the desktop
+ * UserMenu dropdown (POC dropdown style): name + @username + role badge,
+ * followed by My Dashboard / Public profile / Account settings, then a
+ * separator before role-gated Contribute and Moderation queue, then Sign Out.
+ */
+function UserSection({
+  user,
+  pendingCount,
+  onClose,
+  onSignOut,
+  t,
+}: UserSectionProps): React.JSX.Element {
+  const username = (user as { username?: string | null }).username ?? null;
+
+  return (
+    <div className="space-y-1">
+      <div className="px-3 py-3">
+        {user.name && (
+          <p className="truncate text-sm font-semibold text-[var(--text)]">{user.name}</p>
+        )}
+        <div className="mt-1 flex items-center gap-2">
+          {username && (
+            <span className="truncate text-xs text-[var(--text-faint)]">@{username}</span>
+          )}
+          <RoleBadge role={user.role} />
+        </div>
+      </div>
+
+      <MobileMenuLink href="/dashboard" label={t('myDashboard')} subtitle={t('myDashboardSubtitle')} onClick={onClose} />
+      {username && (
+        <MobileMenuLink
+          href={`/contributor/${username}`}
+          label={t('publicProfile')}
+          subtitle={t('publicProfileSubtitle')}
+          onClick={onClose}
+        />
+      )}
+      <MobileMenuLink href="/profile" label={t('profile')} subtitle={t('accountSettingsSubtitle')} onClick={onClose} />
+
+      {(user.role === 'contributor' || user.role === 'moderator') && (
+        <>
+          <div className="my-2 border-t border-[var(--border)]" />
+          <MobileMenuLink
+            href="/contribute"
+            label={t('contribute')}
+            subtitle={t('contributeSubtitle')}
+            onClick={onClose}
+          />
+          {user.role === 'moderator' && (
+            <Link
+              href="/mod"
+              onClick={onClose}
+              className="flex items-start justify-between gap-2 rounded-[6px] px-3 py-2 hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+            >
+              <span className="flex flex-col">
+                <span className="text-sm font-medium text-[var(--accent)]">{t('moderatorDashboard')}</span>
+                <span className="text-[11px] text-[var(--text-faint)]">{t('moderationQueueSubtitle')}</span>
+              </span>
+              {pendingCount > 0 ? (
+                <PendingCountBadge
+                  count={pendingCount}
+                  label={`${pendingCount} items pending moderation`}
+                />
+              ) : (
+                <PendingCountBadge count={pendingCount} />
+              )}
+            </Link>
+          )}
+        </>
+      )}
+
+      <div className="my-2 border-t border-[var(--border)]" />
+      <button
+        type="button"
+        onClick={onSignOut}
+        className="block w-full rounded-[6px] px-3 py-2 text-left text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+      >
+        {t('signOut')}
+      </button>
+    </div>
+  );
+}
+
+function MobileMenuLink({
+  href,
+  label,
+  subtitle,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  subtitle: string;
+  onClick: () => void;
+}): React.JSX.Element {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="flex flex-col rounded-[6px] px-3 py-2 hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+    >
+      <span className="text-sm font-medium text-[var(--text)]">{label}</span>
+      <span className="text-[11px] text-[var(--text-faint)]">{subtitle}</span>
+    </Link>
   );
 }

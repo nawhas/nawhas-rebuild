@@ -28,8 +28,8 @@ vi.mock('next/link', () => ({
 
 const LINKS = [
   { href: '/', label: 'Home' },
-  { href: '/reciters', label: 'Browse Reciters' },
-  { href: '/albums', label: 'Browse Albums' },
+  { href: '/reciters', label: 'Reciters' },
+  { href: '/albums', label: 'Albums' },
 ];
 
 afterEach(() => {
@@ -41,14 +41,14 @@ describe('NavLinks', () => {
   it('renders all nav links', () => {
     render(<NavLinks links={LINKS} />);
     expect(screen.getByRole('link', { name: 'Home' })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Browse Reciters' })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Browse Albums' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Reciters' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Albums' })).toBeDefined();
   });
 
   it('sets aria-current="page" on the active link', () => {
     mockPathname.mockReturnValue('/reciters');
     render(<NavLinks links={LINKS} />);
-    const active = screen.getByRole('link', { name: 'Browse Reciters' });
+    const active = screen.getByRole('link', { name: 'Reciters' });
     expect(active.getAttribute('aria-current')).toBe('page');
   });
 

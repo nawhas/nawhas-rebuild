@@ -59,6 +59,7 @@ async function SiteHeaderBase({
 
   const NAV_LINKS = [
     { href: '/', label: t('home') },
+    { href: '/library', label: t('library') },
     { href: '/reciters', label: t('browseReciters') },
     { href: '/albums', label: t('browseAlbums') },
     { href: '/changes', label: t('recentChanges') },
@@ -80,12 +81,18 @@ async function SiteHeaderBase({
 
       <Container>
         <div className="flex h-16 items-center justify-between">
-          {/* Wordmark — Fraunces serif in POC accent red */}
+          {/* Wordmark — gradient "N" mark + Fraunces serif wordmark, matching POC */}
           <Link
             href="/"
             aria-label={t('logoLabel')}
-            className="rounded font-serif text-2xl font-medium text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
+            className="inline-flex items-center gap-2.5 rounded font-serif text-[22px] font-medium text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
           >
+            <span
+              aria-hidden="true"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--accent)_0%,#7a1c1a_100%)] text-sm font-semibold text-white"
+            >
+              N
+            </span>
             {t('logoText')}
           </Link>
 
@@ -96,7 +103,16 @@ async function SiteHeaderBase({
           <SearchBar />
 
           {/* Desktop auth + theme toggle — hidden on mobile */}
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-3 md:flex">
+            {user && (user.role === 'contributor' || user.role === 'moderator') && (
+              <Link
+                href="/contribute"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-transparent bg-[var(--accent)] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
+              >
+                <span aria-hidden="true" className="text-[15px] leading-none">+</span>
+                {t('contribute')}
+              </Link>
+            )}
             <ThemeToggle />
             {user ? (
               <UserMenu user={user} pendingCount={pendingCount} />

@@ -1,9 +1,10 @@
 {
   "nav": {
     "home": "Home",
-    "browseReciters": "Browse Reciters",
-    "browseAlbums": "Browse Albums",
-    "recentChanges": "Recent changes",
+    "library": "Library",
+    "browseReciters": "Reciters",
+    "browseAlbums": "Albums",
+    "recentChanges": "Changes",
     "skipToMainContent": "Skip to main content",
     "logoLabel": "Nawhas — go to home page",
     "logoText": "Nawhas",
@@ -13,10 +14,20 @@
     "openMenu": "Open navigation menu",
     "closeMenu": "Close navigation menu",
     "theme": "Theme",
-    "profile": "Profile",
+    "profile": "Account settings",
+    "accountSettingsSubtitle": "Email, password, preferences",
+    "myDashboard": "My Dashboard",
+    "myDashboardSubtitle": "Your contributions",
+    "publicProfile": "Public profile",
+    "publicProfileSubtitle": "How others see you",
     "signOut": "Sign Out",
     "contribute": "Contribute",
-    "moderatorDashboard": "Moderator Dashboard"
+    "contributeSubtitle": "Lyrics, translation, metadata",
+    "moderatorDashboard": "Moderation queue",
+    "moderationQueueSubtitle": "Review pending contributions",
+    "roleMember": "Member",
+    "roleContributor": "Contributor",
+    "roleModerator": "Moderator"
   },
   "coverArt": {
     "albumAlt": "Cover art for {label}",

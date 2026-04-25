@@ -97,7 +97,7 @@ describe('UserMenu', () => {
   it('menu content is not visible initially', () => {
     render(<UserMenu user={mockUser} />);
     expect(screen.queryByRole('menu')).toBeNull();
-    expect(screen.queryByText('Profile')).toBeNull();
+    expect(screen.queryByText('Account settings')).toBeNull();
   });
 
   it('opens menu on trigger activation', async () => {
@@ -108,30 +108,76 @@ describe('UserMenu', () => {
     });
   });
 
-  it('shows user name and email in open menu', async () => {
+  it('shows user name, @username and role badge in open menu', async () => {
     render(<UserMenu user={mockUser} />);
     openMenu(screen.getByRole('button', { name: /account menu/i }));
     await waitFor(() => {
       expect(screen.getByText('Ali Hussain')).toBeDefined();
-      expect(screen.getByText('ali@example.com')).toBeDefined();
+      expect(screen.getByText('@ali_h')).toBeDefined();
+      expect(screen.getByText('Member')).toBeDefined();
     });
   });
 
-  it('shows Profile and Sign Out menu items when open', async () => {
+  it('shows Contributor badge for role=contributor', async () => {
+    const user = { ...mockUser, role: 'contributor' as const };
+    render(<UserMenu user={user} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Contributor')).toBeDefined();
+    });
+  });
+
+  it('shows Moderator badge for role=moderator', async () => {
+    const user = { ...mockUser, role: 'moderator' as const };
+    render(<UserMenu user={user} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Moderator')).toBeDefined();
+    });
+  });
+
+  it('shows My Dashboard, Public profile, Account settings, Sign Out menu items when open', async () => {
     render(<UserMenu user={mockUser} />);
     openMenu(screen.getByRole('button', { name: /account menu/i }));
     await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeDefined();
+      expect(screen.getByRole('menuitem', { name: /My Dashboard/i })).toBeDefined();
+      expect(screen.getByRole('menuitem', { name: /Public profile/i })).toBeDefined();
+      expect(screen.getByRole('menuitem', { name: /Account settings/i })).toBeDefined();
       expect(screen.getByRole('menuitem', { name: 'Sign Out' })).toBeDefined();
     });
   });
 
-  it('Profile menu item links to /profile', async () => {
+  it('My Dashboard links to /dashboard', async () => {
     render(<UserMenu user={mockUser} />);
     openMenu(screen.getByRole('button', { name: /account menu/i }));
-    const profileItem = await screen.findByRole('menuitem', { name: 'Profile' });
-    // asChild <Link> renders an <a href="/profile"> that receives the item role
-    const anchor = profileItem.tagName === 'A' ? profileItem : profileItem.querySelector('a');
+    const item = await screen.findByRole('menuitem', { name: /My Dashboard/i });
+    const anchor = item.tagName === 'A' ? item : item.querySelector('a');
+    expect(anchor?.getAttribute('href')).toBe('/dashboard');
+  });
+
+  it('Public profile links to /contributor/<username>', async () => {
+    render(<UserMenu user={mockUser} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    const item = await screen.findByRole('menuitem', { name: /Public profile/i });
+    const anchor = item.tagName === 'A' ? item : item.querySelector('a');
+    expect(anchor?.getAttribute('href')).toBe('/contributor/ali_h');
+  });
+
+  it('hides Public profile when user has no username', async () => {
+    const user = { ...mockUser, username: null as unknown as string };
+    render(<UserMenu user={user} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /Account settings/i })).toBeDefined();
+    });
+    expect(screen.queryByRole('menuitem', { name: /Public profile/i })).toBeNull();
+  });
+
+  it('Account settings links to /profile', async () => {
+    render(<UserMenu user={mockUser} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    const item = await screen.findByRole('menuitem', { name: /Account settings/i });
+    const anchor = item.tagName === 'A' ? item : item.querySelector('a');
     expect(anchor?.getAttribute('href')).toBe('/profile');
   });
 
@@ -160,36 +206,41 @@ describe('UserMenu', () => {
     });
   });
 
-  it('hides Contribute and Moderator Dashboard for role=user', async () => {
+  it('hides Moderator Dashboard for role=user', async () => {
     render(<UserMenu user={mockUser} />);
     openMenu(screen.getByRole('button', { name: /account menu/i }));
     await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeDefined();
+      expect(screen.getByRole('menuitem', { name: /Account settings/i })).toBeDefined();
     });
-    expect(screen.queryByRole('menuitem', { name: 'Contribute' })).toBeNull();
-    expect(screen.queryByRole('menuitem', { name: 'Moderator Dashboard' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /Moderation queue/i })).toBeNull();
   });
 
-  it('shows Contribute but not Moderator Dashboard for role=contributor', async () => {
+  it('hides Moderator Dashboard for role=contributor', async () => {
     const user = { ...mockUser, role: 'contributor' as const };
     render(<UserMenu user={user} />);
     openMenu(screen.getByRole('button', { name: /account menu/i }));
-    const contribute = await screen.findByRole('menuitem', { name: 'Contribute' });
-    const anchor = contribute.tagName === 'A' ? contribute : contribute.querySelector('a');
-    expect(anchor?.getAttribute('href')).toBe('/contribute');
-    expect(screen.queryByRole('menuitem', { name: 'Moderator Dashboard' })).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /Account settings/i })).toBeDefined();
+    });
+    expect(screen.queryByRole('menuitem', { name: /Moderation queue/i })).toBeNull();
   });
 
-  it('shows both Contribute and Moderator Dashboard for role=moderator', async () => {
+  it('shows Moderator Dashboard for role=moderator', async () => {
     const user = { ...mockUser, role: 'moderator' as const };
     render(<UserMenu user={user} />);
     openMenu(screen.getByRole('button', { name: /account menu/i }));
-    const modItem = await screen.findByRole('menuitem', { name: 'Moderator Dashboard' });
+    const modItem = await screen.findByRole('menuitem', { name: /Moderation queue/i });
     const modAnchor = modItem.tagName === 'A' ? modItem : modItem.querySelector('a');
     expect(modAnchor?.getAttribute('href')).toBe('/mod');
-    const contributeItem = screen.getByRole('menuitem', { name: 'Contribute' });
-    const contributeAnchor =
-      contributeItem.tagName === 'A' ? contributeItem : contributeItem.querySelector('a');
-    expect(contributeAnchor?.getAttribute('href')).toBe('/contribute');
+  });
+
+  it('does not include a Contribute menu item (moved to header CTA)', async () => {
+    const user = { ...mockUser, role: 'contributor' as const };
+    render(<UserMenu user={user} />);
+    openMenu(screen.getByRole('button', { name: /account menu/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /Account settings/i })).toBeDefined();
+    });
+    expect(screen.queryByRole('menuitem', { name: 'Contribute' })).toBeNull();
   });
 });

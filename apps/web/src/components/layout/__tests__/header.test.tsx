@@ -100,8 +100,8 @@ describe('SiteHeaderStatic', () => {
     render(await SiteHeaderStatic());
     expect(screen.getByTestId('nav-links')).toBeDefined();
     expect(screen.getByRole('link', { name: 'Home' })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Browse Reciters' })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Browse Albums' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Reciters' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Albums' })).toBeDefined();
   });
 
   it('includes a skip-to-main-content link', async () => {
@@ -134,5 +134,67 @@ describe('SiteHeaderDynamic', () => {
     mockGetSession.mockRejectedValue(new Error('DB unavailable'));
     render(await SiteHeaderDynamic());
     expect(screen.getByRole('link', { name: 'Sign In' })).toBeDefined();
+  });
+
+  it('hides the Contribute pill when unauthenticated', async () => {
+    mockGetSession.mockResolvedValue(null);
+    render(await SiteHeaderStatic());
+    expect(screen.queryByRole('link', { name: 'Contribute' })).toBeNull();
+  });
+
+  it('hides the Contribute pill for role=user', async () => {
+    mockGetSession.mockResolvedValue({
+      user: {
+        id: 'user-1',
+        name: 'Ali Hussain',
+        email: 'ali@example.com',
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        image: null,
+        role: 'user',
+      },
+      session: {},
+    });
+    render(await SiteHeaderDynamic());
+    expect(screen.queryByRole('link', { name: 'Contribute' })).toBeNull();
+  });
+
+  it('shows the Contribute pill for role=contributor', async () => {
+    mockGetSession.mockResolvedValue({
+      user: {
+        id: 'user-1',
+        name: 'Ali Hussain',
+        email: 'ali@example.com',
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        image: null,
+        role: 'contributor',
+      },
+      session: {},
+    });
+    render(await SiteHeaderDynamic());
+    const pill = screen.getByRole('link', { name: 'Contribute' });
+    expect(pill.getAttribute('href')).toBe('/contribute');
+  });
+
+  it('shows the Contribute pill for role=moderator', async () => {
+    mockGetSession.mockResolvedValue({
+      user: {
+        id: 'user-1',
+        name: 'Ali Hussain',
+        email: 'ali@example.com',
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        image: null,
+        role: 'moderator',
+      },
+      session: {},
+    });
+    render(await SiteHeaderDynamic());
+    const pill = screen.getByRole('link', { name: 'Contribute' });
+    expect(pill.getAttribute('href')).toBe('/contribute');
   });
 });
