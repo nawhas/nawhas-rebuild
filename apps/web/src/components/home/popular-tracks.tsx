@@ -15,11 +15,15 @@ function formatDuration(seconds: number): string {
 /**
  * Home page section displaying popular tracks as a numbered list.
  *
- * NOTE: TrackDTO (returned by home.getFeatured) does not include reciter or
- * album metadata, so this section cannot consume the canonical <TrackRow>
- * primitive (which requires reciter + reciterSlug). Token migration only —
- * the data shape would need to be enriched to TrackListItemDTO to swap in
- * <TrackRow>; deferred to a later wave when popularity metrics ship.
+ * Stays bespoke (does not consume <TrackRow>) for two reasons:
+ * 1. TrackDTO (from home.getFeatured) lacks reciter/album slugs, so the
+ *    title link can't be built without enriching the DTO.
+ * 2. Same compact-ranking rationale as TopNawhasTable — the column-grid
+ *    treatment in TrackRow is for table-density browsing, not top-N lists.
+ *
+ * If popularity metrics replace the "newest" proxy and the section moves
+ * to TrackListItemDTO, consolidate with TopNawhasTable instead of
+ * adopting TrackRow.
  *
  * Server Component — pure presentation, no interactivity.
  */

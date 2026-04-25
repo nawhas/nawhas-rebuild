@@ -9,15 +9,13 @@ interface TopNawhasTableProps {
 
 /**
  * Top Nawhas ordered-list, numbered 1..N with clickable titles that route
- * to the canonical track detail page. Surfaces POC literal tokens
- * (--card-bg / --border / --text / --text-dim) for cohesion with the rest
- * of the home page.
+ * to the canonical track detail page.
  *
- * NOTE: The canonical <TrackRow> primitive from @nawhas/ui hard-codes its
- * title link to `/track/${slug}` — that route does not exist in this app
- * (canonical path is `/reciters/:reciterSlug/albums/:albumSlug/tracks/:trackSlug`).
- * Wave 1 Row 5 introduces a TrackRow href-extension; until then this section
- * keeps its bespoke row markup so links remain valid.
+ * Stays bespoke (does not consume <TrackRow>) by design: TrackRow's
+ * column-grid layout is built for table-density browsing with separate
+ * reciter / poet / duration / plays cells. A top-N ranking is denser
+ * with a stacked title + "{reciter} · {album}" subtitle, which is what
+ * we render here. Same hover-bg-rule and POC tokens as TrackRow.
  *
  * Returns null when there are no tracks so the home page layout collapses
  * cleanly in empty-DB scenarios (tests, fresh installs).

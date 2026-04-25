@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatDuration } from '../lib/format-duration.js';
 
 export interface TrackRowProps {
   slug: string;
@@ -16,13 +17,6 @@ export interface TrackRowProps {
    * the grid template grows by one auto-sized column at the start.
    */
   leadingSlot?: React.ReactNode;
-}
-
-function formatDuration(seconds: number | undefined): string {
-  if (seconds === undefined || seconds === null) return '—';
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
 function formatPlays(plays?: number): string {

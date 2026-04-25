@@ -1,11 +1,6 @@
 import Link from 'next/link';
 import type { TrackWithRelationsDTO } from '@nawhas/types';
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+import { formatDuration } from '@nawhas/ui/lib/format-duration';
 
 interface TrackHeaderProps {
   track: TrackWithRelationsDTO;

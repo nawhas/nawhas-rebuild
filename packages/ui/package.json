@@ -13,6 +13,10 @@
       "import": "./dist/lib/utils.js",
       "types": "./dist/lib/utils.d.ts"
     },
+    "./lib/format-duration": {
+      "import": "./dist/lib/format-duration.js",
+      "types": "./dist/lib/format-duration.d.ts"
+    },
     "./components/*": {
       "import": "./dist/components/*.js",
       "types": "./dist/components/*.d.ts"

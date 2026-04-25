@@ -9,13 +9,7 @@ import { usePlayerStore } from '@/store/player';
 import { LoadMore } from '@/components/pagination/load-more';
 import { SaveButton } from '@/components/SaveButton';
 import { fetchMoreLibraryTracks, playAllLibraryTracks } from '@/server/actions/library';
-
-/** Format seconds as m:ss */
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+import { formatDuration } from '@nawhas/ui/lib/format-duration';
 
 function PlayAllIcon(): React.JSX.Element {
   return (

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { cn } from '../lib/utils.js';
+import { formatDuration } from '../lib/format-duration.js';
 
 export interface WaveformProps {
   slug: string;
@@ -26,13 +27,6 @@ function buildBars(slug: string): number[] {
     bars.push(Math.max(6, seededRandom(seed) * 100));
   }
   return bars;
-}
-
-function formatDuration(seconds: number | undefined): string {
-  if (seconds === undefined || seconds === null) return '—';
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
 export function Waveform({
