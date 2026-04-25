@@ -41,7 +41,7 @@ export function AlbumGrid({ initialItems, initialCursor }: AlbumGridProps): Reac
       >
         {items.map((album) => (
           <li key={album.id}>
-            <AlbumCard album={album} reciterName={album.reciterName} trackCount={album.trackCount} />
+            <AlbumCard album={album} />
           </li>
         ))}
       </ul>

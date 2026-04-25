@@ -1,27 +1,27 @@
 import Link from 'next/link';
 import { CoverArt } from '@nawhas/ui';
-import type { AlbumDTO } from '@nawhas/types';
+import type { AlbumDTO, AlbumListItemDTO } from '@nawhas/types';
 
 interface AlbumCardProps {
-  /** Required album shape — title / slug / year / artworkUrl. */
-  album: AlbumDTO;
-  /** Reciter name to render under the title (e.g. on the /albums grid). */
-  reciterName?: string;
-  /** Track count to render in the meta line (e.g. on the /albums grid). */
-  trackCount?: number;
+  /**
+   * Album shape. Pass an `AlbumDTO` for the bare card (home/recent-albums,
+   * reciter discography). Pass an `AlbumListItemDTO` to also render the
+   * reciter name and track-count meta line (/albums listing).
+   */
+  album: AlbumDTO | AlbumListItemDTO;
 }
 
 /**
  * Album card primitive — cover art, title, and meta line linking to the
- * album detail page.
- *
- * Variants by props:
- *  - Bare (no extras) — used on home/recent-albums and reciter discography.
- *  - With `reciterName` / `trackCount` — used on the /albums listing grid.
+ * album detail page. The meta line auto-extends when the album object
+ * carries reciter + track-count data.
  *
  * Server Component — no interactivity.
  */
-export function AlbumCard({ album, reciterName, trackCount }: AlbumCardProps): React.JSX.Element {
+export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
+  const reciterName = 'reciterName' in album ? album.reciterName : undefined;
+  const trackCount = 'trackCount' in album ? album.trackCount : undefined;
+
   const ariaLabel = reciterName
     ? `View album: ${album.title} by ${reciterName}${album.year ? `, ${album.year}` : ''}`
     : `View album: ${album.title}${album.year ? `, ${album.year}` : ''}`;

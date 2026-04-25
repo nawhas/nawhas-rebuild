@@ -1,6 +1,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, cleanup, screen } from '@testing-library/react';
 import type { TrackWithRelationsDTO } from '@nawhas/types';
+// formatDuration runs un-mocked: it's a pure shared util, and these
+// tests assert the M:SS format anyway. Mocking it would just duplicate
+// the logic + risk drifting if the util's signature ever changes.
 
 // Mock next/link to a plain anchor so href assertions work.
 vi.mock('next/link', () => ({
@@ -17,15 +20,6 @@ vi.mock('next/link', () => ({
       {children}
     </a>
   ),
-}));
-
-// formatDuration is a thin utility — mock it so tests are format-agnostic.
-vi.mock('@nawhas/ui/lib/format-duration', () => ({
-  formatDuration: (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  },
 }));
 
 import { TrackHeader } from '../track-header';
