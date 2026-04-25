@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, ilike, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, ilike, inArray, lt, or, sql, type SQL } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { auditLog, lyrics, reciters, albums, tracks, submissions, submissionReviews, users } from '@nawhas/db';
 import { router, moderatorProcedure } from '../trpc/trpc';
@@ -713,26 +713,46 @@ export const moderationRouter = router({
 
   /**
    * Paginated audit log, newest first.
+   * Supports optional filters: actor, action, targetType, from, to (date range, inclusive both ends).
    */
   auditLog: moderatorProcedure
     .input(
       z.object({
         limit: z.number().int().min(1).max(MAX_LIMIT).optional().default(DEFAULT_LIMIT),
         cursor: z.string().optional(),
+        actor: z.string().min(1).max(128).optional(),
+        action: z.string().min(1).max(64).optional(),
+        targetType: z.enum(['submission', 'reciter', 'album', 'track', 'user']).optional(),
+        from: z.iso.date().optional(),
+        to: z.iso.date().optional(),
       }),
     )
     .query(async ({ ctx, input }): Promise<PaginatedResult<AuditLogDTO>> => {
       const limit = input.limit;
 
-      const where = input.cursor
-        ? (() => {
-            const { createdAt, id } = decodeCursor(input.cursor);
-            return or(
-              lt(auditLog.createdAt, createdAt),
-              and(eq(auditLog.createdAt, createdAt), gt(auditLog.id, id)),
-            );
-          })()
-        : undefined;
+      const conditions: SQL[] = [];
+      if (input.actor) conditions.push(eq(auditLog.actorUserId, input.actor));
+      if (input.action) conditions.push(eq(auditLog.action, input.action));
+      if (input.targetType) conditions.push(eq(auditLog.targetType, input.targetType));
+      if (input.from) {
+        conditions.push(sql`${auditLog.createdAt} >= ${input.from}::date`);
+      }
+      if (input.to) {
+        // Inclusive on both ends — `to=YYYY-MM-DD` includes all of that UTC day.
+        conditions.push(sql`${auditLog.createdAt} < (${input.to}::date + interval '1 day')`);
+      }
+
+      if (input.cursor) {
+        const { createdAt, id } = decodeCursor(input.cursor);
+        conditions.push(
+          or(
+            lt(auditLog.createdAt, createdAt),
+            and(eq(auditLog.createdAt, createdAt), gt(auditLog.id, id)),
+          )!,
+        );
+      }
+
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await ctx.db
         .select()

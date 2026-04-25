@@ -832,7 +832,7 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     it('returns sorted by name', async () => {
       const caller = makeModerationCaller(db, moderatorId);
       // Substring scoped to this test run's seeded users only.
-      const result = await caller.searchUsers({ query: SUFFIX });
+      const result = await caller.searchUsers({ query: String(SUFFIX) });
 
       // Should return all three seeded users (Alice, Bob, Charlie), sorted by name.
       expect(result.length).toBeGreaterThanOrEqual(3);
@@ -843,7 +843,7 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
 
     it('respects limit parameter', async () => {
       const caller = makeModerationCaller(db, moderatorId);
-      const result = await caller.searchUsers({ query: SUFFIX, limit: 2 });
+      const result = await caller.searchUsers({ query: String(SUFFIX), limit: 2 });
 
       expect(result.length).toBeLessThanOrEqual(2);
     });
@@ -899,6 +899,185 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       const page1Ids = page1.items.map((e) => e.id);
       const page2Ids = page2.items.map((e) => e.id);
       expect(page1Ids.some((id) => page2Ids.includes(id))).toBe(false);
+    });
+  });
+
+  // ── moderation.auditLog filters ───────────────────────────────────────────
+
+  describe('moderation.auditLog filters', () => {
+    const filterSuffix = `filter-${SUFFIX}`;
+    const actorAId = `mod-actor-a-${SUFFIX}`;
+    const actorBId = `mod-actor-b-${SUFFIX}`;
+    const filterAuditIds: string[] = [];
+
+    beforeAll(async () => {
+      // Seed two distinct moderator users for the actor filter test.
+      await db.insert(users).values([
+        {
+          id: actorAId,
+          name: `Filter Mod A ${SUFFIX}`,
+          email: `filter-mod-a-${SUFFIX}@example.com`,
+          emailVerified: true,
+          role: 'moderator' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: actorBId,
+          name: `Filter Mod B ${SUFFIX}`,
+          email: `filter-mod-b-${SUFFIX}@example.com`,
+          emailVerified: true,
+          role: 'moderator' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+      seededUserIds.push(actorAId, actorBId);
+    });
+
+    afterAll(async () => {
+      // Clean up any audit rows seeded by these filter tests.
+      if (filterAuditIds.length > 0) {
+        await db.delete(auditLog).where(inArray(auditLog.id, filterAuditIds));
+      }
+    });
+
+    it('filters by actor', async () => {
+      // Seed one audit row for actorA, one for actorB.
+      const rows = await db
+        .insert(auditLog)
+        .values([
+          {
+            actorUserId: actorAId,
+            action: `${filterSuffix}.actor.test`,
+            targetType: 'submission',
+            targetId: 'filter-target-a',
+            meta: {},
+          },
+          {
+            actorUserId: actorBId,
+            action: `${filterSuffix}.actor.test`,
+            targetType: 'submission',
+            targetId: 'filter-target-b',
+            meta: {},
+          },
+        ])
+        .returning({ id: auditLog.id });
+      for (const r of rows) filterAuditIds.push(r.id);
+
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.auditLog({ limit: 50, actor: actorAId });
+
+      expect(result.items.length).toBeGreaterThan(0);
+      expect(result.items.every((r) => r.actorUserId === actorAId)).toBe(true);
+    });
+
+    it('filters by action', async () => {
+      const uniqueAction = `${filterSuffix}.unique-action`;
+      const otherAction = `${filterSuffix}.other-action`;
+
+      const rows = await db
+        .insert(auditLog)
+        .values([
+          {
+            actorUserId: actorAId,
+            action: uniqueAction,
+            targetType: 'album',
+            targetId: 'filter-target-action-1',
+            meta: {},
+          },
+          {
+            actorUserId: actorAId,
+            action: otherAction,
+            targetType: 'album',
+            targetId: 'filter-target-action-2',
+            meta: {},
+          },
+        ])
+        .returning({ id: auditLog.id });
+      for (const r of rows) filterAuditIds.push(r.id);
+
+      const caller = makeModerationCaller(db, moderatorId);
+      const result = await caller.auditLog({ limit: 50, action: uniqueAction });
+
+      expect(result.items.length).toBeGreaterThan(0);
+      expect(result.items.every((r) => r.action === uniqueAction)).toBe(true);
+    });
+
+    it('filters by targetType', async () => {
+      const rows = await db
+        .insert(auditLog)
+        .values([
+          {
+            actorUserId: actorAId,
+            action: `${filterSuffix}.type.test`,
+            targetType: 'album',
+            targetId: 'filter-target-type-album',
+            meta: {},
+          },
+          {
+            actorUserId: actorAId,
+            action: `${filterSuffix}.type.test`,
+            targetType: 'reciter',
+            targetId: 'filter-target-type-reciter',
+            meta: {},
+          },
+        ])
+        .returning({ id: auditLog.id });
+      for (const r of rows) filterAuditIds.push(r.id);
+
+      const caller = makeModerationCaller(db, moderatorId);
+      // Filter to only rows seeded by this test (via actorAId and the unique action prefix).
+      const result = await caller.auditLog({ limit: 50, actor: actorAId, targetType: 'album' });
+
+      expect(result.items.length).toBeGreaterThan(0);
+      expect(result.items.every((r) => r.targetType === 'album')).toBe(true);
+    });
+
+    it('filters by date range (inclusive both ends)', async () => {
+      const today = new Date();
+      today.setUTCHours(12, 0, 0, 0); // noon UTC, safely within today
+      const yesterday = new Date(today);
+      yesterday.setUTCDate(today.getUTCDate() - 1);
+
+      const rows = await db
+        .insert(auditLog)
+        .values([
+          {
+            actorUserId: actorBId,
+            action: `${filterSuffix}.date.today`,
+            targetType: 'track',
+            targetId: 'filter-target-date-today',
+            meta: {},
+            createdAt: today,
+          },
+          {
+            actorUserId: actorBId,
+            action: `${filterSuffix}.date.yesterday`,
+            targetType: 'track',
+            targetId: 'filter-target-date-yesterday',
+            meta: {},
+            createdAt: yesterday,
+          },
+        ])
+        .returning({ id: auditLog.id });
+      for (const r of rows) filterAuditIds.push(r.id);
+
+      // Format today as YYYY-MM-DD in UTC.
+      const todayString = today.toISOString().slice(0, 10);
+
+      const caller = makeModerationCaller(db, moderatorId);
+      // Filter to actorBId + date range = today only.
+      const result = await caller.auditLog({
+        limit: 50,
+        actor: actorBId,
+        from: todayString,
+        to: todayString,
+      });
+
+      const actions = result.items.map((r) => r.action);
+      expect(actions).toContain(`${filterSuffix}.date.today`);
+      expect(actions).not.toContain(`${filterSuffix}.date.yesterday`);
     });
   });
 });
