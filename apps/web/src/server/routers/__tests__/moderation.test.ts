@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { albums, auditLog, lyrics, reciters, submissionReviews, submissions, tracks, users } from '@nawhas/db';
 import {
   createTestDb,
@@ -162,7 +162,8 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
         comment: 'Looks good!',
       });
 
-      expect(result.status).toBe('approved');
+      // review(approved) now writes canonical entity atomically → status='applied'
+      expect(result.status).toBe('applied');
 
       // Verify a review record was written.
       const reviews = await db
@@ -223,6 +224,96 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       await expect(
         caller.review({ submissionId: seeded!.id, action: 'approved' }),
       ).rejects.toThrow('Only pending or changes_requested');
+    });
+
+    it('approve writes canonical entity, audit, and applied status in one transaction', async () => {
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const submission = await contribCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Test Reciter Approve' },
+      });
+      seededSubmissionIds.push(submission.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({
+        submissionId: submission.id,
+        action: 'approved',
+      });
+
+      const [row] = await db.select().from(submissions).where(eq(submissions.id, submission.id));
+      expect(row?.status).toBe('applied');
+
+      const [reciter] = await db.select().from(reciters).where(eq(reciters.slug, 'test-reciter-approve'));
+      expect(reciter).toBeDefined();
+      seededReciterIds.push(reciter!.id);
+
+      const auditRows = await db
+        .select()
+        .from(auditLog)
+        .where(and(eq(auditLog.action, 'submission.applied'), sql`(meta->>'submissionId') = ${submission.id}`));
+      expect(auditRows).toHaveLength(1);
+      expect(auditRows[0]?.targetType).toBe('reciter');
+      expect(auditRows[0]?.targetId).toBe(reciter!.id);
+    });
+
+    it('approve rolls back when a parent FK is missing', async () => {
+      const fakeReciterId = '00000000-0000-0000-0000-000000000000';
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const submission = await contribCaller.create({
+        type: 'album',
+        action: 'create',
+        data: { title: 'Album X', reciterId: fakeReciterId },
+      });
+      seededSubmissionIds.push(submission.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await expect(
+        modCaller.review({
+          submissionId: submission.id,
+          action: 'approved',
+        }),
+      ).rejects.toThrow();
+
+      const [row] = await db.select().from(submissions).where(eq(submissions.id, submission.id));
+      expect(row?.status).toBe('pending');
+
+      const albumRows = await db.select().from(albums).where(eq(albums.title, 'Album X'));
+      expect(albumRows).toHaveLength(0);
+
+      const auditRows = await db
+        .select()
+        .from(auditLog)
+        .where(sql`(meta->>'submissionId') = ${submission.id}`);
+      expect(auditRows).toHaveLength(0);
+    });
+
+    it('approve on a track edit upserts lyrics in the same transaction', async () => {
+      const [r] = await db.insert(reciters).values({ name: 'R', slug: `r-${SUFFIX}` }).returning();
+      seededReciterIds.push(r!.id);
+      const [a] = await db.insert(albums).values({ title: 'A', slug: `a-${SUFFIX}`, reciterId: r!.id }).returning();
+      seededAlbumIds.push(a!.id);
+      const [t] = await db.insert(tracks).values({ title: 'T', slug: `t-${SUFFIX}`, albumId: a!.id }).returning();
+      seededTrackIds.push(t!.id);
+
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const submission = await contribCaller.create({
+        type: 'track',
+        action: 'edit',
+        targetId: t!.id,
+        data: { title: 'T', albumId: a!.id, lyrics: { en: 'hello world' } },
+      });
+      seededSubmissionIds.push(submission.id);
+
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({
+        submissionId: submission.id,
+        action: 'approved',
+      });
+
+      const lyricRows = await db.select().from(lyrics).where(eq(lyrics.trackId, t!.id));
+      expect(lyricRows).toHaveLength(1);
+      expect(lyricRows[0]?.text).toBe('hello world');
     });
   });
 
@@ -351,8 +442,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       });
       seededSubmissionIds.push(sub.id);
 
+      // Directly set status='approved' to simulate legacy/manual approval
+      // (review(approved) now writes the canonical entity atomically itself).
+      await db.update(submissions).set({ status: 'approved' }).where(eq(submissions.id, sub.id));
+
       const modCaller = makeModerationCaller(db, moderatorId);
-      await modCaller.review({ submissionId: sub.id, action: 'approved' });
       const applied = await modCaller.applyApproved({ submissionId: sub.id });
 
       const [row] = await db.select().from(albums).where(eq(albums.id, applied.entityId));
@@ -377,8 +471,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       });
       seededSubmissionIds.push(sub.id);
 
+      // Directly set status='approved' to simulate legacy/manual approval
+      // (review(approved) now writes the canonical entity atomically itself).
+      await db.update(submissions).set({ status: 'approved' }).where(eq(submissions.id, sub.id));
+
       const modCaller = makeModerationCaller(db, moderatorId);
-      await modCaller.review({ submissionId: sub.id, action: 'approved' });
       const applied = await modCaller.applyApproved({ submissionId: sub.id });
 
       const [row] = await db
@@ -410,8 +507,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       });
       seededSubmissionIds.push(sub.id);
 
+      // Directly set status='approved' to simulate legacy/manual approval
+      // (review(approved) now writes the canonical entity atomically itself).
+      await db.update(submissions).set({ status: 'approved' }).where(eq(submissions.id, sub.id));
+
       const modCaller = makeModerationCaller(db, moderatorId);
-      await modCaller.review({ submissionId: sub.id, action: 'approved' });
       const applied = await modCaller.applyApproved({ submissionId: sub.id });
       seededTrackIds.push(applied.entityId);
 
@@ -430,8 +530,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       });
       seededSubmissionIds.push(sub.id);
 
+      // Directly set status='approved' to simulate legacy/manual approval
+      // (review(approved) now writes the canonical entity atomically itself).
+      await db.update(submissions).set({ status: 'approved' }).where(eq(submissions.id, sub.id));
+
       const modCaller = makeModerationCaller(db, moderatorId);
-      await modCaller.review({ submissionId: sub.id, action: 'approved' });
       const first = await modCaller.applyApproved({ submissionId: sub.id });
       seededReciterIds.push(first.entityId);
 
@@ -450,8 +553,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       });
       seededSubmissionIds.push(sub.id);
 
+      // Directly set status='approved' to simulate legacy/manual approval
+      // (review(approved) now writes the canonical entity atomically itself).
+      await db.update(submissions).set({ status: 'approved' }).where(eq(submissions.id, sub.id));
+
       const modCaller = makeModerationCaller(db, moderatorId);
-      await modCaller.review({ submissionId: sub.id, action: 'approved' });
       const applied = await modCaller.applyApproved({ submissionId: sub.id });
       seededReciterIds.push(applied.entityId);
 
@@ -475,8 +581,11 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       });
       seededSubmissionIds.push(sub.id);
 
+      // Directly set status='approved' to simulate legacy/manual approval
+      // (review(approved) now writes the canonical entity atomically itself).
+      await db.update(submissions).set({ status: 'approved' }).where(eq(submissions.id, sub.id));
+
       const modCaller = makeModerationCaller(db, moderatorId);
-      await modCaller.review({ submissionId: sub.id, action: 'approved' });
       await modCaller.applyApproved({ submissionId: sub.id });
 
       const rows = await db.select().from(lyrics).where(eq(lyrics.trackId, trackId));

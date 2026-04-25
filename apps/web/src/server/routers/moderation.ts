@@ -69,6 +69,151 @@ async function pickTrackSlug(
 }
 
 // ---------------------------------------------------------------------------
+// applyToCanonical helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Apply a submission's data to the canonical tables inside an existing
+ * transaction. Returns the canonical entity id and type. Throws TRPCError on
+ * FK / not-found failures so the surrounding transaction rolls back.
+ *
+ * Used both by `review(approve)` (primary path) and `applyApproved`
+ * (ops escape hatch).
+ */
+async function applyToCanonical(
+  tx: DbTx,
+  submission: typeof submissions.$inferSelect,
+): Promise<{ entityId: string; entityType: 'reciter' | 'album' | 'track' }> {
+  if (submission.type === 'reciter') {
+    const data = reciterDataSchema.parse(submission.data);
+    if (submission.action === 'create') {
+      const slug = data.slug ?? (await pickReciterSlug(tx, data.name));
+      const [inserted] = await tx
+        .insert(reciters)
+        .values({
+          name: data.name,
+          slug,
+          arabicName: data.arabicName ?? null,
+          country: data.country ?? null,
+          birthYear: data.birthYear ?? null,
+          description: data.description ?? null,
+          avatarUrl: data.avatarUrl ?? null,
+        })
+        .returning({ id: reciters.id });
+      if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+      return { entityId: inserted.id, entityType: 'reciter' };
+    }
+    if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
+    const [updated] = await tx
+      .update(reciters)
+      .set({
+        name: data.name,
+        arabicName: data.arabicName ?? null,
+        country: data.country ?? null,
+        birthYear: data.birthYear ?? null,
+        description: data.description ?? null,
+        avatarUrl: data.avatarUrl ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(reciters.id, submission.targetId))
+      .returning({ id: reciters.id });
+    if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reciter not found — it may have been deleted.' });
+    return { entityId: submission.targetId, entityType: 'reciter' };
+  }
+
+  if (submission.type === 'album') {
+    const data = albumDataSchema.parse(submission.data);
+    if (submission.action === 'create') {
+      const slug = data.slug ?? (await pickAlbumSlug(tx, data.reciterId, data.title));
+      const [inserted] = await tx
+        .insert(albums)
+        .values({
+          title: data.title,
+          slug,
+          reciterId: data.reciterId,
+          year: data.year ?? null,
+          description: data.description ?? null,
+          artworkUrl: data.artworkUrl ?? null,
+        })
+        .returning({ id: albums.id });
+      if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+      return { entityId: inserted.id, entityType: 'album' };
+    }
+    if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
+    const [updated] = await tx
+      .update(albums)
+      .set({
+        title: data.title,
+        reciterId: data.reciterId,
+        year: data.year ?? null,
+        description: data.description ?? null,
+        artworkUrl: data.artworkUrl ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(albums.id, submission.targetId))
+      .returning({ id: albums.id });
+    if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Album not found — it may have been deleted.' });
+    return { entityId: submission.targetId, entityType: 'album' };
+  }
+
+  // track
+  const data = trackDataSchema.parse(submission.data);
+  let trackId: string;
+  if (submission.action === 'create') {
+    const slug = data.slug ?? (await pickTrackSlug(tx, data.albumId, data.title));
+    const [inserted] = await tx
+      .insert(tracks)
+      .values({
+        title: data.title,
+        slug,
+        albumId: data.albumId,
+        trackNumber: data.trackNumber ?? null,
+        audioUrl: data.audioUrl ?? null,
+        youtubeId: data.youtubeId ?? null,
+        duration: data.duration ?? null,
+      })
+      .returning({ id: tracks.id });
+    if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+    trackId = inserted.id;
+  } else {
+    if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
+    const [updated] = await tx
+      .update(tracks)
+      .set({
+        title: data.title,
+        albumId: data.albumId,
+        trackNumber: data.trackNumber ?? null,
+        audioUrl: data.audioUrl ?? null,
+        youtubeId: data.youtubeId ?? null,
+        duration: data.duration ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(tracks.id, submission.targetId))
+      .returning({ id: tracks.id });
+    if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Track not found — it may have been deleted.' });
+    trackId = submission.targetId;
+  }
+
+  if (data.lyrics) {
+    for (const [language, text] of Object.entries(data.lyrics)) {
+      if (text === undefined) continue;
+      if (text === '') {
+        await tx.delete(lyrics).where(and(eq(lyrics.trackId, trackId), eq(lyrics.language, language)));
+      } else {
+        await tx
+          .insert(lyrics)
+          .values({ trackId, language, text })
+          .onConflictDoUpdate({
+            target: [lyrics.trackId, lyrics.language],
+            set: { text, updatedAt: new Date() },
+          });
+      }
+    }
+  }
+  return { entityId: trackId, entityType: 'track' };
+}
+
+// ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
 
@@ -138,8 +283,13 @@ export const moderationRouter = router({
 
   /**
    * Record a moderation decision (approved / rejected / changes_requested).
-   * Writes a submission_reviews row and updates the submission status.
-   * Sends feedback email for rejected / changes_requested outcomes.
+   *
+   * When action='approved': writes review row + canonical entity + audit
+   * (action='submission.applied') + status='applied' atomically in one
+   * transaction. The canonical write is delegated to applyToCanonical().
+   *
+   * When action='rejected' or 'changes_requested': writes review row +
+   * status update + audit in a transaction; sends feedback email.
    */
   review: moderatorProcedure
     .input(
@@ -167,8 +317,12 @@ export const moderationRouter = router({
         });
       }
 
-      // Wrap review record, status update, and audit log in a transaction
-      // so no partial writes occur if any step fails.
+      // Status motion:
+      //  approved              -> applied   (canonical write happens inside the tx)
+      //  rejected              -> rejected
+      //  changes_requested     -> changes_requested
+      const newStatus = input.action === 'approved' ? 'applied' : input.action;
+
       const updated = await ctx.db.transaction(async (tx) => {
         await tx.insert(submissionReviews).values({
           submissionId: input.submissionId,
@@ -177,9 +331,29 @@ export const moderationRouter = router({
           comment: input.comment ?? null,
         });
 
+        let auditTargetType: string = 'submission';
+        let auditTargetId: string = input.submissionId;
+        let auditAction: string;
+        let auditMeta: Record<string, unknown>;
+
+        if (input.action === 'approved') {
+          const { entityId, entityType } = await applyToCanonical(tx, submission);
+          auditTargetType = entityType;
+          auditTargetId = entityId;
+          auditAction = 'submission.applied';
+          auditMeta = {
+            submissionId: input.submissionId,
+            submissionAction: submission.action,
+            ...(input.comment ? { comment: input.comment } : {}),
+          };
+        } else {
+          auditAction = `submission.${input.action}`;
+          auditMeta = { comment: input.comment ?? null, submissionType: submission.type };
+        }
+
         const [upd] = await tx
           .update(submissions)
-          .set({ status: input.action, updatedAt: new Date() })
+          .set({ status: newStatus, updatedAt: new Date() })
           .where(eq(submissions.id, input.submissionId))
           .returning();
 
@@ -189,24 +363,30 @@ export const moderationRouter = router({
 
         await tx.insert(auditLog).values({
           actorUserId: ctx.user.id,
-          action: `submission.${input.action}`,
-          targetType: 'submission',
-          targetId: input.submissionId,
-          meta: { comment: input.comment ?? null, submissionType: submission.type },
+          action: auditAction,
+          targetType: auditTargetType,
+          targetId: auditTargetId,
+          meta: auditMeta,
         });
 
         return upd;
       });
 
-      // Send feedback email for non-approved outcomes — fire-and-forget, outside transaction.
-      if (input.action === 'rejected' || input.action === 'changes_requested') {
-        const [submitter] = await ctx.db
-          .select({ email: users.email })
-          .from(users)
-          .where(eq(users.id, submission.submittedByUserId))
-          .limit(1);
+      // Email — fire-and-forget, outside transaction.
+      const [submitter] = await ctx.db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, submission.submittedByUserId))
+        .limit(1);
 
-        if (submitter) {
+      if (submitter) {
+        if (input.action === 'approved') {
+          sendSubmissionApproved({
+            to: submitter.email,
+            submissionId: input.submissionId,
+            type: submission.type,
+          });
+        } else {
           sendSubmissionFeedback({
             to: submitter.email,
             submissionId: input.submissionId,
@@ -221,9 +401,12 @@ export const moderationRouter = router({
 
   /**
    * Apply an approved submission to the canonical tables.
-   * For action=create: inserts a new entity.
-   * For action=edit: updates the existing entity.
-   * Writes an audit log entry and fires an approval email.
+   *
+   * **Ops escape hatch only.** As of W2, `review(action='approved')`
+   * does the canonical write inline in the same transaction; this
+   * procedure remains for the rare case where a submission is in
+   * `status='approved'` (legacy data, or a manual recovery scenario)
+   * and needs to be applied separately. No primary UI surfaces this.
    */
   applyApproved: moderatorProcedure
     .input(z.object({ submissionId: z.uuid() }))
@@ -244,157 +427,15 @@ export const moderationRouter = router({
         });
       }
 
-      // Wrap all entity writes and audit log in a transaction so no partial
-      // state is committed if any step fails.
       const entityId = await ctx.db.transaction(async (tx) => {
-        let eid: string;
-
-        if (submission.type === 'reciter') {
-          const data = reciterDataSchema.parse(submission.data);
-
-          if (submission.action === 'create') {
-            const slug = data.slug ?? (await pickReciterSlug(tx, data.name));
-            const [inserted] = await tx
-              .insert(reciters)
-              .values({
-                name: data.name,
-                slug,
-                arabicName: data.arabicName ?? null,
-                country: data.country ?? null,
-                birthYear: data.birthYear ?? null,
-                description: data.description ?? null,
-                avatarUrl: data.avatarUrl ?? null,
-              })
-              .returning({ id: reciters.id });
-            if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-            eid = inserted.id;
-          } else {
-            // edit — slug is frozen for URL stability
-            if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-            const [updated] = await tx
-              .update(reciters)
-              .set({
-                name: data.name,
-                arabicName: data.arabicName ?? null,
-                country: data.country ?? null,
-                birthYear: data.birthYear ?? null,
-                description: data.description ?? null,
-                avatarUrl: data.avatarUrl ?? null,
-                updatedAt: new Date(),
-              })
-              .where(eq(reciters.id, submission.targetId))
-              .returning({ id: reciters.id });
-            if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Reciter not found — it may have been deleted.' });
-            eid = submission.targetId;
-          }
-        } else if (submission.type === 'album') {
-          const data = albumDataSchema.parse(submission.data);
-
-          if (submission.action === 'create') {
-            const slug = data.slug ?? (await pickAlbumSlug(tx, data.reciterId, data.title));
-            const [inserted] = await tx
-              .insert(albums)
-              .values({
-                title: data.title,
-                slug,
-                reciterId: data.reciterId,
-                year: data.year ?? null,
-                description: data.description ?? null,
-                artworkUrl: data.artworkUrl ?? null,
-              })
-              .returning({ id: albums.id });
-            if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-            eid = inserted.id;
-          } else {
-            if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-            const [updated] = await tx
-              .update(albums)
-              .set({
-                title: data.title,
-                // slug frozen on edits — URL stability
-                reciterId: data.reciterId,
-                year: data.year ?? null,
-                description: data.description ?? null,
-                artworkUrl: data.artworkUrl ?? null,
-                updatedAt: new Date(),
-              })
-              .where(eq(albums.id, submission.targetId))
-              .returning({ id: albums.id });
-            if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Album not found — it may have been deleted.' });
-            eid = submission.targetId;
-          }
-        } else {
-          // track
-          const data = trackDataSchema.parse(submission.data);
-          const slug = data.slug ?? (await pickTrackSlug(tx, data.albumId, data.title));
-
-          let trackId: string;
-          if (submission.action === 'create') {
-            const [inserted] = await tx
-              .insert(tracks)
-              .values({
-                title: data.title,
-                slug,
-                albumId: data.albumId,
-                trackNumber: data.trackNumber ?? null,
-                audioUrl: data.audioUrl ?? null,
-                youtubeId: data.youtubeId ?? null,
-                duration: data.duration ?? null,
-              })
-              .returning({ id: tracks.id });
-            if (!inserted) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-            trackId = inserted.id;
-          } else {
-            if (!submission.targetId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetId missing.' });
-            const [updated] = await tx
-              .update(tracks)
-              .set({
-                title: data.title,
-                // slug frozen on edits — URL stability
-                albumId: data.albumId,
-                trackNumber: data.trackNumber ?? null,
-                audioUrl: data.audioUrl ?? null,
-                youtubeId: data.youtubeId ?? null,
-                duration: data.duration ?? null,
-                updatedAt: new Date(),
-              })
-              .where(eq(tracks.id, submission.targetId))
-              .returning({ id: tracks.id });
-            if (!updated) throw new TRPCError({ code: 'NOT_FOUND', message: 'Track not found — it may have been deleted.' });
-            trackId = submission.targetId;
-          }
-
-          // Lyrics upsert: for each language key in data.lyrics, insert-or-update.
-          // Empty string means delete the row. Missing keys are left untouched.
-          if (data.lyrics) {
-            for (const [language, text] of Object.entries(data.lyrics)) {
-              if (text === undefined) continue;
-              if (text === '') {
-                await tx.delete(lyrics).where(and(eq(lyrics.trackId, trackId), eq(lyrics.language, language)));
-              } else {
-                await tx
-                  .insert(lyrics)
-                  .values({ trackId, language, text })
-                  .onConflictDoUpdate({
-                    target: [lyrics.trackId, lyrics.language],
-                    set: { text, updatedAt: new Date() },
-                  });
-              }
-            }
-          }
-
-          eid = trackId;
-        }
+        const { entityId, entityType } = await applyToCanonical(tx, submission);
 
         await tx.insert(auditLog).values({
           actorUserId: ctx.user.id,
           action: 'submission.applied',
-          targetType: submission.type,
-          targetId: eid,
-          meta: {
-            submissionId: input.submissionId,
-            submissionAction: submission.action,
-          },
+          targetType: entityType,
+          targetId: entityId,
+          meta: { submissionId: input.submissionId, submissionAction: submission.action },
         });
 
         await tx
@@ -402,7 +443,7 @@ export const moderationRouter = router({
           .set({ status: 'applied', updatedAt: new Date() })
           .where(eq(submissions.id, input.submissionId));
 
-        return eid;
+        return entityId;
       });
 
       // Fire approval email — fire-and-forget, outside transaction.
