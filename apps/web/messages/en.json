@@ -303,9 +303,24 @@
     "access": {
       "heading": "Contributor Access Required",
       "description": "You need contributor access to submit content on Nawhas.com. Contributors help keep the library accurate and complete.",
+      "applyCta": "Apply for contributor access",
+      "pendingHeading": "Your application is pending review",
+      "pendingDescription": "Submitted on {date}. We'll email you once a moderator reviews it.",
       "howToHeading": "How to become a contributor",
       "howToDescription": "Contact a moderator to have your account promoted to contributor status. Once promoted, you can submit new reciters, albums, and tracks for review.",
       "backToHome": "← Back to home"
+    },
+    "apply": {
+      "heading": "Apply to contribute",
+      "subheading": "Tell us a bit about how you'd like to help.",
+      "reasonLabel": "Why do you want to contribute?",
+      "reasonOptional": "(optional)",
+      "reasonPlaceholder": "Tell us a bit about how you'd like to help — translations, missing reciters, lyric corrections...",
+      "submitting": "Submitting…",
+      "submit": "Submit application",
+      "withdraw": "Withdraw application",
+      "alreadyPending": "Your application is pending review",
+      "rejectionHeading": "Your previous application wasn't approved"
     },
     "pages": {
       "newReciterTitle": "New Reciter",
@@ -482,7 +497,21 @@
       "overview": "Overview",
       "queue": "Queue",
       "users": "Users",
-      "audit": "Audit Log"
+      "audit": "Audit Log",
+      "accessRequests": "Access requests"
+    },
+    "accessRequests": {
+      "heading": "Access requests",
+      "empty": "No access requests in this view.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approving": "Approving…",
+      "rejecting": "Rejecting…",
+      "decisionHeading": "Decision",
+      "commentPlaceholder": "Comment (optional for approval, required for rejection)",
+      "noReason": "No reason provided.",
+      "moderatorComment": "Moderator comment",
+      "applicantReason": "Reason"
     },
     "overview": {
       "heading": "Moderation Overview",
@@ -732,5 +761,31 @@
     "switchToDark": "Switch to dark mode",
     "reciters": "Reciters",
     "albums": "Albums"
+  },
+  "contributor": {
+    "profile": {
+      "totalContributions": "Total Contributions",
+      "approved": "Approved",
+      "pending": "Pending",
+      "approvalRate": "Approval Rate",
+      "activityHeading": "Contribution Activity",
+      "badgesHeading": "Badges",
+      "noBadges": "No badges yet",
+      "maintainer": "\u2b50 Maintainer",
+      "trusted": "\u2713 Trusted",
+      "milestone100": "\ud83c\udfc6 100+ Contributions"
+    }
+  },
+  "dashboard": {
+    "tabAll": "All",
+    "tabPending": "Pending",
+    "tabApproved": "Approved",
+    "emptyAll": "No submissions yet \u2014 try contributing!",
+    "emptyPending": "No pending submissions.",
+    "emptyApproved": "No approved submissions yet.",
+    "quickActionsHeading": "Quick Actions",
+    "newSubmission": "New submission",
+    "viewProfile": "View profile",
+    "loading": "Loading\u2026"
   }
 }
