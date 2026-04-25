@@ -6,6 +6,7 @@ import {
   createTestDb,
   isDbAvailable,
   makeSubmissionCaller,
+  makeModerationCaller,
   type TestDb,
 } from './helpers';
 
@@ -18,6 +19,7 @@ const SUFFIX = Date.now();
 
 const contributorId = `sub-contrib-${SUFFIX}`;
 const otherUserId = `sub-other-${SUFFIX}`;
+const moderatorId = `sub-mod-${SUFFIX}`;
 
 const seededReciterIds: string[] = [];
 const seededSubmissionIds: string[] = [];
@@ -46,6 +48,15 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        id: moderatorId,
+        name: 'Mod User',
+        email: `mod-${SUFFIX}@example.com`,
+        emailVerified: true,
+        role: 'moderator',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
     // Seed a reciter for edit-submission tests.
@@ -64,7 +75,7 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
     if (seededReciterIds.length > 0) {
       await db.delete(reciters).where(inArray(reciters.id, seededReciterIds));
     }
-    await db.delete(users).where(inArray(users.id, [contributorId, otherUserId]));
+    await db.delete(users).where(inArray(users.id, [contributorId, otherUserId, moderatorId]));
     await close();
   });
 
@@ -309,6 +320,52 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       await expect(
         caller.get({ id: '00000000-0000-0000-0000-000000000000' }),
       ).rejects.toThrow('Submission not found');
+    });
+  });
+
+  // ── submission.getMyReviewThread ─────────────────────────────────────────
+
+  describe('submission.getMyReviewThread', () => {
+    it('returns thread with reviewer names redacted to empty string', async () => {
+      const contributorCaller = makeSubmissionCaller(db, contributorId);
+      const moderatorCaller = makeModerationCaller(db, moderatorId);
+
+      const { id: submissionId } = await contributorCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Owner Thread' },
+      });
+      seededSubmissionIds.push(submissionId);
+
+      await moderatorCaller.review({
+        submissionId,
+        action: 'changes_requested',
+        comment: 'Please add description',
+      });
+
+      const thread = await contributorCaller.getMyReviewThread({ submissionId });
+
+      expect(thread.reviews).toHaveLength(1);
+      expect(thread.reviews[0]?.reviewerName).toBe('');
+      expect(thread.reviews[0]?.reviewerRole).toBeNull();
+      expect(thread.reviews[0]?.comment).toBe('Please add description');
+      expect(thread.submitter.id).toBe(contributorId);
+    });
+
+    it('rejects non-owners (FORBIDDEN)', async () => {
+      const contributorACaller = makeSubmissionCaller(db, contributorId);
+      const contributorBCaller = makeSubmissionCaller(db, otherUserId);
+
+      const { id: submissionId } = await contributorACaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Foreign Submission' },
+      });
+      seededSubmissionIds.push(submissionId);
+
+      await expect(
+        contributorBCaller.getMyReviewThread({ submissionId }),
+      ).rejects.toThrow();
     });
   });
 

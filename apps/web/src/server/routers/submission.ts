@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, or, sql } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { submissions, reciters, albums, tracks } from '@nawhas/db';
+import { submissions, reciters, albums, tracks, submissionReviews, auditLog } from '@nawhas/db';
 import { router, contributorProcedure, protectedProcedure } from '../trpc/trpc';
 import { sendSubmissionReceived } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
-import type { PaginatedResult, SubmissionDTO } from '@nawhas/types';
+import type { PaginatedResult, ReviewThreadDTO, SubmissionDTO } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -278,5 +278,68 @@ export const submissionRouter = router({
       }
 
       return row as SubmissionDTO;
+    }),
+
+  /**
+   * Owner-scoped review thread for a contributor's own submission.
+   * Same shape as moderation.getReviewThread but reviewer names are
+   * redacted to empty string and reviewer role to null.
+   */
+  getMyReviewThread: protectedProcedure
+    .input(z.object({ submissionId: z.string().uuid() }))
+    .query(async ({ ctx, input }): Promise<ReviewThreadDTO> => {
+      const [submission] = await ctx.db
+        .select({
+          id: submissions.id,
+          createdAt: submissions.createdAt,
+          submittedByUserId: submissions.submittedByUserId,
+        })
+        .from(submissions)
+        .where(eq(submissions.id, input.submissionId))
+        .limit(1);
+
+      if (!submission) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Submission not found.' });
+      }
+      if (submission.submittedByUserId !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+
+      const reviewRows = await ctx.db
+        .select({
+          id: submissionReviews.id,
+          action: submissionReviews.action,
+          comment: submissionReviews.comment,
+          createdAt: submissionReviews.createdAt,
+        })
+        .from(submissionReviews)
+        .where(eq(submissionReviews.submissionId, input.submissionId))
+        .orderBy(asc(submissionReviews.createdAt));
+
+      const [appliedRow] = await ctx.db
+        .select({ createdAt: auditLog.createdAt })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'submission.applied'),
+            sql`(${auditLog.meta}->>'submissionId') = ${input.submissionId}`,
+          ),
+        )
+        .orderBy(desc(auditLog.createdAt))
+        .limit(1);
+
+      return {
+        submitter: { id: ctx.user.id, name: ctx.user.name ?? '' },
+        submittedAt: submission.createdAt,
+        reviews: reviewRows.map((r) => ({
+          id: r.id,
+          action: r.action,
+          comment: r.comment,
+          reviewerName: '',
+          reviewerRole: null,
+          createdAt: r.createdAt,
+        })),
+        appliedAt: appliedRow?.createdAt ?? null,
+      };
     }),
 });
