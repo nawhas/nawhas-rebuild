@@ -16,7 +16,7 @@ export function ReciterCard({ reciter }: ReciterCardProps): React.JSX.Element {
   return (
     <Link
       href={`/reciters/${reciter.slug}`}
-      className="group flex flex-col items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-4 text-center transition-colors hover:border-[var(--border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+      className="group flex flex-col items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-4 text-center transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       aria-label={`View ${reciter.name}'s profile`}
     >
       <div className="h-16 w-16">

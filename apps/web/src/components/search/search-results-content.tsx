@@ -118,7 +118,7 @@ function ReciterResult({
   return (
     <Link
       href={`/reciters/${item.slug}`}
-      className="group flex flex-col items-center gap-3 rounded-lg p-4 text-center transition-colors hover:bg-[var(--surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group flex flex-col items-center gap-3 rounded-lg p-4 text-center transition-colors hover:bg-[var(--surface)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       aria-label={`View ${item.name}'s profile`}
     >
       <div className="h-16 w-16">
@@ -144,7 +144,7 @@ function AlbumResult({
   return (
     <Link
       href={`/albums/${item.slug}`}
-      className="group flex flex-col gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group flex flex-col gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       aria-label={`View album: ${item.title}${item.year ? `, ${item.year}` : ''}`}
     >
       <div className="aspect-square w-full overflow-hidden">
@@ -188,7 +188,7 @@ function TrackResult({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      className="group flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:-outline-offset-2"
       aria-label={`View track ${item.title} from ${item.albumTitle} by ${item.reciterName}`}
     >
       {/* Album cover thumbnail — TrackSearchItemDTO has no artworkUrl, so
@@ -285,7 +285,7 @@ function Pagination({
       {hasPrev ? (
         <Link
           href={pageHref(currentPage - 1)}
-          className="rounded-md border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-md border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           aria-label={t('previousLabel')}
         >
           {t('previous')}
@@ -307,7 +307,7 @@ function Pagination({
       {hasNext ? (
         <Link
           href={pageHref(currentPage + 1)}
-          className="rounded-md border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-md border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-dim)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           aria-label={t('nextLabel')}
           scroll={false}
         >
@@ -575,7 +575,7 @@ export function SearchResultsContent({
               key={tab.type}
               value={tab.type}
               asChild
-              className="inline-flex items-center gap-1.5 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-medium text-[var(--text-dim)] shadow-none transition-colors hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[state=active]:border-[var(--accent)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--accent)] data-[state=active]:shadow-none"
+              className="inline-flex items-center gap-1.5 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-medium text-[var(--text-dim)] shadow-none transition-colors hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:-outline-offset-2 data-[state=active]:border-[var(--accent)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--accent)] data-[state=active]:shadow-none"
             >
               <Link href={tabHref(tab.type)}>
                 {tab.label}

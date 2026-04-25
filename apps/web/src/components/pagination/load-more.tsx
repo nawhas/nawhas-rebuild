@@ -21,7 +21,7 @@ export function LoadMore({ onLoadMore, isLoading }: LoadMoreProps): React.JSX.El
       onClick={onLoadMore}
       disabled={isLoading}
       aria-busy={isLoading}
-      className="rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-6 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-6 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {isLoading ? t('loading') : t('loadMore')}
     </button>

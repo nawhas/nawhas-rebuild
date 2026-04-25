@@ -69,7 +69,7 @@ export function ReciterGrid({ initialItems, initialCursor }: ReciterGridProps): 
           <a
             key={letter}
             href={`#letter-${letter}`}
-            className="rounded px-2 py-1 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="rounded-[6px] px-2 py-1 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           >
             {letter}
           </a>
