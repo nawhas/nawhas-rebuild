@@ -17,3 +17,5 @@ export { CoverArt, type CoverArtProps } from './components/cover-art.js';
 export { ReciterAvatar, type ReciterAvatarProps } from './components/reciter-avatar.js';
 export { TrackRow, type TrackRowProps } from './components/track-row.js';
 export { Waveform, type WaveformProps } from './components/waveform.js';
+export { TrustLevelPill } from './components/trust-level-pill.js';
+export type { TrustLevel } from './components/trust-level-pill.js';
