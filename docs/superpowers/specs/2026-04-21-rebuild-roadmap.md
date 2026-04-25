@@ -1,6 +1,6 @@
 # Nawhas Rebuild — Roadmap (April 2026)
 
-**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 shipped (2026-04-25) · Phase 2.4 W2 shipped (2026-04-25) · Phase 2.1c + 2.4 W3 + Phase 3 not started
+**Status:** Phase 1 shipped (2026-04-21) · Phase 2.1 shipped · 2.1 decisions resolved · Phase 2.1d shipped · Phase 2.2 shipped · Phase 2.1e shipped · Phase 2.3 shipped (2026-04-22) · Phase 2.4 W1 shipped (2026-04-23) · Phase 2.5 shipped (2026-04-25) · Phase 2.4 W2 shipped (2026-04-25) · Phase 2.4 W3 shipped (2026-04-25) · Phase 2.1c + Phase 3 not started
 **Author:** Asif (brainstormed with Claude)
 **Created:** 2026-04-21
 **Last updated:** 2026-04-25
@@ -356,7 +356,7 @@ Three-workstream plan spec'd 2026-04-23 in
 |---|---|---|
 | W1 | Contribute forms (parent pickers, uploads, auto-slug, lyrics, drafts) | ✅ shipped 2026-04-23 |
 | W2 | Moderation flow (merge approve+apply, internal notes, thread, filters) | not started |
-| W3 | Contributor lifecycle (apply-for-access, withdraw, resubmit-diff, digests) | not started |
+| W3 | Contributor lifecycle (apply-for-access, withdraw, resubmit-diff, digests) | ✅ shipped 2026-04-25 |
 
 ### 2.4 W1 Contribute forms ✅ shipped 2026-04-23
 
@@ -534,21 +534,162 @@ Refs:
 [`docs/superpowers/specs/2026-04-25-phase-2-4-w2-moderation-flow-design.md`](./2026-04-25-phase-2-4-w2-moderation-flow-design.md),
 [`docs/superpowers/plans/2026-04-25-phase-2-4-w2-moderation-flow.md`](../plans/2026-04-25-phase-2-4-w2-moderation-flow.md).
 
-### 2.4 W3 Contributor lifecycle (not started)
+### 2.4 W3 Contributor lifecycle ✅ shipped 2026-04-25
 
-Self-service "Apply to contribute" CTA on `/contribute` for role=user
-(backed by the `access_requests` table shipped in W1) with a new
-`/mod/access-requests` moderator queue. Allow contributors to withdraw
-their own pending submissions (new `withdrawn` status already reserved
-in W1). Show a diff panel on resubmit surfacing what changed since the
-prior rejection + the moderator's comment. Digest email to moderators
-(throttled to once per hour) + in-app pending-count badge on the
-Moderator Dashboard nav link.
+Shipped as 37 commits on `main` (`b22f3ff..9b410a1`), executed across
+nine phases (A–I).
 
-Scope extends to include the public `/contributor/[slug]` profile,
-contribution heatmap, and `/dashboard` stats surfaced by Phase 2.5.
+**Schema (Phase A — 4 commits, migration `0013_many_red_wolf.sql`):**
+`users` gained `username` (citext, unique partial-index on
+`lower(username)`), `trust_level` (`'new' | 'regular' | 'trusted' |
+'maintainer'` enum, default `'new'`), and `bio` (text, nullable —
+surfaced on the public profile). `access_requests` gained
+`withdrawn_at`, `reviewed_at`, `notified_at`; the status enum widened
+to admit `'withdrawn'`. `submissions` gained `notified_at` to mark
+rows folded into a moderator digest. Two partial indexes back the
+hourly digest's "pending and unnotified" scan
+(`access_requests_pending_unnotified_idx`,
+`submissions_pending_unnotified_idx`).
 
-Own spec and plan will land before execution.
+**Server (Phase C — 9 commits):**
+
+| Commit | Procedure | Purpose |
+|---|---|---|
+| `6d5517f` | `accessRequests.create` | Validates the applicant has no open request, inserts with status `'pending'`, audits `access_request.created` (note: renamed from `apply` in `b22f3ff` — `apply` is reserved by tRPC v11) |
+| `335716f` | `accessRequests.withdrawMine` | Owner-scoped state flip `pending → withdrawn`, sets `withdrawn_at`, audits |
+| `9abe651` | `accessRequests.getMine` + `.queue` | Self-fetch (returns null if none) and moderator queue (status filter, cursor pagination, joined applicant fields) |
+| `304387e` | `accessRequests.review` | Approve / reject in one tx: status flip + role flip to `'contributor'` on approve + audit row + applicant email; rolls back atomically on any leg failing |
+| `6f73a2f` | `submission.withdrawMine` | Owner-on-pending withdraw; mirrors the access-request shape |
+| `d858209` | `submission.getResubmitContext` | Returns the prior `changes_requested` review row + diff payload feeding `<ChangesRequestedBanner>` on the contributor edit surface |
+| `93526e1` | `moderation.dashboardStats` extension + `moderation.pendingCounts` | `dashboardStats` gains `pendingAccessRequestsCount`; the new `pendingCounts` returns submissions + access-requests counts in a single roundtrip for nav badges |
+| `0138850` | `home.contributorProfile` + `home.contributorHeatmap` | Public, username-scoped profile + a 365-day bucket array of submission/applied counts |
+| `9ac938e` | `dashboard.mine` (new router) + `submission.myHistory` status filter | Contributor dashboard stats + the listing tabs ("All / Pending / Changes / Applied / Withdrawn") |
+
+**Email + cron (Phase D — 3 commits):** `sendModeratorDigest`,
+`sendAccessRequestApproved`, `sendAccessRequestRejected` added to the
+existing email helpers. `apps/web/scripts/send-moderator-digest.ts`
+(`034ba67`) is a standalone Node entrypoint that queries the two
+partial indexes, renders the digest, sends to all `moderator` /
+`admin` users, and stamps `notified_at` on the rows it included
+(at-least-once trade explicitly called out in comments — a digest can
+double-send if the email succeeds and the stamp write fails). The
+Helm template `deploy/helm/nawhas/templates/digest-cronjob.yaml`
+(`db8f282`) wires it as a `CronJob` running at the top of every hour;
+gated on a new `digest.enabled` value.
+
+**Components (Phase E — 6 commits):**
+
+- `<TrustLevelPill />` (`6fb7158`) — token-driven badge in
+  `@nawhas/ui`, four variants (`new`, `regular`, `trusted`,
+  `maintainer`).
+- `<Heatmap />` (`1d895fc`) — 365-day calendar grid ported from the
+  POC, single-year window, 5-bucket intensity scale, ARIA label per
+  cell.
+- `<ContributorHero />` (`7bef3dd`) — public profile header
+  (avatar + username + trust pill + bio + join date + total counts).
+- `<ContributionList />` (`7364e99`) — extracted from the dashboard
+  routes; renders submission rows with status badges, used on both
+  `/dashboard` and `/contributor/[username]`.
+- `<PendingCountBadge />` (`0cf2bbe`) — small circle shipped on the
+  main-nav `/mod` link and on each `/mod` sub-nav tab.
+- `<ChangesRequestedBanner />` (`17f8846`) — placed on
+  `/profile/contributions/[id]` (not the contribute edit page — see
+  deviations below); shows the moderator comment + a diff toggle
+  driven by `submission.getResubmitContext`.
+
+**Routes (Phase F — 4 new routes, 4 commits):**
+
+- `/contribute/apply` (`2080889`) — applicant form (reason field,
+  optional supporting links) wired to `accessRequests.create`.
+- `/mod/access-requests` + `/mod/access-requests/[id]` (`9e8c656`) —
+  moderator queue with status filter + detail view with
+  Approve / Reject / Comment actions.
+- `/contributor/[username]` (`9a3c620`) — public, signed-out-friendly
+  profile + heatmap + contribution list.
+- `/dashboard` (`481ced3`) — contributor dashboard with stats cards
+  + tabbed contribution list. The legacy `/profile/contributions`
+  list route was removed in favor of a redirect (see G6); the
+  per-submission detail route `/profile/contributions/[id]` is
+  preserved as the contributor-side review surface.
+
+**Restyled / extended (Phase G — 8 commits):**
+
+- `/contribute` access-denied screen (`92bce9f`) is now an active CTA
+  driven by `accessRequests.getMine`: applicant sees Apply button when
+  no request exists, a pending panel with Withdraw when one is open,
+  or a rejected panel with the moderator's comment.
+- Main-nav `/mod` link (`ce3b76b`) and `/mod` sub-nav (`62e5e1d`)
+  badge-decorated via `moderation.pendingCounts` — counts split into
+  submissions + access-requests at the sub-nav level.
+- `<ChangesRequestedBanner>` rendered on
+  `/profile/contributions/[id]` for `changes_requested` rows
+  (`e5691d6`).
+- Owner Withdraw button on submission detail (`8ad5eb8`) — visible
+  when the viewer owns the row and status is `pending`.
+- `/profile/contributions` → `/dashboard` redirect (`d964efe`) keeps
+  legacy bookmarks working.
+- ~80 new i18n keys (`a111ff4`) covering the access-request flow,
+  banners, badges, and dashboard chrome.
+- Username required at signup (`fd4c42d`) with format validation
+  and a 23505 unique-violation message; bundled dev/staging backfill
+  script for existing users without a username.
+
+**Tests:** 24 new server unit tests across `accessRequests.test.ts`
+(new file), `dashboard.test.ts` (new file), `submission.test.ts`,
+`moderation.test.ts`, `home.test.ts`. 18 new component tests across
+the six new components. 6 new E2E specs in
+`apps/e2e/tests/contributor-lifecycle.spec.ts` (`b5ea2c5`,
+`c59a0f4`, `0099f39`, `93eecc0`, `05b6d31`, `9b410a1`) covering
+apply→approve→contribute, access-request withdraw, submission
+withdraw, the changes-requested banner round-trip, the public
+profile + 404, and the moderator pending-count badge decrement.
+The H-phase suite needed one infrastructure pass (`2c5139a`) to
+unblock auth import, dev port, and DB helpers.
+
+**Notable plan deviations:**
+
+- `accessRequests.apply` was renamed to `.create` (`b22f3ff`) before
+  the Phase C work landed: `apply` is reserved on tRPC v11
+  procedure builders.
+- The UI uses server actions throughout rather than tRPC client
+  hooks, matching the rest of the app's contribute / mod surfaces.
+- `<ChangesRequestedBanner>` lives on `/profile/contributions/[id]`
+  (the contributor's own review surface) rather than the contribute
+  edit page — the diff + moderator comment are read context for the
+  resubmit decision, not edit-form chrome.
+- The main-nav `/mod` link is gated to moderators-only and surfaces
+  in the user-menu / mobile-nav rather than as a top-level desktop
+  link, matching W2's nav shape; the badge decoration sits there.
+
+**Verification:** `./dev qa` green (typecheck + lint + unit tests);
+helm-template renders the CronJob with `digest.enabled=true`;
+manual digest-script invocation against MailHog confirmed the email
+body composes correctly. E2E specs are typecheck-clean and run on
+CI; not exercised end-to-end locally for this closeout (W2 covered
+the docker-runner sanity already).
+
+**Deferred follow-ups:**
+
+- **Trust-level auto-population.** Column `users.trust_level`
+  shipped with default `'new'`; the criteria for promotion (e.g.
+  `regular ≥ 10 applied submissions`, `trusted ≥ 50 + 95% approval`,
+  `maintainer = manual`) and the scheduled recompute job are
+  deferred for a future micro-feature.
+- `/mod/users` surface for setting trust level manually — needed
+  before the auto-population job lands so maintainers can be
+  bootstrapped.
+- Public contributor leaderboard at `/contributors` — surface
+  exists in the POC but not wired here.
+- Username self-service rename — currently set once at signup and
+  immutable.
+- Multi-year heatmap — single 365-day window today; year picker
+  deferred.
+- Digest unsubscribe link — moderators receive the digest while
+  they hold the role; per-user opt-out deferred.
+
+Refs:
+[`docs/superpowers/specs/2026-04-25-phase-2-4-w3-contributor-lifecycle-design.md`](./2026-04-25-phase-2-4-w3-contributor-lifecycle-design.md),
+[`docs/superpowers/plans/2026-04-25-phase-2-4-w3-contributor-lifecycle.md`](../plans/2026-04-25-phase-2-4-w3-contributor-lifecycle.md).
 
 ## Phase 2.5 — POC Design Port ✅ shipped 2026-04-25
 
