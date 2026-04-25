@@ -54,7 +54,7 @@ export function DeleteAccountSection(): React.JSX.Element {
 
   return (
     <section aria-labelledby="danger-heading">
-      <h2 id="danger-heading" className="font-serif text-2xl font-medium text-[var(--color-error-500)]">
+      <h2 id="danger-heading" className="font-serif text-2xl font-medium text-[var(--text)]">
         {t('dangerZoneHeading')}
       </h2>
       <p className="mt-1 text-sm text-[var(--text-dim)]">
