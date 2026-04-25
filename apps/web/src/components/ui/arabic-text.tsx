@@ -18,7 +18,7 @@ export function ArabicText({ children, className }: ArabicTextProps): React.JSX.
     <div
       dir="rtl"
       lang="ar"
-      className={['text-[1.125rem] leading-[1.8] text-foreground whitespace-pre-wrap', className ?? '']
+      className={['text-[1.125rem] leading-[1.8] text-[var(--text)] whitespace-pre-wrap', className ?? '']
         .join(' ')
         .trim()}
     >

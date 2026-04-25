@@ -16,7 +16,7 @@ import {
 
 function SpeakerIcon(): React.JSX.Element {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-foreground">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-[var(--text)]">
       <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
     </svg>
   );
@@ -32,7 +32,7 @@ function CloseIcon(): React.JSX.Element {
 
 function DragHandleIcon(): React.JSX.Element {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-muted-foreground">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-[var(--text-dim)]">
       <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
     </svg>
   );
@@ -203,17 +203,17 @@ export function QueuePanel(): React.JSX.Element {
           // Leave room for the fixed PlayerBar at the bottom (~65px)
           'h-[calc(100vh-65px)]',
           'w-full sm:w-80 md:w-96',
-          'border-l border-border bg-card text-card-foreground shadow-dialog',
+          'border-l border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] shadow-dialog',
           'transition-transform duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : 'translate-x-full',
         ].join(' ')}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-          <h2 className="text-sm font-semibold text-foreground">
+        <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-4 py-3">
+          <h2 className="text-sm font-semibold text-[var(--text)]">
             {t('upNext')}
             {queue.length > 0 && (
-              <span className="ml-2 text-xs font-normal text-muted-foreground">
+              <span className="ml-2 text-xs font-normal text-[var(--text-dim)]">
                 {queue.length === 1 ? t('trackCountSingular', { count: queue.length }) : t('trackCount', { count: queue.length })}
               </span>
             )}
@@ -223,7 +223,7 @@ export function QueuePanel(): React.JSX.Element {
             type="button"
             onClick={toggleQueue}
             aria-label={t('closeQueue')}
-            className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+            className="rounded-[6px] p-1 text-[var(--text-dim)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           >
             <CloseIcon />
           </button>
@@ -232,8 +232,8 @@ export function QueuePanel(): React.JSX.Element {
         {/* Track list */}
         {queue.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm text-muted-foreground">{t('emptyTitle')}</p>
-            <p className="text-xs text-muted-foreground">{t('emptySubtitle')}</p>
+            <p className="text-sm text-[var(--text-dim)]">{t('emptyTitle')}</p>
+            <p className="text-xs text-[var(--text-dim)]">{t('emptySubtitle')}</p>
           </div>
         ) : (
           <ol
@@ -255,10 +255,10 @@ export function QueuePanel(): React.JSX.Element {
                   onDragEnd={handleDragEnd}
                   className={[
                     'group flex cursor-grab items-center gap-2 px-3 py-2.5 active:cursor-grabbing',
-                    'border-b border-border last:border-b-0',
+                    'border-b border-[var(--border)] last:border-b-0',
                     'transition-colors',
-                    isActive ? 'bg-muted' : 'hover:bg-muted',
-                    isDragTarget ? 'border-t-2 border-t-foreground' : '',
+                    isActive ? 'bg-[var(--surface-2)]' : 'hover:bg-[var(--surface-2)]',
+                    isDragTarget ? 'border-t-2 border-t-[var(--accent)]' : '',
                   ].join(' ')}
                   aria-label={[
                     t('trackLabel', { number: index + 1, title: track.title }),
@@ -277,7 +277,7 @@ export function QueuePanel(): React.JSX.Element {
                   {/* Track number or speaker icon */}
                   <span
                     aria-hidden="true"
-                    className="w-5 shrink-0 text-center text-xs tabular-nums text-muted-foreground"
+                    className="w-5 shrink-0 text-center text-xs tabular-nums text-[var(--text-dim)]"
                   >
                     {isActive ? <SpeakerIcon /> : index + 1}
                   </span>
@@ -286,7 +286,7 @@ export function QueuePanel(): React.JSX.Element {
                   <div className="min-w-0 flex-1">
                     <p
                       className={`truncate text-sm font-medium ${
-                        isActive ? 'text-foreground' : 'text-foreground/80'
+                        isActive ? 'text-[var(--text)]' : 'text-[var(--text)]/80'
                       }`}
                     >
                       {track.title}
@@ -297,7 +297,7 @@ export function QueuePanel(): React.JSX.Element {
                   {track.duration != null && (
                     <span
                       aria-hidden="true"
-                      className="shrink-0 text-xs tabular-nums text-muted-foreground"
+                      className="shrink-0 text-xs tabular-nums text-[var(--text-dim)]"
                     >
                       {formatDuration(track.duration)}
                     </span>
@@ -313,7 +313,7 @@ export function QueuePanel(): React.JSX.Element {
                       onClick={() => index > 0 ? reorderQueue(index, index - 1) : undefined}
                       aria-label={t('moveUp', { title: track.title })}
                       disabled={index === 0}
-                      className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-30"
+                      className="rounded-[4px] p-0.5 text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus:opacity-100 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-30"
                     >
                       <ChevronUpIcon />
                     </button>
@@ -322,7 +322,7 @@ export function QueuePanel(): React.JSX.Element {
                       onClick={() => index < queue.length - 1 ? reorderQueue(index, index + 1) : undefined}
                       aria-label={t('moveDown', { title: track.title })}
                       disabled={index === queue.length - 1}
-                      className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-30"
+                      className="rounded-[4px] p-0.5 text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus:opacity-100 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-30"
                     >
                       <ChevronDownSmIcon />
                     </button>
@@ -333,7 +333,7 @@ export function QueuePanel(): React.JSX.Element {
                     type="button"
                     onClick={() => removeFromQueue(index)}
                     aria-label={t('remove', { title: track.title })}
-                    className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background group-hover:opacity-100"
+                    className="shrink-0 rounded-[6px] p-1 text-[var(--text-dim)] opacity-0 transition-all hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus:opacity-100 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 group-hover:opacity-100"
                   >
                     <RemoveIcon />
                   </button>

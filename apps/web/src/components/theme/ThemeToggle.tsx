@@ -75,7 +75,7 @@ export function ThemeToggle(): React.JSX.Element {
         type="button"
         disabled
         aria-label={t('toggleThemeLabel')}
-        className="rounded p-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="rounded-[6px] p-2 text-[var(--text-dim)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       >
         <span className="block h-5 w-5" aria-hidden="true" />
       </button>
@@ -100,7 +100,7 @@ export function ThemeToggle(): React.JSX.Element {
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
-      className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      className="rounded-[6px] p-2 text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
     >
       {currentTheme === 'light' ? <MoonIcon /> : <SunIcon />}
     </button>

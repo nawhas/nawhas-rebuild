@@ -79,16 +79,16 @@ export function TrackDetailPlayButton({ track, lyrics }: TrackDetailPlayButtonPr
   const statusText = isCurrentlyPlaying ? 'Now playing' : isActive ? 'Paused' : 'Play this track';
 
   return (
-    <div className="mt-2 flex h-14 items-center gap-4 rounded-lg border border-border bg-muted px-4">
+    <div className="mt-2 flex h-14 items-center gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4">
       <button
         type="button"
         onClick={handleClick}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
         aria-label={label}
       >
         {isCurrentlyPlaying ? <PauseIcon /> : <PlayIcon />}
       </button>
-      <span aria-live="polite" className="text-sm font-medium text-foreground">
+      <span aria-live="polite" className="text-sm font-medium text-[var(--text)]">
         {statusText}
       </span>
     </div>

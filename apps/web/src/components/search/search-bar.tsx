@@ -21,7 +21,7 @@ export function HighlightedText({ snippet, fallback }: { snippet?: string; fallb
 export function Spinner() {
   return (
     <svg
-      className="h-4 w-4 animate-spin text-muted-foreground"
+      className="h-4 w-4 animate-spin text-[var(--text-dim)]"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -96,15 +96,15 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
   const isHero = variant === 'hero';
   const containerClass = isHero ? 'relative w-full' : 'relative hidden md:block';
   const iconWrapperClass = isHero
-    ? 'pointer-events-none absolute inset-y-0 left-5 flex items-center text-muted-foreground'
-    : 'pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground';
+    ? 'pointer-events-none absolute inset-y-0 left-5 flex items-center text-[var(--text-dim)]'
+    : 'pointer-events-none absolute inset-y-0 left-3 flex items-center text-[var(--text-dim)]';
   const iconSize = isHero ? 20 : 16;
   const inputClass = isHero
-    ? 'h-14 w-full rounded-full border border-transparent bg-card pl-14 pr-6 text-base text-foreground placeholder:text-muted-foreground shadow-lg focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background'
-    : 'h-9 w-64 rounded-md border border-input bg-card pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background';
+    ? 'h-14 w-full rounded-full border border-transparent bg-[var(--card-bg)] pl-14 pr-6 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] shadow-lg focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2'
+    : 'h-9 w-64 rounded-md border border-[var(--border)] bg-[var(--card-bg)] pl-9 pr-4 text-sm text-[var(--text)] placeholder:text-[var(--text-dim)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2';
   const listboxClass = isHero
-    ? 'absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-menu'
-    : 'absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-menu';
+    ? 'absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] shadow-menu'
+    : 'absolute left-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] shadow-menu';
 
   return (
     <div ref={containerRef} className={containerClass}>
@@ -152,12 +152,12 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
           className={listboxClass}
         >
           {isPending ? (
-            <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-[var(--text-dim)]" aria-live="polite">
               <Spinner />
               {t('searching')}
             </div>
           ) : !hasResults ? (
-            <div className="px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
+            <div className="px-4 py-3 text-sm text-[var(--text-dim)]" aria-live="polite">
               {t('noResults', { query })}
             </div>
           ) : (
@@ -168,7 +168,7 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
                 <div key={section.key} role="group" aria-labelledby={headerId}>
                   <div
                     id={headerId}
-                    className="bg-muted px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    className="bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-dim)]"
                   >
                     {section.label}
                   </div>
@@ -182,8 +182,8 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
                       onClick={closeDropdown}
                       className={`flex flex-col px-4 py-2 text-sm outline-none transition-colors ${
                         activeIndex === globalIndex
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-foreground hover:bg-muted'
+                          ? 'bg-[var(--surface-2)] text-[var(--text)]'
+                          : 'text-[var(--text)] hover:bg-[var(--surface-2)]'
                       }`}
                     >
                       <span className="font-medium [&_mark]:bg-warning-200 [&_mark]:text-warning-950 dark:[&_mark]:bg-warning-800 dark:[&_mark]:text-warning-50">
@@ -193,7 +193,7 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
                         />
                       </span>
                       {item.secondaryText && (
-                        <span className="text-xs text-muted-foreground">{item.secondaryText}</span>
+                        <span className="text-xs text-[var(--text-dim)]">{item.secondaryText}</span>
                       )}
                     </Link>
                   ))}
@@ -202,11 +202,11 @@ export function SearchBar({ variant = 'default' }: SearchBarProps = {}) {
               })}
 
               {/* Search all link */}
-              <div className="border-t border-border">
+              <div className="border-t border-[var(--border)]">
                 <Link
                   href={`/search?q=${encodeURIComponent(query)}`}
                   onClick={closeDropdown}
-                  className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  className="flex items-center gap-1 px-4 py-2 text-sm text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
                 >
                   <span>{t('seeAllResults', { query })}</span>
                   <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

@@ -52,7 +52,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label={open ? t('closeMenu') : t('openMenu')}
-        className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="rounded-[6px] p-2 text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -83,30 +83,30 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
           role="navigation"
           aria-label={t('mobileNavLabel')}
           onKeyDown={handleMenuKeyDown}
-          className="absolute inset-x-0 top-16 z-40 border-b border-border bg-card text-card-foreground px-4 pb-4 pt-2 shadow-menu"
+          className="absolute inset-x-0 top-16 z-40 border-b border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] px-4 pb-4 pt-2 shadow-menu"
         >
           <NavLinks links={links} className="flex flex-col" onClick={close} />
 
-          <div className="mt-4 border-t border-border pt-4">
+          <div className="mt-4 border-t border-[var(--border)] pt-4">
             <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-sm text-muted-foreground">{t('theme')}</span>
+              <span className="text-sm text-[var(--text-dim)]">{t('theme')}</span>
               <ThemeToggle />
             </div>
           </div>
 
-          <div className="border-t border-border pt-4">
+          <div className="border-t border-[var(--border)] pt-4">
             {user ? (
               <div className="space-y-1">
                 <div className="px-3 py-2">
                   {user.name && (
-                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-sm font-medium text-[var(--text)]">{user.name}</p>
                   )}
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-xs text-[var(--text-dim)]">{user.email}</p>
                 </div>
                 <Link
                   href="/profile"
                   onClick={close}
-                  className="block rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  className="block rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
                 >
                   {t('profile')}
                 </Link>
@@ -114,7 +114,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                   <Link
                     href="/contribute"
                     onClick={close}
-                    className="block rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                    className="block rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
                   >
                     {t('contribute')}
                   </Link>
@@ -123,7 +123,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                   <Link
                     href="/mod"
                     onClick={close}
-                    className="block rounded px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                    className="block rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
                   >
                     {t('moderatorDashboard')}
                   </Link>
@@ -131,7 +131,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="block w-full rounded px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  className="block w-full rounded-[6px] px-3 py-2 text-left text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
                 >
                   {t('signOut')}
                 </button>
@@ -140,7 +140,7 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
               <Link
                 href="/login"
                 onClick={close}
-                className="block w-full rounded-md bg-foreground px-4 py-2 text-center text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                className="block w-full rounded-[8px] bg-[var(--accent)] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
               >
                 {t('signIn')}
               </Link>

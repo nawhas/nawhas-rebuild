@@ -17,7 +17,7 @@ export function TrackListSkeleton({ count = 8 }: TrackListSkeletonProps): React.
       {/* Section heading placeholder */}
       <Skeleton className="mb-4 h-6 w-20" />
 
-      <div className="divide-y divide-border rounded-lg border border-border">
+      <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
         {Array.from({ length: count }, (_, i) => (
           <div key={i} className="flex items-center gap-4 px-4 py-3">
             {/* Track number */}

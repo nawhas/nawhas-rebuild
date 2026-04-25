@@ -63,7 +63,7 @@ export function TrackPlayButton({ track, trackNumber }: TrackPlayButtonProps): R
     <button
       type="button"
       onClick={handleClick}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] text-[var(--text-dim)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
       aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
     >
       {isCurrentlyPlaying ? (
@@ -72,7 +72,7 @@ export function TrackPlayButton({ track, trackNumber }: TrackPlayButtonProps): R
         <>
           <span
             aria-hidden="true"
-            className="tabular-nums text-sm text-muted-foreground group-hover:hidden"
+            className="tabular-nums text-sm text-[var(--text-dim)] group-hover:hidden"
           >
             {trackNumber}
           </span>

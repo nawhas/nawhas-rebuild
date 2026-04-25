@@ -197,7 +197,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
       // pointer-events-none when off-screen so z-[60] never blocks PlayerBar clicks.
       className={[
         'fixed inset-0 z-[60]',
-        'flex flex-col bg-background text-foreground',
+        'flex flex-col bg-[var(--bg)] text-[var(--text)]',
         'transition-transform duration-300 ease-in-out',
         isVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none',
       ].join(' ')}
@@ -209,7 +209,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
       <div className="flex shrink-0 items-center justify-between px-4 pt-4 pb-2">
         {/* Drag handle indicator */}
         <div aria-hidden="true" className="absolute left-1/2 top-2 -translate-x-1/2">
-          <div className="h-1 w-10 rounded-full bg-muted-foreground/40" />
+          <div className="h-1 w-10 rounded-full bg-[var(--text-dim)]/40" />
         </div>
 
         {/* Collapse button — first focusable element, receives focus on open */}
@@ -218,7 +218,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           type="button"
           onClick={closeMobileOverlay}
           aria-label={t('collapseMiniPlayer')}
-          className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+          className="rounded-full p-2 text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           tabIndex={isVisible ? 0 : -1}
         >
           <ChevronDownIcon />
@@ -229,7 +229,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           type="button"
           onClick={closeMobileOverlay}
           aria-label={t('dismissPlayer')}
-          className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+          className="rounded-full p-2 text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           tabIndex={isVisible ? 0 : -1}
         >
           <CloseIcon />
@@ -242,25 +242,25 @@ export function MobilePlayerOverlay(): React.JSX.Element {
           {/* Album art */}
           <div
             aria-hidden="true"
-            className="mt-4 flex h-56 w-56 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground shadow-lg"
+            className="mt-4 flex h-56 w-56 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface)] text-[var(--text-dim)] shadow-lg"
           >
             <MusicNoteIcon />
           </div>
 
           {/* Track info */}
           <div className="mt-6 w-full text-center">
-            <p className="truncate text-xl font-bold text-foreground">
+            <p className="truncate text-xl font-bold text-[var(--text)]">
               {currentTrack?.title ?? ''}
             </p>
             {/* Reciter name not available in TrackDTO — placeholder for future */}
-            <p className="mt-1 truncate text-sm text-muted-foreground" aria-hidden="true" />
+            <p className="mt-1 truncate text-sm text-[var(--text-dim)]" aria-hidden="true" />
           </div>
 
           {/* Seek bar */}
           <div className="mt-6 w-full">
-            <div className="group relative h-1 cursor-pointer rounded-full bg-muted hover:h-1.5">
+            <div className="group relative h-1 cursor-pointer rounded-full bg-[var(--surface)] hover:h-1.5">
               <div
-                className="h-full rounded-full bg-foreground transition-all"
+                className="h-full rounded-full bg-[var(--accent)] transition-all"
                 style={{ width: `${progressPercent}%` }}
               />
               <input
@@ -280,7 +280,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               />
             </div>
             {/* Time display */}
-            <div className="mt-1 flex justify-between tabular-nums text-xs text-muted-foreground" aria-live="off">
+            <div className="mt-1 flex justify-between tabular-nums text-xs text-[var(--text-dim)]" aria-live="off">
               <span>
                 <span className="sr-only">{t('position')}</span>
                 {formatTime(position)}
@@ -302,10 +302,10 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               aria-pressed={isShuffle}
               tabIndex={isVisible ? 0 : -1}
               className={[
-                'rounded-full p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background',
+                'rounded-full p-2 transition-colors focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2',
                 isShuffle
-                  ? 'text-foreground hover:bg-muted'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  ? 'text-[var(--text)] hover:bg-[var(--surface)]'
+                  : 'text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--text)]',
               ].join(' ')}
             >
               <ShuffleIcon />
@@ -317,7 +317,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               onClick={previous}
               aria-label={t('previousTrack')}
               tabIndex={isVisible ? 0 : -1}
-              className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+              className="rounded-full p-2 text-[var(--text)] transition-colors hover:bg-[var(--surface)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               <PreviousIcon />
             </button>
@@ -328,7 +328,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               onClick={isPlaying ? pause : resume}
               aria-label={isPlaying ? t('pause') : t('play')}
               tabIndex={isVisible ? 0 : -1}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </button>
@@ -339,7 +339,7 @@ export function MobilePlayerOverlay(): React.JSX.Element {
               onClick={next}
               aria-label={t('nextTrack')}
               tabIndex={isVisible ? 0 : -1}
-              className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+              className="rounded-full p-2 text-[var(--text)] transition-colors hover:bg-[var(--surface)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               <NextIcon />
             </button>
