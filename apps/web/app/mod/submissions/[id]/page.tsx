@@ -71,67 +71,129 @@ export default async function SubmissionDetailPage({
   const t = await getTranslations('mod.submission');
 
   return (
-    <div className="max-w-3xl">
-      {/* Back link */}
-      <Link
-        href="/mod/queue"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:underline"
-      >
-        {t('backToQueue')}
-      </Link>
-
-      <h1 className="mb-2 text-2xl font-bold text-foreground">
-        {t('heading')}
-      </h1>
-
-      {/* Meta badges */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <SubmissionTypeBadge type={submission.type} />
-        <SubmissionActionBadge action={submission.action} />
-        <SubmissionStatusBadge status={submission.status} />
-        <time
-          dateTime={String(submission.createdAt)}
-          className="text-xs text-muted-foreground"
-          title={new Date(submission.createdAt).toLocaleString()}
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+      {/* Main column */}
+      <div>
+        {/* Back link */}
+        <Link
+          href="/mod/queue"
+          className="mb-6 inline-flex items-center gap-1 text-sm text-[var(--text-dim)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
         >
-          {t('submittedAt', {
-            date: new Date(submission.createdAt).toLocaleDateString(undefined, {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            }),
-          })}
-        </time>
+          {t('backToQueue')}
+        </Link>
+
+        <h1 className="mb-2 font-serif text-[28px] font-medium text-[var(--text)]">
+          {t('heading')}
+        </h1>
+
+        {/* Meta badges */}
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <SubmissionTypeBadge type={submission.type} />
+          <SubmissionActionBadge action={submission.action} />
+          <SubmissionStatusBadge status={submission.status} />
+          <time
+            dateTime={String(submission.createdAt)}
+            className="text-xs text-[var(--text-faint)]"
+            title={new Date(submission.createdAt).toLocaleString()}
+          >
+            {t('submittedAt', {
+              date: new Date(submission.createdAt).toLocaleDateString(undefined, {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              }),
+            })}
+          </time>
+        </div>
+
+        {/* Notes from submitter */}
+        {submission.notes && (
+          <section
+            aria-label={t('submitterNotesLabel')}
+            className="mb-6 rounded-[8px] border border-[var(--color-info-200)] bg-[var(--color-info-50)] px-4 py-3 dark:border-[var(--color-info-800)] dark:bg-[var(--color-info-950)]"
+          >
+            <p className="mb-1 text-xs font-medium uppercase tracking-wider text-[var(--color-info-500)]">
+              {t('submitterNotesHeading')}
+            </p>
+            <p className="text-sm text-[var(--text)]">{submission.notes}</p>
+          </section>
+        )}
+
+        {/* Field-by-field diff or preview */}
+        <section
+          aria-label={t('dataLabel')}
+          className="mb-6 divide-y divide-[var(--border)] rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] px-5"
+        >
+          <SubmissionFields
+            submission={submission}
+            currentValues={currentValues}
+            t={t}
+          />
+        </section>
+
+        {/* Review actions */}
+        {canReview && <ReviewActions submissionId={submission.id} />}
+        {canApply && <ApplyButton submissionId={submission.id} />}
       </div>
 
-      {/* Notes from submitter */}
-      {submission.notes && (
-        <section
-          aria-label={t('submitterNotesLabel')}
-          className="mb-6 rounded-lg border border-info-200 bg-info-50 px-4 py-3 dark:border-info-800 dark:bg-info-950"
-        >
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-info-500 dark:text-info-400">
-            {t('submitterNotesHeading')}
-          </p>
-          <p className="text-sm text-info-900 dark:text-info-100">{submission.notes}</p>
-        </section>
-      )}
-
-      {/* Field-by-field diff or preview */}
-      <section
-        aria-label={t('dataLabel')}
-        className="mb-6 divide-y divide-border rounded-lg border border-border bg-card px-5"
-      >
-        <SubmissionFields
-          submission={submission}
-          currentValues={currentValues}
-          t={t}
-        />
-      </section>
-
-      {/* Review actions */}
-      {canReview && <ReviewActions submissionId={submission.id} />}
-      {canApply && <ApplyButton submissionId={submission.id} />}
+      {/* Metadata sidebar */}
+      <aside className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-6 sticky top-24 self-start">
+        <h2 className="font-serif text-[18px] font-medium text-[var(--text)] mb-4">
+          Details
+        </h2>
+        <dl className="space-y-4">
+          <div>
+            <dt className="text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1">
+              ID
+            </dt>
+            <dd className="text-sm text-[var(--text)] font-mono break-all">{submission.id}</dd>
+          </div>
+          <div>
+            <dt className="text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1">
+              Type
+            </dt>
+            <dd className="text-sm text-[var(--text)]">
+              <SubmissionTypeBadge type={submission.type} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1">
+              Action
+            </dt>
+            <dd className="text-sm text-[var(--text)]">
+              <SubmissionActionBadge action={submission.action} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1">
+              Status
+            </dt>
+            <dd className="text-sm text-[var(--text)]">
+              <SubmissionStatusBadge status={submission.status} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1">
+              Submitted
+            </dt>
+            <dd className="text-sm text-[var(--text)]">
+              {new Date(submission.createdAt).toLocaleDateString(undefined, {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </dd>
+          </div>
+          {submission.targetId && (
+            <div>
+              <dt className="text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1">
+                Target ID
+              </dt>
+              <dd className="text-sm text-[var(--text)] font-mono break-all">{submission.targetId}</dd>
+            </div>
+          )}
+        </dl>
+      </aside>
     </div>
   );
 }

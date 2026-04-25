@@ -2,69 +2,68 @@
  * Pill badges for submission type, action, and status.
  * Purely presentational — no interactivity required.
  *
- * Wraps the shared <Badge> primitive (variant="secondary") and applies
- * per-key colour classes via className override. The mod UI relies on
- * colour for quick visual scanning (entity type / action / status / role),
- * so we preserve the existing palette rather than collapsing to semantic
- * Badge variants alone.
+ * Uses POC design token classes per the Status badges pattern in
+ * docs/design/visual-vocabulary.md. Each badge follows the pill pattern:
+ * `px-2 py-0.5 rounded-full text-[12px] font-medium`.
  */
 
 import { useTranslations } from 'next-intl';
-import { Badge } from '@nawhas/ui/components/badge';
 import type { SubmissionAction, SubmissionStatus, SubmissionType } from '@nawhas/types';
 
+const PILL_BASE = 'inline-flex items-center px-2 py-0.5 rounded-full text-[12px] font-medium';
+
 const TYPE_CLASSES: Record<SubmissionType, string> = {
-  reciter: 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200',
-  album: 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200',
-  track: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
+  reciter: 'bg-[var(--color-info-50)] text-[var(--color-info-700)] dark:bg-[var(--color-info-950)] dark:text-[var(--color-info-300)]',
+  album: 'bg-[var(--color-accent-50)] text-[var(--color-accent-700)] dark:bg-[var(--color-accent-950)] dark:text-[var(--color-accent-300)]',
+  track: 'bg-[var(--color-success-50)] text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]',
 };
 
 const ACTION_CLASSES: Record<SubmissionAction, string> = {
-  create: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
-  edit: 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200',
+  create: 'bg-[var(--color-success-50)] text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]',
+  edit: 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)] dark:bg-[var(--color-warning-950)] dark:text-[var(--color-warning-300)]',
 };
 
 const STATUS_CLASSES: Record<SubmissionStatus, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  pending: 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200',
-  approved: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
-  rejected: 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200',
-  changes_requested: 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200',
-  withdrawn: 'bg-muted text-muted-foreground',
-  applied: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
+  draft: 'bg-[var(--surface)] text-[var(--text-dim)]',
+  pending: 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)] dark:bg-[var(--color-warning-950)] dark:text-[var(--color-warning-300)]',
+  approved: 'bg-[var(--color-success-50)] text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]',
+  rejected: 'bg-[var(--color-error-50)] text-[var(--color-error-700)] dark:bg-[var(--color-error-950)] dark:text-[var(--color-error-300)]',
+  changes_requested: 'bg-[var(--color-warning-50)] text-[var(--color-warning-700)] dark:bg-[var(--color-warning-950)] dark:text-[var(--color-warning-300)]',
+  withdrawn: 'bg-[var(--surface)] text-[var(--text-dim)]',
+  applied: 'bg-[var(--color-success-50)] text-[var(--color-success-700)] dark:bg-[var(--color-success-950)] dark:text-[var(--color-success-300)]',
 };
 
 export function SubmissionTypeBadge({ type }: { type: SubmissionType }): React.JSX.Element {
   const t = useTranslations('mod.type');
   return (
-    <Badge variant="secondary" className={TYPE_CLASSES[type]}>
+    <span className={`${PILL_BASE} ${TYPE_CLASSES[type]}`}>
       {t(type)}
-    </Badge>
+    </span>
   );
 }
 
 export function SubmissionActionBadge({ action }: { action: SubmissionAction }): React.JSX.Element {
   const t = useTranslations('mod.action');
   return (
-    <Badge variant="secondary" className={ACTION_CLASSES[action]}>
+    <span className={`${PILL_BASE} ${ACTION_CLASSES[action]}`}>
       {t(action)}
-    </Badge>
+    </span>
   );
 }
 
 export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }): React.JSX.Element {
   const t = useTranslations('mod.status');
   return (
-    <Badge variant="secondary" className={STATUS_CLASSES[status]}>
+    <span className={`${PILL_BASE} ${STATUS_CLASSES[status]}`}>
       {t(status)}
-    </Badge>
+    </span>
   );
 }
 
 const ROLE_CLASSES: Record<string, string> = {
-  moderator: 'bg-foreground text-background',
-  contributor: 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200',
-  user: 'bg-muted text-muted-foreground',
+  moderator: 'bg-[var(--accent)] text-white',
+  contributor: 'bg-[var(--color-info-50)] text-[var(--color-info-700)] dark:bg-[var(--color-info-950)] dark:text-[var(--color-info-300)]',
+  user: 'bg-[var(--surface)] text-[var(--text-dim)]',
 };
 
 export function RoleBadge({ role }: { role: string }): React.JSX.Element {
@@ -73,8 +72,8 @@ export function RoleBadge({ role }: { role: string }): React.JSX.Element {
   const known = role === 'moderator' || role === 'contributor' || role === 'user';
   const label = known ? t(role) : role.charAt(0).toUpperCase() + role.slice(1);
   return (
-    <Badge variant="secondary" className={classes}>
+    <span className={`${PILL_BASE} ${classes}`}>
       {label}
-    </Badge>
+    </span>
   );
 }

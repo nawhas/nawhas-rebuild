@@ -126,6 +126,21 @@ This vocabulary is intentionally narrow. Anything not specified above defaults t
 - **Filters / search bar above the table:** `bg-[var(--input-bg)]` input per Forms; secondary-CTA buttons per CTA vocab.
 - **Role buttons (in users table):** Use the **Secondary CTA** classes for default, swap to **Primary CTA** classes for the active role. Active state visually persistent (no hover-only).
 
+## Submission review (`/mod/submissions/[id]`)
+
+- **Two-column layout:** `grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8`. Main column = diff + actions. Right column = metadata sidebar.
+- **Page heading:** serif 28px weight 500 — "Submission #ID" (or "Reviewing submission for [entity]").
+- **Status badge** (top of header): per Status badges below.
+- **Diff card:** `bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-8`. Each field row: label `text-[13px] font-medium text-[var(--text-dim)] mb-2`, two stacked values:
+  - Old: `bg-[var(--color-error-50)] text-[var(--text)] dark:bg-[var(--color-error-950)]/40 px-3 py-2 rounded-[6px] line-through opacity-70`
+  - New: `bg-[var(--color-success-50)] text-[var(--text)] dark:bg-[var(--color-success-950)]/40 px-3 py-2 rounded-[6px] mt-1`
+  - If only one side present (add or remove), render only that side.
+- **Status badges:** pill `px-2 py-0.5 rounded-full text-[12px] font-medium`. Pending: `bg-[var(--color-warning-50)] text-[var(--color-warning-700)]`. Approved: `bg-[var(--color-success-50)] text-[var(--color-success-700)]`. Rejected: `bg-[var(--color-error-50)] text-[var(--color-error-700)]`. Dark variants via `dark:` classes — use the corresponding `-950` / `-300` tokens.
+- **Action panel (in main column, below diff):** `flex items-center justify-end gap-3 mt-6`. Approve = primary CTA. Reject = destructive CTA. Defer/skip = secondary CTA.
+- **Metadata sidebar:** `bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-6 sticky top-24 self-start`. Each meta row: label `text-[13px] text-[var(--text-faint)] uppercase tracking-wide mb-1`, value `text-sm text-[var(--text)]`.
+- **Field-diff component:** consumed inside the diff card; uses the old/new pill treatment above.
+- **Apply button** (visible only when status is approved-but-not-applied): primary CTA, separate row at bottom of main column.
+
 ---
 
 ## Lighthouse canary — Phase B end (2026-04-24)
