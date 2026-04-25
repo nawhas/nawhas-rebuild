@@ -7,11 +7,13 @@ import { useTranslations } from 'next-intl';
 import { signOut } from '@/lib/auth-client';
 import { NavLinks } from './nav-links';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { PendingCountBadge } from '@/components/mod/pending-count-badge';
 import type { User } from '@/lib/auth';
 
 interface MobileNavProps {
   links: ReadonlyArray<{ href: string; label: string }>;
   user: User | null;
+  pendingCount?: number;
 }
 
 /**
@@ -19,7 +21,7 @@ interface MobileNavProps {
  *
  * Client Component — requires useState for open/close toggle.
  */
-export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
+export function MobileNav({ links, user, pendingCount = 0 }: MobileNavProps): React.JSX.Element {
   const t = useTranslations('nav');
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -123,9 +125,17 @@ export function MobileNav({ links, user }: MobileNavProps): React.JSX.Element {
                   <Link
                     href="/mod"
                     onClick={close}
-                    className="block rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+                    className="flex items-center justify-between rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
                   >
-                    {t('moderatorDashboard')}
+                    <span>{t('moderatorDashboard')}</span>
+                    {pendingCount > 0 ? (
+                      <PendingCountBadge
+                        count={pendingCount}
+                        label={`${pendingCount} items pending moderation`}
+                      />
+                    ) : (
+                      <PendingCountBadge count={pendingCount} />
+                    )}
                   </Link>
                 )}
                 <button

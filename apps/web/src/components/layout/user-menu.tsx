@@ -12,9 +12,11 @@ import {
 } from '@nawhas/ui/components/dropdown-menu';
 import { signOut } from '@/lib/auth-client';
 import type { User } from '@/lib/auth';
+import { PendingCountBadge } from '@/components/mod/pending-count-badge';
 
 interface UserMenuProps {
   user: User;
+  pendingCount?: number;
 }
 
 /**
@@ -24,7 +26,7 @@ interface UserMenuProps {
  * focus trap, Escape/outside-click dismissal, aria roles and portal mounting
  * are handled by Radix. Client Component.
  */
-export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
+export function UserMenu({ user, pendingCount = 0 }: UserMenuProps): React.JSX.Element {
   const t = useTranslations('nav');
   const router = useRouter();
 
@@ -73,7 +75,17 @@ export function UserMenu({ user }: UserMenuProps): React.JSX.Element {
         )}
         {user.role === 'moderator' && (
           <DropdownMenuItem asChild>
-            <Link href="/mod">{t('moderatorDashboard')}</Link>
+            <Link href="/mod" className="flex w-full items-center justify-between">
+              <span>{t('moderatorDashboard')}</span>
+              {pendingCount > 0 ? (
+                <PendingCountBadge
+                  count={pendingCount}
+                  label={`${pendingCount} items pending moderation`}
+                />
+              ) : (
+                <PendingCountBadge count={pendingCount} />
+              )}
+            </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
