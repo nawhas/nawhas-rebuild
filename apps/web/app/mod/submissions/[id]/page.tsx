@@ -16,11 +16,13 @@ import {
 import { FieldDiff, DataPreview } from '@/components/mod/field-diff';
 import { ReviewActions } from '@/components/mod/review-actions';
 import { ModeratorNotes } from '@/components/mod/moderator-notes';
+import { ReviewThread } from '@/components/mod/review-thread';
 import type {
   ReciterSubmissionData,
   AlbumSubmissionData,
   TrackSubmissionData,
   SubmissionDTO,
+  ReviewThreadDTO,
 } from '@nawhas/types';
 
 export const dynamic = 'force-dynamic';
@@ -60,6 +62,8 @@ export default async function SubmissionDetailPage({
   } catch {
     notFound();
   }
+
+  const thread: ReviewThreadDTO = await caller.moderation.getReviewThread({ submissionId: id });
 
   // Fetch current entity values for edit submissions.
   const currentValues = await fetchCurrentValues(submission);
@@ -136,6 +140,8 @@ export default async function SubmissionDetailPage({
 
         {/* Review actions */}
         {canReview && <ReviewActions submissionId={submission.id} />}
+
+        <ReviewThread thread={thread} variant="moderator" />
       </div>
 
       {/* Metadata sidebar */}

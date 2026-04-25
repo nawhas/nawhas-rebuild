@@ -551,7 +551,14 @@
       "moderatorNotesPlaceholder": "Add internal notes about this submission…",
       "moderatorNotesSaving": "Saving…",
       "moderatorNotesSaved": "Saved",
-      "moderatorNotesError": "Couldn't save notes."
+      "moderatorNotesError": "Couldn't save notes.",
+      "reviewThreadHeading": "Review history",
+      "reviewThreadSubmittedBy": "Submitted by {name} on {date}",
+      "reviewThreadAppliedAt": "Applied on {date}",
+      "reviewThreadEmpty": "No reviews yet.",
+      "reviewThreadActionApproved": "Approved",
+      "reviewThreadActionRejected": "Rejected",
+      "reviewThreadActionChangesRequested": "Changes requested"
     },
     "reviewActions": {
       "commentLabel": "Comment (optional)",
