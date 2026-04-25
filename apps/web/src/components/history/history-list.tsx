@@ -76,11 +76,11 @@ export function HistoryList({
   if (items.length === 0 && !isClearing) {
     return (
       <div className="py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-dim)]">
           <ClockIcon />
         </div>
         <SectionTitle className="mb-2 text-lg font-semibold">{t('emptyTitle')}</SectionTitle>
-        <p className="text-sm text-muted-foreground">{t('emptySubtitle')}</p>
+        <p className="text-sm text-[var(--text-dim)]">{t('emptySubtitle')}</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export function HistoryList({
     <div>
       {/* Header row with count + clear button */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-[var(--text-dim)]">
           {items.length === 1 ? t('trackCountSingular', { count: items.length }) : t('trackCountPlural', { count: items.length })}
           {cursor !== null ? '+' : ''}
         </p>
@@ -109,7 +109,7 @@ export function HistoryList({
 
         {showConfirm && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">{t('clearConfirmPrompt')}</span>
+            <span className="text-sm text-[var(--text-dim)]">{t('clearConfirmPrompt')}</span>
             <Button
               type="button"
               variant="destructive"
@@ -123,7 +123,7 @@ export function HistoryList({
               variant="link"
               size="sm"
               onClick={() => setShowConfirm(false)}
-              className="h-auto p-0 text-muted-foreground hover:text-foreground"
+              className="h-auto p-0 text-[var(--text-dim)] hover:text-[var(--text)]"
             >
               {t('clearCancel')}
             </Button>
@@ -134,7 +134,7 @@ export function HistoryList({
       {/* History list */}
       <ol
         aria-label={items.length === 1 ? t('playedTracksListLabel', { count: items.length }) : t('playedTracksListLabelPlural', { count: items.length })}
-        className="divide-y divide-border rounded-lg border border-border bg-card"
+        className="divide-y divide-[var(--border)] rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]"
       >
         {items.map((entry) => (
           <HistoryEntryRow key={entry.id} entry={entry} />
@@ -174,18 +174,18 @@ function HistoryEntryRow({ entry }: HistoryEntryRowProps): React.JSX.Element {
   }
 
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+    <li className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-2)]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--text-dim)]">
         <ClockIcon />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{track.title}</p>
+        <p className="truncate text-sm font-medium text-[var(--text)]">{track.title}</p>
       </div>
 
       <time
         dateTime={entry.playedAt}
-        className="shrink-0 text-xs text-muted-foreground"
+        className="shrink-0 text-xs text-[var(--text-faint)]"
         title={new Date(entry.playedAt).toLocaleString()}
       >
         {timeLabel}

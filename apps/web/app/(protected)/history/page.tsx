@@ -48,8 +48,8 @@ export default async function HistoryPage(): Promise<React.JSX.Element> {
     <div className="py-10">
       <Container>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">{t('pageTitle')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('pageSubtitle')}</p>
+          <h1 className="text-3xl font-serif font-medium text-[var(--text)]">{t('pageTitle')}</h1>
+          <p className="mt-1 text-sm text-[var(--text-dim)]">{t('pageSubtitle')}</p>
         </header>
 
         <HistoryList initialItems={items} initialCursor={nextCursor} />

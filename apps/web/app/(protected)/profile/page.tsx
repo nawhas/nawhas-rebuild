@@ -66,7 +66,7 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
         {/* Profile header card */}
         <section
           aria-label={t('profileSectionLabel')}
-          className="mb-8 rounded-xl border border-border bg-card p-6 shadow-sm"
+          className="mb-8 rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8 shadow-sm"
         >
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {/* Avatar */}
@@ -75,16 +75,16 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
             {/* Name / email */}
             <div className="flex flex-col gap-1 text-center sm:text-left">
               <DisplayNameEdit initialName={user.name} />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[var(--text-dim)]">
                 {user.email}{' '}
                 <Link
                   href="/settings"
-                  className="text-xs text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+                  className="text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
                 >
                   {t('changeInSettings')}
                 </Link>
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">{t('joinedDate', { date: joinedDate })}</p>
+              <p className="mt-1 text-xs text-[var(--text-faint)]">{t('joinedDate', { date: joinedDate })}</p>
             </div>
           </div>
         </section>
@@ -94,28 +94,28 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
           aria-label={t('statsSectionLabel')}
           className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-2"
         >
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <p className="text-3xl font-bold text-foreground">{savedCount}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8 shadow-sm">
+            <p className="text-3xl font-serif font-medium text-[var(--text)]">{savedCount}</p>
+            <p className="mt-1 text-sm text-[var(--text-dim)]">
               {savedCount !== 1 ? t('savedTracksPlural') : t('savedTracksSingular')}
             </p>
             <Link
               href="/library/tracks"
-              className="mt-2 inline-block text-xs text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+              className="mt-2 inline-block text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
             >
               {t('viewLibrary')}
             </Link>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <p className="text-3xl font-bold text-foreground">
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-8 shadow-sm">
+            <p className="text-3xl font-serif font-medium text-[var(--text)]">
               {recentHistory.items.length}
               {recentHistory.nextCursor !== null ? '+' : ''}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('tracksPlayed')}</p>
+            <p className="mt-1 text-sm text-[var(--text-dim)]">{t('tracksPlayed')}</p>
             <Link
               href="/history"
-              className="mt-2 inline-block text-xs text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+              className="mt-2 inline-block text-xs text-[var(--text-faint)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
             >
               {t('viewHistory')}
             </Link>
@@ -125,34 +125,34 @@ export default async function ProfilePage(): Promise<React.JSX.Element> {
         {/* Recent history */}
         <section aria-label={t('recentHistoryLabel')}>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">{t('recentlyPlayed')}</h2>
+            <h2 className="text-2xl font-serif font-medium text-[var(--text)]">{t('recentlyPlayed')}</h2>
             <Link
               href="/history"
-              className="text-sm text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+              className="text-sm text-[var(--text-dim)] hover:text-[var(--text)] hover:underline focus:outline-none focus:underline"
             >
               {t('seeAll')}
             </Link>
           </div>
 
           {recentHistory.items.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
+            <p className="py-12 text-center text-sm text-[var(--text-dim)]">
               {t('noHistory')}
             </p>
           ) : (
             <ol
               aria-label={t('recentTracksLabel')}
-              className="divide-y divide-border rounded-lg border border-border bg-card"
+              className="divide-y divide-[var(--border)] rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)]"
             >
               {recentHistory.items.map((entry) => (
-                <li key={entry.id} className="flex items-center gap-3 px-4 py-3">
+                <li key={entry.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-2)]">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
+                    <p className="truncate text-sm font-medium text-[var(--text)]">
                       {entry.track.title}
                     </p>
                   </div>
                   <time
                     dateTime={entry.playedAt}
-                    className="shrink-0 text-xs text-muted-foreground"
+                    className="shrink-0 text-xs text-[var(--text-faint)]"
                     title={new Date(entry.playedAt).toLocaleString()}
                   >
                     {new Date(entry.playedAt).toLocaleDateString(undefined, {

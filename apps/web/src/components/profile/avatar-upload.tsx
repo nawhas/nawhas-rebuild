@@ -73,7 +73,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded: onUploadedProp }: Ava
         aria-label={t('avatarChangeLabel')}
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="group relative h-24 w-24 overflow-hidden rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-60"
+        className="group relative h-24 w-24 overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-60"
       >
         {currentUrl ? (
           <Image
@@ -84,7 +84,7 @@ export function AvatarUpload({ imageUrl, name, onUploaded: onUploadedProp }: Ava
             sizes="96px"
           />
         ) : (
-          <span className="flex h-full w-full items-center justify-center bg-muted text-2xl font-semibold text-muted-foreground">
+          <span className="flex h-full w-full items-center justify-center bg-[var(--surface-2)] text-2xl font-semibold text-[var(--text-dim)]">
             {getInitials(name)}
           </span>
         )}
