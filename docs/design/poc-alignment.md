@@ -28,7 +28,7 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Reciter detail | ⬜ | URL path changed; layout close |
 | Albums list | ⬜ | Close — year filter removed |
 | Album detail | ⬜ | Close — componentized |
-| Track detail | ⬜ | URL flattened → nested; sidebar removed |
+| Track detail | ✅ | Aligned — kept nested URL; new POC hero, breadcrumb, sidebar, lyrics empty-state; YouTube simplified |
 | Library | ⬜ | Differs significantly (paradigm change) |
 | Dashboard | ⬜ | Close — sidebar widget differs |
 | Contributor profile | ⬜ | Close — one stat removed |
@@ -239,25 +239,42 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 9. Track detail
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done — all 6 decisions resolved
 
 **POC:** `src/app/track/[slug]/page.tsx` — URL `/track/[slug]` (flat)
 **Current:** `apps/web/app/reciters/[slug]/albums/[albumSlug]/tracks/[trackSlug]/page.tsx` (nested)
 
 **Findings:**
-- URL: flat → deeply nested. **Breaking link change** affecting every track link in the app.
-- POC layout: breadcrumb → cover + title + reciter badge + play + waveform + lyrics (left col) + album info + related tracks sidebar (right col).
-- Current layout: TrackHeader + TrackActions + MediaToggle/TrackDetailPlayButton + Waveform + LyricsDisplay. **No related-tracks sidebar visible.**
-- Lyrics: POC has language tabs (Urdu / Roman / English) + edit/add buttons. Current has `LyricsDisplay` — needs verification it preserves tabs.
-- MediaToggle (YouTube playback) is new in Current — POC has no YouTube concept.
+- URL: nested wins on data-layer terms — track slugs are unique only within an album (`tracks_album_slug_unique` on `albumId, slug`), so POC's flat URL would need a schema migration.
+- POC hero: 2-col with cover (lg=360px) on left + red radial-glow background + Fraunces 72px weight-400 title + uppercase "NAWHA TRACK" eyebrow + reciter pill (avatar circle + name) + horizontal action row (Play lg / ❤ / ✎ Suggest edit / ⋯ overflow). Current has narrower header + smaller title + inline metadata + separate Save/Like row.
+- POC has Home • Album • Track breadcrumb at top. Current has none.
+- POC body: 2-col with Lyrics (1.6fr) + Sidebar (Album card + 8 Related Tracks).
+- POC lyrics: segmented tabs (Urdu / Roman / English) + "✎ Edit lyrics" + "+ Add translation" buttons + empty state with "+ Contribute lyrics" CTA.
+- Current `LyricsDisplay` has Radix tab nav (Arabic / Urdu / English / Romanized) but **no edit/add links** and returns `null` on empty.
+- Current has `<MediaToggle>` for YouTube tracks — POC has no equivalent.
+- Current emits JSON-LD via `JsonLd` for SEO — POC has none (kept).
 
-**Decisions needed:**
-- [ ] Revert to flat `/track/[slug]` URL or keep nested?
-- [ ] Restore related-tracks sidebar?
-- [ ] Confirm `LyricsDisplay` still has language tabs + edit/add translation buttons.
-- [ ] Keep MediaToggle (YouTube) feature?
+**Decisions:**
+- [x] **D1: URL strategy** — Keep nested `/reciters/[slug]/albums/[albumSlug]/tracks/[trackSlug]`. POC's flat URL was a prototype convenience that would need a globally-unique slug migration we don't want. ✅
+- [x] **D2: Hero treatment** — Option A (full POC fidelity). New `<TrackHero>` component replaces `<TrackHeader>` + `<TrackActions>`: 2-col cover-left/title-right, red radial glow, "NAWHA TRACK" uppercase eyebrow, clamp(40px,6vw,72px) Fraunces weight-400 title, reciter pill (28px accent-circle initials + name in surface-2 pill), action row (lg `<TrackDetailPlayButton variant="hero">` + `<SaveButton>` in 44px circle wrapper + "Suggest edit" pill linking to `/contribute/edit/track/...` + stub `⋯` overflow). Page container bumped `md` → `xl` (1280px). `<LikeButton>` no longer surfaced on the track hero (POC has only one heart-style action; Save kept as canonical). Orphaned `track-header.tsx` + `track-actions.tsx` deleted along with their tests. ✅
+- [x] **D3: Body sidebar** — Option A. New `<TrackSidebar>` rendering the album mini-card + a related-tracks list (8 items). Body laid out as 2-col `[1.6fr_1fr]` below the waveform; lyrics live in the left column. Related = "other tracks by the same reciter, excluding this one, ordered by createdAt desc". New tRPC procedure `track.getRelated({ trackId, limit })` (default 8, max 16). ✅
+- [x] **D4: Lyrics chrome** — Option A. `<LyricsDisplay>` updated: gained an `editHref` prop, renders inline "✎ Edit lyrics" + "+ Add translation" pills next to the language tabs, replaces the early-return-null with a proper empty-state card containing a "+ Contribute lyrics" CTA. Title bumped to POC's serif 28px weight-400 with -0.02em tracking. Page now passes `editHref={`/contribute/edit/track/${reciterSlug}/${albumSlug}/${trackSlug}`}` and renders the component unconditionally so lyrics-less tracks still surface the contribute affordance. ✅
+- [x] **D5: Breadcrumb** — Option B: 4-level breadcrumb (Home • Reciter • Album • Track) above the hero. New `<TrackBreadcrumb>` Server Component with semantic `<nav>` + `<ol>`; first three crumbs link to their pages, last crumb is plain text with `aria-current="page"`. ✅
+- [x] **D6: MediaToggle/YouTube** — Option B: dropped the Listen/Watch tab switcher (Listen tab was redundant with the new hero play button), now renders `<YoutubeEmbedSlot>` directly under a "Watch on YouTube" section heading when `track.youtubeId` is set. `media-toggle.tsx` and its two test files (one in `src/components/tracks/__tests__`, one in `src/__tests__/components`) deleted. ✅
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Hero rewrite: `apps/web/src/components/tracks/track-hero.tsx` (new). Test in `__tests__/track-hero.test.tsx`.
+- ✅ `TrackDetailPlayButton` gained a `hero` variant (bare 56px circle) — `apps/web/src/components/player/track-detail-play-button.tsx`.
+- ✅ Page wired: `apps/web/app/reciters/[slug]/albums/[albumSlug]/tracks/[trackSlug]/page.tsx` now uses `<TrackHero>` and `Container size="xl"`. Existing `<MediaToggle>` retained for YouTube tracks (D6 will revisit).
+- ✅ i18n: new `trackDetail` namespace with `eyebrow`, `suggestEdit`, `moreOptions` keys.
+- 🗑️ Deleted: `track-header.tsx`, `track-actions.tsx`, and their tests. `<LikeButton>` retained (no consumers right now).
+- ✅ Sidebar: `apps/web/src/components/tracks/track-sidebar.tsx` (new) + test in `__tests__/track-sidebar.test.tsx`.
+- ✅ Backend: `track.getRelated` procedure added in `apps/web/src/server/routers/track.ts` (returns `TrackListItemDTO[]`, default 8). Inline `trackListItemColumns` projection (duplicated from home router; promote to shared lib later if a third consumer appears).
+- ✅ Page: 2-col `[1.6fr_1fr]` body grid below the waveform; lyrics in left column, sidebar in right.
+- ✅ i18n: `trackDetail.sidebar` keys (`regionLabel`, `albumHeading`, `relatedHeading`).
+- ✅ Lyrics chrome: `apps/web/src/components/tracks/lyrics-display.tsx` updated with `editHref` prop, empty-state card, contribution pills. Tests updated in `__tests__/lyrics-display.test.tsx`. New i18n keys under `trackDetail.lyrics`.
+- ✅ Breadcrumb: `apps/web/src/components/tracks/track-breadcrumb.tsx` (new) + test in `__tests__/track-breadcrumb.test.tsx`. Wired above `<TrackHero>` in the page. New `trackDetail.breadcrumb` i18n keys.
+- ✅ MediaToggle simplified: page now renders `<YoutubeEmbedSlot>` directly inside a labelled section when `youtubeId` exists. New `trackDetail.watch.heading` i18n key. Deleted: `media-toggle.tsx` + the duplicate test files at `src/components/tracks/__tests__/media-toggle.test.tsx` and `src/__tests__/components/media-toggle.test.tsx`.
 
 ---
 

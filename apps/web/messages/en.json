@@ -268,6 +268,30 @@
       "loadingMore": "Loading…"
     }
   },
+  "trackDetail": {
+    "eyebrow": "Nawha Track",
+    "suggestEdit": "Suggest edit",
+    "moreOptions": "More options",
+    "breadcrumb": {
+      "label": "Breadcrumb",
+      "home": "Home"
+    },
+    "sidebar": {
+      "regionLabel": "Track context",
+      "albumHeading": "Album",
+      "relatedHeading": "Related Tracks"
+    },
+    "lyrics": {
+      "heading": "Lyrics",
+      "editLyrics": "Edit lyrics",
+      "addTranslation": "Add translation",
+      "emptyTitle": "No lyrics yet for this track.",
+      "contributeCta": "Contribute lyrics"
+    },
+    "watch": {
+      "heading": "Watch on YouTube"
+    }
+  },
   "profile": {
     "contributions": {
       "detailHeading": "My submission",

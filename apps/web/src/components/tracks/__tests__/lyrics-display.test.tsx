@@ -46,9 +46,44 @@ afterEach(() => {
 
 describe('LyricsDisplay', () => {
   describe('empty state', () => {
-    it('returns null when lyrics array is empty', () => {
-      const { container } = render(<LyricsDisplay lyrics={[]} />);
-      expect(container.firstChild).toBeNull();
+    it('renders the heading and the empty-state message when lyrics are empty', () => {
+      render(<LyricsDisplay lyrics={[]} />);
+      expect(screen.getByRole('heading', { name: /lyrics/i })).toBeDefined();
+      expect(screen.getByText(/No lyrics yet for this track/i)).toBeDefined();
+    });
+
+    it('renders a "Contribute lyrics" CTA when editHref is provided', () => {
+      render(<LyricsDisplay lyrics={[]} editHref="/contribute/edit/track/r/a/t" />);
+      const cta = screen.getByRole('link', { name: /Contribute lyrics/i });
+      expect(cta.getAttribute('href')).toBe('/contribute/edit/track/r/a/t');
+    });
+
+    it('omits the Contribute CTA when editHref is not provided', () => {
+      render(<LyricsDisplay lyrics={[]} />);
+      expect(screen.queryByRole('link', { name: /Contribute lyrics/i })).toBeNull();
+    });
+
+    it('does not render lyric tabs in the empty state', () => {
+      render(<LyricsDisplay lyrics={[]} editHref="/contribute/edit/track/r/a/t" />);
+      expect(screen.queryByRole('tablist')).toBeNull();
+    });
+  });
+
+  describe('contribution links (non-empty)', () => {
+    const enLyrics = [makeLyric('en', 'English text')];
+
+    it('renders Edit lyrics + Add translation links when editHref is provided', () => {
+      render(<LyricsDisplay lyrics={enLyrics} editHref="/contribute/edit/track/r/a/t" />);
+      const editLink = screen.getByRole('link', { name: /Edit lyrics/i });
+      const addLink = screen.getByRole('link', { name: /Add translation/i });
+      expect(editLink.getAttribute('href')).toBe('/contribute/edit/track/r/a/t');
+      expect(addLink.getAttribute('href')).toBe('/contribute/edit/track/r/a/t');
+    });
+
+    it('omits the contribution links when editHref is not provided', () => {
+      render(<LyricsDisplay lyrics={enLyrics} />);
+      expect(screen.queryByRole('link', { name: /Edit lyrics/i })).toBeNull();
+      expect(screen.queryByRole('link', { name: /Add translation/i })).toBeNull();
     });
   });
 

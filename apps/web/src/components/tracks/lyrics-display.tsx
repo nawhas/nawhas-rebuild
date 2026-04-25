@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { LyricDTO } from '@nawhas/types';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@nawhas/ui/components/tabs';
 import { ArabicText } from '@/components/ui/arabic-text';
@@ -72,6 +74,12 @@ function LyricContent({ lyric }: LyricContentProps): React.JSX.Element {
 
 interface LyricsDisplayProps {
   lyrics: LyricDTO[];
+  /**
+   * Track-edit URL — used by the inline "Edit lyrics" / "Add translation"
+   * pills next to the language tabs and by the empty-state Contribute CTA.
+   * Optional: when omitted the contribution affordances are not rendered.
+   */
+  editHref?: string;
 }
 
 /**
@@ -81,6 +89,7 @@ interface LyricsDisplayProps {
  * - Persists the selected tab to localStorage so preference is remembered across tracks.
  * - English UI chrome is always LTR; RTL is scoped to individual content blocks.
  * - Uses the Radix-backed <Tabs> primitive (Phase 2.2 Task 6).
+ * - Empty-state surface invites lyrics contribution rather than disappearing.
  *
  * NOTE: Timestamp-driven highlight/scroll-sync is parked for Phase 2.1c research.
  * The `LyricDTO` shape preserves any timestamp field it already carries; we just
@@ -88,13 +97,11 @@ interface LyricsDisplayProps {
  *
  * Client Component — required for localStorage and tab interactivity.
  */
-export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element | null {
-  // --- Hooks FIRST (Rules of Hooks) --------------------------------------
-  // Previously this component returned null before the first useState/useEffect
-  // call when `lyrics` was empty. That violated the Rules of Hooks and was
-  // dormant only because the parent mounts us conditionally. Hooks now run
-  // unconditionally; the empty-state return is moved AFTER them.
+export function LyricsDisplay({ lyrics, editHref }: LyricsDisplayProps): React.JSX.Element {
+  const t = useTranslations('trackDetail.lyrics');
 
+  // Hooks FIRST (Rules of Hooks). The empty-state branch reuses the heading
+  // shell so we still render a `<section>`, just with a CTA card body.
   const availableLanguages = useMemo(() => getAvailableLanguages(lyrics), [lyrics]);
   const defaultLanguage = useMemo(
     () => getDefaultLanguage(availableLanguages),
@@ -104,9 +111,6 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
   const [activeLanguage, setActiveLanguage] = useState<string>(defaultLanguage);
 
   // Restore persisted language preference after mount (avoids hydration mismatch).
-  // Depends on `availableLanguages` so we only apply a saved value we can honour;
-  // the useMemo above keeps the reference stable across renders for a given
-  // `lyrics` input, so this does not re-fire unnecessarily.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -122,48 +126,100 @@ export function LyricsDisplay({ lyrics }: LyricsDisplayProps): React.JSX.Element
     }
   }
 
-  // --- Conditional return AFTER all hooks --------------------------------
-  if (lyrics.length === 0) return null;
-
-  const showTabs = availableLanguages.length > 1;
+  const isEmpty = lyrics.length === 0;
+  const showTabs = !isEmpty && availableLanguages.length > 1;
 
   return (
     <section aria-labelledby="lyrics-heading">
-      <h2
-        id="lyrics-heading"
-        className="mb-6 font-serif text-2xl font-medium tracking-tight text-[var(--text)]"
-      >
-        Lyrics
-      </h2>
-
-      <Tabs value={activeLanguage} onValueChange={handleValueChange}>
-        {showTabs && (
-          <TabsList
-            aria-label="Lyrics language"
-            className="mb-6 h-auto w-full justify-start gap-0 rounded-none border-b border-[var(--border)] bg-transparent p-0"
-          >
-            {availableLanguages.map((lang) => (
-              <TabsTrigger
-                key={lang}
-                value={lang}
-                className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-[var(--text-dim)] shadow-none transition-colors hover:text-[var(--text)] data-[state=active]:border-[var(--accent)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--accent)] data-[state=active]:shadow-none"
-              >
-                {LANGUAGE_LABELS[lang] ?? lang.toUpperCase()}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h2
+          id="lyrics-heading"
+          className="font-serif text-[28px] font-normal tracking-[-0.02em] text-[var(--text)]"
+        >
+          {t('heading')}
+        </h2>
+        {!isEmpty && editHref !== undefined && (
+          <div className="flex items-center gap-2">
+            <Link
+              href={editHref}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--text-dim)] transition-colors hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+            >
+              <PencilIcon />
+              {t('editLyrics')}
+            </Link>
+            <Link
+              href={editHref}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--text-dim)] transition-colors hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+            >
+              <span aria-hidden="true">+</span>
+              {t('addTranslation')}
+            </Link>
+          </div>
         )}
+      </div>
 
-        {availableLanguages.map((lang) => {
-          const lyric = lyrics.find((l) => l.language === lang);
-          if (!lyric) return null;
-          return (
-            <TabsContent key={lang} value={lang}>
-              <LyricContent lyric={lyric} />
-            </TabsContent>
-          );
-        })}
-      </Tabs>
+      {isEmpty ? (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-6 py-16 text-center">
+          <p className="text-sm text-[var(--text-dim)]">{t('emptyTitle')}</p>
+          {editHref !== undefined && (
+            <Link
+              href={editHref}
+              className="mt-4 inline-flex items-center rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+            >
+              <span aria-hidden="true" className="mr-1.5">+</span>
+              {t('contributeCta')}
+            </Link>
+          )}
+        </div>
+      ) : (
+        <Tabs value={activeLanguage} onValueChange={handleValueChange}>
+          {showTabs && (
+            <TabsList
+              aria-label="Lyrics language"
+              className="mb-6 h-auto w-full justify-start gap-0 rounded-none border-b border-[var(--border)] bg-transparent p-0"
+            >
+              {availableLanguages.map((lang) => (
+                <TabsTrigger
+                  key={lang}
+                  value={lang}
+                  className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-[var(--text-dim)] shadow-none transition-colors hover:text-[var(--text)] data-[state=active]:border-[var(--accent)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--accent)] data-[state=active]:shadow-none"
+                >
+                  {LANGUAGE_LABELS[lang] ?? lang.toUpperCase()}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          )}
+
+          {availableLanguages.map((lang) => {
+            const lyric = lyrics.find((l) => l.language === lang);
+            if (!lyric) return null;
+            return (
+              <TabsContent key={lang} value={lang}>
+                <LyricContent lyric={lyric} />
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      )}
     </section>
+  );
+}
+
+function PencilIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+    </svg>
   );
 }

@@ -1,8 +1,29 @@
 import { z } from 'zod';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, ne } from 'drizzle-orm';
 import { albums, lyrics as lyricsTable, reciters, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
-import type { TrackDTO, TrackWithRelationsDTO } from '@nawhas/types';
+import type { TrackDTO, TrackListItemDTO, TrackWithRelationsDTO } from '@nawhas/types';
+
+/** Track row projected with the reciter + album slugs needed to build canonical track URLs. */
+const trackListItemColumns = {
+  id: tracks.id,
+  title: tracks.title,
+  slug: tracks.slug,
+  albumId: tracks.albumId,
+  trackNumber: tracks.trackNumber,
+  audioUrl: tracks.audioUrl,
+  youtubeId: tracks.youtubeId,
+  duration: tracks.duration,
+  createdAt: tracks.createdAt,
+  updatedAt: tracks.updatedAt,
+  reciterSlug: reciters.slug,
+  reciterName: reciters.name,
+  albumSlug: albums.slug,
+  albumTitle: albums.title,
+} as const;
+
+const RELATED_TRACKS_DEFAULT_LIMIT = 8;
+const RELATED_TRACKS_MAX_LIMIT = 16;
 
 export const trackRouter = router({
   /**
@@ -91,5 +112,49 @@ export const trackRouter = router({
         .from(tracks)
         .where(eq(tracks.albumId, album.id))
         .orderBy(asc(tracks.trackNumber), desc(tracks.createdAt));
+    }),
+
+  /**
+   * Returns "related" tracks to surface in the track-detail sidebar:
+   * other tracks by the same reciter, excluding the one being viewed.
+   * Ordered by createdAt desc; limited to 8 by default.
+   *
+   * Returns an empty array when the input track does not exist (or has
+   * no reciter), matching the behaviour expected by the sidebar — no
+   * 404, just an empty list, since the page itself already 404s on a
+   * bad track id upstream of this query.
+   */
+  getRelated: publicProcedure
+    .input(
+      z.object({
+        trackId: z.string().uuid(),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(RELATED_TRACKS_MAX_LIMIT)
+          .optional()
+          .default(RELATED_TRACKS_DEFAULT_LIMIT),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<TrackListItemDTO[]> => {
+      // Resolve the reciter for this track via its album.
+      const [base] = await ctx.db
+        .select({ reciterId: albums.reciterId })
+        .from(tracks)
+        .innerJoin(albums, eq(tracks.albumId, albums.id))
+        .where(eq(tracks.id, input.trackId))
+        .limit(1);
+
+      if (!base) return [];
+
+      return ctx.db
+        .select(trackListItemColumns)
+        .from(tracks)
+        .innerJoin(albums, eq(tracks.albumId, albums.id))
+        .innerJoin(reciters, eq(albums.reciterId, reciters.id))
+        .where(and(eq(albums.reciterId, base.reciterId), ne(tracks.id, input.trackId)))
+        .orderBy(desc(tracks.createdAt))
+        .limit(input.limit);
     }),
 });

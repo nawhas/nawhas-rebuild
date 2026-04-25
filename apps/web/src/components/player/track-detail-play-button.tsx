@@ -28,6 +28,12 @@ interface TrackDetailPlayButtonProps {
   track: TrackDTO;
   /** Lyrics to sync into the player store so the mobile overlay can display them. */
   lyrics?: LyricDTO[];
+  /**
+   * `default` — full-width status card with text + 40px circle button.
+   * `hero` — bare 56px accent-filled circle button suitable for the POC hero
+   *   (no surrounding card, no status text).
+   */
+  variant?: 'default' | 'hero';
 }
 
 /**
@@ -39,7 +45,11 @@ interface TrackDetailPlayButtonProps {
  *
  * Client Component — reads from and dispatches to Zustand player store.
  */
-export function TrackDetailPlayButton({ track, lyrics }: TrackDetailPlayButtonProps): React.JSX.Element {
+export function TrackDetailPlayButton({
+  track,
+  lyrics,
+  variant = 'default',
+}: TrackDetailPlayButtonProps): React.JSX.Element {
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const isPlaying = usePlayerStore(selectIsPlaying);
   const play = usePlayerStore((s) => s.play);
@@ -75,6 +85,19 @@ export function TrackDetailPlayButton({ track, lyrics }: TrackDetailPlayButtonPr
   const label = isCurrentlyPlaying
     ? `Pause ${track.title}`
     : `Play ${track.title}`;
+
+  if (variant === 'hero') {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label={label}
+        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+      >
+        {isCurrentlyPlaying ? <PauseIcon /> : <PlayIcon />}
+      </button>
+    );
+  }
 
   const statusText = isCurrentlyPlaying ? 'Now playing' : isActive ? 'Paused' : 'Play this track';
 

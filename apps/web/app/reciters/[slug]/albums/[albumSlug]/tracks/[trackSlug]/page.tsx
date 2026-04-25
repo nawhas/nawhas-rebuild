@@ -3,11 +3,12 @@ import type { Metadata } from 'next';
 import { db } from '@nawhas/db';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
+import { getTranslations } from 'next-intl/server';
 import { Container } from '@/components/layout/container';
-import { TrackHeader } from '@/components/tracks/track-header';
-import { TrackActions } from '@/components/tracks/track-actions';
-import { TrackDetailPlayButton } from '@/components/player/track-detail-play-button';
-import { MediaToggle } from '@/components/tracks/media-toggle';
+import { TrackBreadcrumb } from '@/components/tracks/track-breadcrumb';
+import { TrackHero } from '@/components/tracks/track-hero';
+import { TrackSidebar } from '@/components/tracks/track-sidebar';
+import { YoutubeEmbedSlot } from '@/components/tracks/youtube-embed-slot';
 import { LyricsDisplay } from '@/components/tracks/lyrics-display';
 import { Waveform } from '@nawhas/ui';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
@@ -61,28 +62,49 @@ export default async function TrackPage({ params }: TrackPageProps): Promise<Rea
     notFound();
   }
 
+  // Related tracks (same reciter, excluding this one) — surfaced in the
+  // right-hand sidebar below the waveform. Fired in parallel with the
+  // track query above wouldn't work because we need `track.id` first.
+  const related = await caller.track.getRelated({ trackId: track.id });
+
+  const tWatch = await getTranslations('trackDetail.watch');
+
   return (
     <div className="py-10">
       <JsonLd data={buildTrackJsonLd(track, reciterSlug, albumSlug, trackSlug)} />
-      <Container size="md">
-        <TrackHeader track={track} />
-        <TrackActions trackId={track.id} />
+      <Container size="xl">
+        <TrackBreadcrumb track={track} />
+        <TrackHero track={track} />
 
-        {track.youtubeId ? (
-          <MediaToggle track={track} />
-        ) : (
-          <TrackDetailPlayButton track={track} lyrics={track.lyrics} />
-        )}
-
-        <div className="mt-6">
+        <div className="mt-10 border-t border-[var(--border)] pt-10">
           <Waveform slug={track.slug} durationSec={track.duration ?? undefined} />
         </div>
 
-        {track.lyrics.length > 0 && (
-          <div className="mt-10">
-            <LyricsDisplay lyrics={track.lyrics} />
-          </div>
+        {track.youtubeId && (
+          <section aria-labelledby="track-watch-heading" className="mt-10">
+            <h2
+              id="track-watch-heading"
+              className="mb-4 font-serif text-[28px] font-normal tracking-[-0.02em] text-[var(--text)]"
+            >
+              {tWatch('heading')}
+            </h2>
+            <YoutubeEmbedSlot
+              youtubeId={track.youtubeId}
+              title={`${track.title} — YouTube video`}
+            />
+          </section>
         )}
+
+        {/* 2-col body — lyrics on the left, album+related sidebar on the right */}
+        <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[1.6fr_1fr]">
+          <div>
+            <LyricsDisplay
+              lyrics={track.lyrics}
+              editHref={`/contribute/edit/track/${reciterSlug}/${albumSlug}/${trackSlug}`}
+            />
+          </div>
+          <TrackSidebar track={track} related={related} />
+        </div>
       </Container>
     </div>
   );
