@@ -5,7 +5,7 @@ import { submissions, reciters, albums, tracks, submissionReviews, auditLog } fr
 import { router, contributorProcedure, protectedProcedure } from '../trpc/trpc';
 import { sendSubmissionReceived } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
-import type { PaginatedResult, ReviewThreadDTO, SubmissionDTO } from '@nawhas/types';
+import type { PaginatedResult, ResubmitContextDTO, ReviewThreadDTO, SubmissionDTO } from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -399,5 +399,41 @@ export const submissionRouter = router({
         });
       });
       return { ok: true };
+    }),
+
+  /**
+   * Owner-scoped read returning the submission's current data + the
+   * most recent review comment, used to drive the <ChangesRequestedBanner>
+   * diff panel on the contribute edit form.
+   * Only valid when status='changes_requested'.
+   */
+  getResubmitContext: protectedProcedure
+    .input(z.object({ id: z.uuid() }))
+    .query(async ({ ctx, input }): Promise<ResubmitContextDTO> => {
+      const [row] = await ctx.db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, input.id))
+        .limit(1);
+      if (!row || row.submittedByUserId !== ctx.user.id) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      if (row.status !== 'changes_requested') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `getResubmitContext is only valid for submissions with status changes_requested (current status: ${row.status}).`,
+        });
+      }
+      const [lastReview] = await ctx.db
+        .select({ comment: submissionReviews.comment, createdAt: submissionReviews.createdAt })
+        .from(submissionReviews)
+        .where(eq(submissionReviews.submissionId, input.id))
+        .orderBy(desc(submissionReviews.createdAt))
+        .limit(1);
+      return {
+        priorData: row.data as ResubmitContextDTO['priorData'],
+        lastReviewComment: lastReview?.comment ?? null,
+        lastReviewedAt: lastReview?.createdAt ?? null,
+      };
     }),
 });

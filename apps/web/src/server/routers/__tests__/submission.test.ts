@@ -574,4 +574,70 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
       );
     });
   });
+
+  // ── submission.getResubmitContext ─────────────────────────────────────────
+
+  describe('submission.getResubmitContext', () => {
+    it('returns prior data + last review comment + reviewedAt', async () => {
+      // Create + changes_requested.
+      const [sub] = await db
+        .insert(submissions)
+        .values({
+          type: 'reciter',
+          action: 'create',
+          data: { name: `RC ${SUFFIX}` },
+          status: 'changes_requested',
+          submittedByUserId: contributorId,
+        })
+        .returning();
+      seededSubmissionIds.push(sub!.id);
+
+      // Insert a review row.
+      await db.insert(submissionReviews).values({
+        submissionId: sub!.id,
+        reviewerUserId: moderatorId,
+        action: 'changes_requested',
+        comment: 'Add publication year.',
+      });
+
+      const caller = makeSubmissionCaller(db, contributorId);
+      const ctx = await caller.getResubmitContext({ id: sub!.id });
+      expect(ctx.lastReviewComment).toBe('Add publication year.');
+      expect(ctx.lastReviewedAt).toBeInstanceOf(Date);
+      expect((ctx.priorData as { name: string }).name).toBe(`RC ${SUFFIX}`);
+    });
+
+    it('rejects when submission status ≠ changes_requested with BAD_REQUEST', async () => {
+      const caller = makeSubmissionCaller(db, contributorId);
+      const created = await caller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: `Pending ${SUFFIX}` },
+      });
+      seededSubmissionIds.push(created.id);
+
+      await expect(
+        caller.getResubmitContext({ id: created.id }),
+      ).rejects.toThrow(/BAD_REQUEST|status/i);
+    });
+
+    it('rejects non-owner with NOT_FOUND', async () => {
+      const [sub] = await db
+        .insert(submissions)
+        .values({
+          type: 'reciter',
+          action: 'create',
+          data: { name: `OtherCR ${SUFFIX}` },
+          status: 'changes_requested',
+          submittedByUserId: contributorId,
+        })
+        .returning();
+      seededSubmissionIds.push(sub!.id);
+
+      const other = makeSubmissionCaller(db, otherUserId);
+      await expect(
+        other.getResubmitContext({ id: sub!.id }),
+      ).rejects.toThrow(/NOT_FOUND|FORBIDDEN/i);
+    });
+  });
 });
