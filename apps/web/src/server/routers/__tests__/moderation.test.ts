@@ -715,6 +715,66 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
     });
   });
 
+  // ── moderation.getReviewThread ────────────────────────────────────────────
+
+  describe('moderation.getReviewThread', () => {
+    it('returns submitter, reviews chronologically, and applied bookend', async () => {
+      // Seed a second moderator so reviewer names are distinct.
+      const secondModId = `mod-second-${SUFFIX}`;
+      await db.insert(users).values({
+        id: secondModId,
+        name: 'Second Mod',
+        email: `mod-second-${SUFFIX}@example.com`,
+        emailVerified: true,
+        role: 'moderator',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      seededUserIds.push(secondModId);
+
+      const contribCaller = makeSubmissionCaller(db, contributorId);
+      const { id: submissionId } = await contribCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'Thread Reciter' },
+      });
+      seededSubmissionIds.push(submissionId);
+
+      // First reviewer requests changes.
+      const modCaller = makeModerationCaller(db, moderatorId);
+      await modCaller.review({
+        submissionId,
+        action: 'changes_requested',
+        comment: 'Add a description.',
+      });
+
+      // Second reviewer approves — this also applies (Task 3 merged behaviour).
+      const secondModCaller = makeModerationCaller(db, secondModId);
+      await secondModCaller.review({
+        submissionId,
+        action: 'approved',
+      });
+
+      // Register the created reciter for cleanup.
+      const [createdReciter] = await db
+        .select()
+        .from(reciters)
+        .where(eq(reciters.slug, 'thread-reciter'));
+      if (createdReciter) seededReciterIds.push(createdReciter.id);
+
+      const thread = await modCaller.getReviewThread({ submissionId });
+
+      expect(thread.submitter.name).toBe('Contrib User');
+      expect(thread.reviews).toHaveLength(2);
+      expect(thread.reviews[0]?.action).toBe('changes_requested');
+      expect(thread.reviews[0]?.comment).toBe('Add a description.');
+      expect(thread.reviews[0]?.reviewerName).toBe('Mod User');
+      expect(thread.reviews[1]?.action).toBe('approved');
+      expect(thread.reviews[1]?.reviewerName).toBe('Second Mod');
+      expect(thread.appliedAt).not.toBeNull();
+    });
+  });
+
   // ── moderation.auditLog ───────────────────────────────────────────────────
 
   describe('moderation.auditLog', () => {

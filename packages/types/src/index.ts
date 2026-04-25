@@ -326,3 +326,23 @@ export interface AuditLogDTO {
   meta: Record<string, unknown> | null;
   createdAt: Date;
 }
+
+// ---------------------------------------------------------------------------
+// Moderation — Review Thread
+// ---------------------------------------------------------------------------
+
+export interface ReviewThreadEntryDTO {
+  id: string;
+  action: 'approved' | 'rejected' | 'changes_requested';
+  comment: string | null;
+  reviewerName: string;          // empty string in the contributor variant
+  reviewerRole: 'moderator' | null;
+  createdAt: Date;
+}
+
+export interface ReviewThreadDTO {
+  submitter: { id: string; name: string };
+  submittedAt: Date;
+  reviews: ReviewThreadEntryDTO[];
+  appliedAt: Date | null;
+}

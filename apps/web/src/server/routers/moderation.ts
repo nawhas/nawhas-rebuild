@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, ilike, inArray, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, ilike, inArray, lt, or, sql } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { auditLog, lyrics, reciters, albums, tracks, submissions, submissionReviews, users } from '@nawhas/db';
 import { router, moderatorProcedure } from '../trpc/trpc';
@@ -7,7 +7,7 @@ import { sendSubmissionApproved, sendSubmissionFeedback } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
 import { slugify, findFreeSlug } from '../lib/slug';
 import { reciterDataSchema, albumDataSchema, trackDataSchema } from './submission';
-import type { AuditLogDTO, PaginatedResult, SubmissionDTO } from '@nawhas/types';
+import type { AuditLogDTO, PaginatedResult, ReviewThreadDTO, SubmissionDTO } from '@nawhas/types';
 import type { Database } from '@nawhas/db';
 
 const DEFAULT_LIMIT = 20;
@@ -501,6 +501,81 @@ export const moderationRouter = router({
       });
 
       return { success: true };
+    }),
+
+  /**
+   * Returns the full review thread for a submission: submitter info,
+   * each submission_reviews row in chronological order with reviewer
+   * name + role, and the applied-at bookend (if any).
+   *
+   * The "applied at" bookend is fetched via the audit_log row where
+   * action='submission.applied' AND meta->>'submissionId' = $1, written
+   * by review(approved) (Task 3 merged approve+apply behaviour).
+   */
+  getReviewThread: moderatorProcedure
+    .input(z.object({ submissionId: z.uuid() }))
+    .query(async ({ ctx, input }): Promise<ReviewThreadDTO> => {
+      const [submission] = await ctx.db
+        .select({
+          id: submissions.id,
+          createdAt: submissions.createdAt,
+          submittedByUserId: submissions.submittedByUserId,
+        })
+        .from(submissions)
+        .where(eq(submissions.id, input.submissionId))
+        .limit(1);
+      if (!submission) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Submission not found.' });
+      }
+
+      const [submitter] = await ctx.db
+        .select({ id: users.id, name: users.name })
+        .from(users)
+        .where(eq(users.id, submission.submittedByUserId))
+        .limit(1);
+      if (!submitter) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Submitter missing.' });
+      }
+
+      const reviewRows = await ctx.db
+        .select({
+          id: submissionReviews.id,
+          action: submissionReviews.action,
+          comment: submissionReviews.comment,
+          createdAt: submissionReviews.createdAt,
+          reviewerName: users.name,
+          reviewerRole: users.role,
+        })
+        .from(submissionReviews)
+        .innerJoin(users, eq(submissionReviews.reviewerUserId, users.id))
+        .where(eq(submissionReviews.submissionId, input.submissionId))
+        .orderBy(asc(submissionReviews.createdAt));
+
+      const [appliedRow] = await ctx.db
+        .select({ createdAt: auditLog.createdAt })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'submission.applied'),
+            sql`(${auditLog.meta}->>'submissionId') = ${input.submissionId}`,
+          ),
+        )
+        .orderBy(desc(auditLog.createdAt))
+        .limit(1);
+
+      return {
+        submitter: { id: submitter.id, name: submitter.name },
+        submittedAt: submission.createdAt,
+        reviews: reviewRows.map((r) => ({
+          id: r.id,
+          action: r.action,
+          comment: r.comment ?? null,
+          reviewerName: r.reviewerName,
+          reviewerRole: r.reviewerRole === 'moderator' ? 'moderator' : null,
+          createdAt: r.createdAt,
+        })),
+        appliedAt: appliedRow?.createdAt ?? null,
+      };
     }),
 
   /**
