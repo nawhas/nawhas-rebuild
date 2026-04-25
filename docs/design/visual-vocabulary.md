@@ -13,20 +13,36 @@ verify-email, check-email), `(protected)/profile`, `(protected)/settings`,
 
 ## Surfaces
 
-- **Page background:** `var(--bg)` — `#0a0a0b` dark, `#ffffff` light.
+The four surface tokens form a parent → child cascade. Every component
+sits in exactly one parent context, and that context dictates which
+nested-element token reads cleanly in **both** themes.
+
+| Token | Light | Dark | When to use |
+|---|---|---|---|
+| `--bg` | `#ffffff` | `#0a0a0b` | Page background. Set on `<body>` / `<main>`; never on a card. |
+| `--card-bg` | `#ffffff` | `#141416` | Cards, dialogs, panels, list containers — anything with a `border` wrapper. |
+| `--surface` | `#fafafa` | `#141416` | Hover / active state for elements **on the page background** (no card wrapper). Light only — collides with `--card-bg` in dark. |
+| `--surface-2` | `#f4f4f5` | `#1a1a1d` | Hover / active state for elements **inside a card-bg container**. Reads as a visible delta in both themes. Also the canonical "selected option" / active table row color. |
+| `--input-bg` | `#fafafa` | `#1a1a1d` | Form input background. Distinct token in both themes; do **not** substitute `--surface` / `--surface-2`. |
+
+Surface basics:
+
+- **Page background:** `var(--bg)`.
 - **Content card:** `var(--card-bg)` with `1px solid var(--border)`, radius 16px, padding 32px.
 - **Form input background:** `var(--input-bg)` with `1px solid var(--border)`, radius 8px, padding 12px 16px.
 
 ### Hover-bg rule (avoid the dark-mode collision)
 
-`--card-bg` and `--surface` resolve to **the same value** in dark mode (`#141416`). An element with `bg-[var(--card-bg)]` parent that hovers to `--surface` produces zero visual delta in dark mode — a common drift that surfaced repeatedly across Wave 1 / Wave 2 (LoadMore primitive, LibraryTrackRow, top-nawhas-table, search pagination).
+`--card-bg` and `--surface` resolve to **the same value** in dark mode (`#141416`). An element with a `bg-[var(--card-bg)]` parent that hovers to `--surface` produces zero visual delta in dark mode — a drift that surfaced repeatedly across Wave 1 / Wave 2 (LoadMore primitive, LibraryTrackRow, top-nawhas-table, search pagination, mod table rows, album-loading skeleton bars).
 
-The rule:
+The rule, stated as a parent-context lookup:
 
-- Element sits **on the page background** (`--bg` parent, no card wrapper) → `hover:bg-[var(--surface)]` is correct.
-- Element sits **inside a `--card-bg` container** (cards, list rows) → use `hover:bg-[var(--surface-2)]` for visible delta in both themes.
+- **Parent is `--bg` (page background, no card wrapper)** → child hover is `bg-[var(--surface)]`.
+- **Parent is `--card-bg` (any card, panel, dialog, table container, listbox)** → child hover is `bg-[var(--surface-2)]`.
 
-`--surface-2` is `#1a1a1d` dark / `#f4f4f5` light — one step deeper than `--surface` in both themes.
+This applies uniformly to: hover backgrounds, active list-row backgrounds, selected combobox options, status-pill backgrounds for "draft / withdrawn / user" pills inside metadata sidebars, and skeleton-pulse backgrounds when nested in a card.
+
+The same parent-context rule governs static (non-hover) backgrounds when an inner element wants subtle elevation away from its parent — choose `--surface` if the parent is `--bg`, `--surface-2` if the parent is `--card-bg`.
 
 ## Typography
 
@@ -46,10 +62,10 @@ The rule:
 
 ## Empty / loading / error states
 
-- **Skeleton placeholder:** `bg-[var(--surface)] animate-pulse rounded-[8px]`.
+- **Skeleton placeholder:** `animate-pulse rounded-[8px]` plus a parent-context-correct background per the hover-bg rule — `bg-[var(--surface)]` on the page background, `bg-[var(--surface-2)]` when nested inside a card (e.g. the album-detail loading track-list).
 - **Empty state:** centered, `var(--text-dim)` body copy, accent CTA below.
 - **Error state:** centered, `var(--color-error-500)` 24px icon + `var(--text)` heading + `var(--text-dim)` body + accent CTA to retry.
-- **Auth-gate redirect:** match `(auth)/*` card treatment — centered card on `var(--surface)`, accent CTA labelled with the contextual `AuthReason` copy.
+- **Auth-gate redirect:** match `(auth)/*` card treatment — centered card on `var(--card-bg)`, accent CTA labelled with the contextual `AuthReason` copy.
 
 ## Forms
 
@@ -62,9 +78,11 @@ The rule:
 
 ## Tables
 
+Tables are wrapped in a `--card-bg` container (`rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] overflow-hidden`); the rules below assume that wrapper.
+
 - **Header:** Inter 13px weight 600 color `var(--text-dim)`, padding 12px 16px, border-bottom `var(--border-strong)`.
 - **Cell:** Inter 14px color `var(--text)`, padding 12px 16px, border-bottom `var(--border)`.
-- **Hover row:** background `var(--surface)`.
+- **Hover row:** `bg-[var(--surface-2)]` (parent is `--card-bg` → use `--surface-2` per the hover-bg rule).
 
 ## Modals (`packages/ui/src/components/dialog.tsx` — already shipped)
 
@@ -75,8 +93,8 @@ The rule:
 
 ## Auth surfaces (`(auth)/*`)
 
-- Centered card, max-width 400px, vertically centered in viewport.
-- Card on `var(--surface)`, padding 40px, radius 16px, `1px solid var(--border)`.
+- Centered card, max-width 400px, anchored at `pt-[12vh]` (not perfectly centered — fixes the dead-zone-above-card issue from the 2026-04-23 audit).
+- Card on `var(--card-bg)`, padding 40px, radius 16px, `1px solid var(--border)`.
 - Page heading: serif 28px weight 500.
 - Form fields per Forms above.
 - "Switch flow" link (e.g. "Don't have an account? Sign up") below CTA, Inter 13px color `var(--text-dim)` with accent on hover.
