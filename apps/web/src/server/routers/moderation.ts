@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { and, asc, desc, eq, gt, ilike, inArray, lt, or, sql, type SQL } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { auditLog, lyrics, reciters, albums, tracks, submissions, submissionReviews, users } from '@nawhas/db';
+import { auditLog, lyrics, reciters, albums, tracks, submissions, submissionReviews, users, accessRequests } from '@nawhas/db';
 import { router, moderatorProcedure } from '../trpc/trpc';
 import { sendSubmissionApproved, sendSubmissionFeedback } from '@/lib/email';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
@@ -712,6 +712,23 @@ export const moderationRouter = router({
     }),
 
   /**
+   * Lightweight count fetch for the moderator nav badge. Cached per-request
+   * via React's `cache()` at the call site (server components) so layout +
+   * sub-nav share one DB hit.
+   */
+  pendingCounts: moderatorProcedure.query(async ({ ctx }): Promise<{ submissions: number; accessRequests: number }> => {
+    const [subsRow] = await ctx.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(submissions)
+      .where(inArray(submissions.status, ['pending', 'changes_requested']));
+    const [arRow] = await ctx.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(accessRequests)
+      .where(eq(accessRequests.status, 'pending'));
+    return { submissions: Number(subsRow?.n ?? 0), accessRequests: Number(arRow?.n ?? 0) };
+  }),
+
+  /**
    * Three numbers (+ a 7-bucket array) for the /mod overview cards.
    *
    * - pendingCount: pending + changes_requested submissions awaiting review
@@ -719,12 +736,14 @@ export const moderationRouter = router({
    * - last7DaysBuckets: per-day counts oldest→newest (index 0 = 6 days ago, index 6 = today),
    *   in UTC days
    * - oldestPendingHours: age of the oldest pending submission, or null if none
+   * - pendingAccessRequestsCount: pending access-requests awaiting moderator review (W3)
    */
   dashboardStats: moderatorProcedure.query(async ({ ctx }): Promise<{
     pendingCount: number;
     last7DaysCount: number;
     last7DaysBuckets: number[];
     oldestPendingHours: number | null;
+    pendingAccessRequestsCount: number;
   }> => {
     const [pendingRow] = await ctx.db
       .select({ n: sql<number>`count(*)::int` })
@@ -768,11 +787,17 @@ export const moderationRouter = router({
       .from(submissions)
       .where(eq(submissions.status, 'pending'));
 
+    const [arRow] = await ctx.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(accessRequests)
+      .where(eq(accessRequests.status, 'pending'));
+
     return {
       pendingCount: Number(pendingRow?.n ?? 0),
       last7DaysCount: Number(last7Row?.n ?? 0),
       last7DaysBuckets: bucketArray,
       oldestPendingHours: oldestRow?.hours == null ? null : Number(oldestRow.hours),
+      pendingAccessRequestsCount: Number(arRow?.n ?? 0),
     };
   }),
 
