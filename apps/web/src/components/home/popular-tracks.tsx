@@ -1,15 +1,9 @@
 import { SectionTitle } from '@nawhas/ui/components/section-title';
 import type { TrackDTO } from '@nawhas/types';
+import { formatDuration } from '@nawhas/ui/lib/format-duration';
 
 interface PopularTracksProps {
   tracks: TrackDTO[];
-}
-
-/** Format a duration in seconds as m:ss */
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 /**

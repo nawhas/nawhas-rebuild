@@ -20,9 +20,14 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-// Stub @nawhas/ui — CoverArt and Button.
+// Stub @nawhas/ui — CoverArt is consumed by AlbumCard via the root path.
 vi.mock('@nawhas/ui', () => ({
   CoverArt: ({ label }: { label?: string }) => <div aria-label={label}>{label}</div>,
+}));
+
+// LoadMoreAlbums imports Button from the deep package path; mocking the
+// root '@nawhas/ui' alone doesn't intercept it.
+vi.mock('@nawhas/ui/components/button', () => ({
   Button: ({
     children,
     onClick,
