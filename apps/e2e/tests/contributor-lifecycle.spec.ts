@@ -362,4 +362,79 @@ test.describe('Phase 2.4 W3 — contributor lifecycle', () => {
     const res = await page.goto('/contributor/no-such-user-xyz-123');
     expect(res?.status()).toBe(404);
   });
+
+  // -------------------------------------------------------------------------
+  // H6. Pending-count badge decrements after a moderator clears an item
+  // -------------------------------------------------------------------------
+  //
+  // The pending-count badge lives inside the user-menu dropdown (desktop)
+  // and the mobile-nav drawer; we drive the desktop variant here. The badge
+  // returns null when the count is zero, so the post-approval assertion
+  // tolerates either "still visible with a smaller number" or "no longer
+  // present" — either is correct behaviour.
+  test('moderator pending-count badge decrements after clearing an access-request', async ({
+    page,
+    browser,
+    freshApplicant,
+    freshModerator,
+  }) => {
+    // Applicant submits an access-request via the UI in a separate context
+    // so the moderator session below isn't disturbed.
+    const appCtx: BrowserContext = await browser.newContext();
+    const appPage = await appCtx.newPage();
+    try {
+      await signIn(appPage, freshApplicant.email, freshApplicant.password);
+      await gotoExpectOk(appPage, '/contribute/apply');
+      await appPage
+        .getByRole('button', { name: /Submit application/i })
+        .click();
+      await expect(appPage).toHaveURL(/\/contribute$/, { timeout: 15_000 });
+    } finally {
+      await appCtx.close();
+    }
+    // The form's redirect to /contribute is the contributor-side proof the
+    // server action ran, so by the time the moderator session below renders
+    // /mod the access-request row already exists.
+
+    // Moderator: sign in, navigate to /mod, open the user-menu dropdown
+    // and read the badge count.
+    await signIn(page, freshModerator.email, freshModerator.password);
+    await gotoExpectOk(page, '/mod');
+
+    const trigger = page.getByRole('button', {
+      name: /Account menu for/i,
+    });
+    await trigger.click();
+    const beforeBadge = page
+      .getByLabel(/items pending moderation/i)
+      .first();
+    await expect(beforeBadge).toBeVisible({ timeout: 10_000 });
+    const beforeText = (await beforeBadge.textContent()) ?? '';
+    const before = Number(beforeText.replace('+', '').trim());
+    expect(before).toBeGreaterThan(0);
+
+    // Close the dropdown so its overlay doesn't intercept clicks below.
+    await page.keyboard.press('Escape');
+
+    // Approve the access-request via the moderator UI.
+    await gotoExpectOk(page, '/mod/access-requests');
+    await page.getByText(freshApplicant.email).first().click();
+    await expect(page).toHaveURL(/\/mod\/access-requests\/[0-9a-f-]+$/, {
+      timeout: 10_000,
+    });
+    await page.getByRole('button', { name: /^Approve$/i }).click();
+    await waitForAccessRequestStatus(freshApplicant.email, 'approved');
+
+    // Re-render /mod and re-open the user-menu. The badge is either gone
+    // (if the count dropped to zero across the worker's whole DB) or shows
+    // a number strictly less than `before`.
+    await page.goto('/mod');
+    await page.getByRole('button', { name: /Account menu for/i }).click();
+    const afterBadge = page.getByLabel(/items pending moderation/i).first();
+    if (await afterBadge.isVisible().catch(() => false)) {
+      const afterText = (await afterBadge.textContent()) ?? '';
+      const after = Number(afterText.replace('+', '').trim());
+      expect(after).toBeLessThan(before);
+    }
+  });
 });
