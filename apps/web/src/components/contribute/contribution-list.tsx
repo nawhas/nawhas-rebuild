@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { SubmissionTypeBadge, SubmissionActionBadge, SubmissionStatusBadge } from '@/components/mod/badges';
@@ -99,15 +100,24 @@ function SubmissionCard({
             {t('submissionId')} <span className="font-mono">{submission.id}</span>
           </p>
 
-          {canResubmit && !resubmitting && (
-            <button
-              type="button"
-              onClick={() => setResubmitting(true)}
-              className="mt-3 rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Link
+              href={`/profile/contributions/${submission.id}`}
+              className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
-              {t('editAndResubmit')}
-            </button>
-          )}
+              View details →
+            </Link>
+
+            {canResubmit && !resubmitting && (
+              <button
+                type="button"
+                onClick={() => setResubmitting(true)}
+                className="rounded-[8px] border border-[var(--border)] bg-[var(--input-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+              >
+                {t('editAndResubmit')}
+              </button>
+            )}
+          </div>
 
           {canResubmit && resubmitting && (
             <ResubmitForm

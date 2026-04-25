@@ -253,6 +253,11 @@
     }
   },
   "profile": {
+    "contributions": {
+      "detailHeading": "My submission",
+      "detailBackLink": "← Back to contributions",
+      "detailNotFound": "Submission not found"
+    },
     "pageTitle": "My Profile",
     "profileSectionLabel": "Profile",
     "statsSectionLabel": "Statistics",

@@ -249,6 +249,26 @@ export const submissionRouter = router({
     }),
 
   /**
+   * Owner-scoped read of a single submission.
+   * Returns the submitter's own submission row, or NOT_FOUND if missing
+   * or not owned by the caller.
+   */
+  getMine: protectedProcedure
+    .input(z.object({ submissionId: z.uuid() }))
+    .query(async ({ ctx, input }): Promise<SubmissionDTO> => {
+      const [row] = await ctx.db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, input.submissionId))
+        .limit(1);
+      if (!row || row.submittedByUserId !== ctx.user.id) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      // Strip moderator-only notes field for contributors.
+      return { ...row, notes: null } as SubmissionDTO;
+    }),
+
+  /**
    * Fetch a single submission by id.
    * The owner can view their own; moderators can view any.
    */

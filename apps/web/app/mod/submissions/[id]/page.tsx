@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
-import { db, reciters, albums, tracks, lyrics } from '@nawhas/db';
-import { eq } from 'drizzle-orm';
+import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
 import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
@@ -13,14 +12,12 @@ import {
   SubmissionActionBadge,
   SubmissionStatusBadge,
 } from '@/components/mod/badges';
-import { FieldDiff, DataPreview } from '@/components/mod/field-diff';
 import { ReviewActions } from '@/components/mod/review-actions';
 import { ModeratorNotes } from '@/components/mod/moderator-notes';
 import { ReviewThread } from '@/components/mod/review-thread';
+import { SubmissionFields } from '@/components/submissions/submission-fields';
+import { fetchCurrentValues } from '@/server/lib/submission-fields';
 import type {
-  ReciterSubmissionData,
-  AlbumSubmissionData,
-  TrackSubmissionData,
   SubmissionDTO,
   ReviewThreadDTO,
 } from '@nawhas/types';
@@ -206,198 +203,3 @@ export default async function SubmissionDetailPage({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-type LyricsMap = Partial<Record<string, string>>;
-
-interface CurrentValues {
-  // Reciter fields
-  name?: string | null;
-  slug?: string | null;
-  arabicName?: string | null;
-  country?: string | null;
-  birthYear?: number | null;
-  description?: string | null;
-  avatarUrl?: string | null;
-  // Album fields
-  title?: string | null;
-  reciterId?: string | null;
-  year?: number | null;
-  artworkUrl?: string | null;
-  // Track fields
-  albumId?: string | null;
-  trackNumber?: number | null;
-  audioUrl?: string | null;
-  youtubeId?: string | null;
-  duration?: number | null;
-  lyrics?: LyricsMap;
-}
-
-async function fetchCurrentValues(submission: SubmissionDTO): Promise<CurrentValues | null> {
-  if (submission.action !== 'edit' || !submission.targetId) return null;
-
-  if (submission.type === 'reciter') {
-    const [row] = await db.select().from(reciters).where(eq(reciters.id, submission.targetId)).limit(1);
-    if (!row) return null;
-    return {
-      name: row.name,
-      slug: row.slug,
-      arabicName: row.arabicName,
-      country: row.country,
-      birthYear: row.birthYear,
-      description: row.description,
-      avatarUrl: row.avatarUrl,
-    };
-  }
-
-  if (submission.type === 'album') {
-    const [row] = await db.select().from(albums).where(eq(albums.id, submission.targetId)).limit(1);
-    if (!row) return null;
-    return {
-      title: row.title,
-      slug: row.slug,
-      reciterId: row.reciterId,
-      year: row.year,
-      artworkUrl: row.artworkUrl,
-      description: row.description,
-    };
-  }
-
-  if (submission.type === 'track') {
-    const [row] = await db.select().from(tracks).where(eq(tracks.id, submission.targetId)).limit(1);
-    if (!row) return null;
-    const lyricRows = await db.select().from(lyrics).where(eq(lyrics.trackId, submission.targetId));
-    const lyricsMap: LyricsMap = {};
-    for (const lyric of lyricRows) {
-      lyricsMap[lyric.language] = lyric.text;
-    }
-    return {
-      title: row.title,
-      slug: row.slug,
-      albumId: row.albumId,
-      trackNumber: row.trackNumber,
-      audioUrl: row.audioUrl,
-      youtubeId: row.youtubeId,
-      duration: row.duration,
-      lyrics: lyricsMap,
-    };
-  }
-
-  return null;
-}
-
-function SubmissionFields({
-  submission,
-  currentValues,
-  t,
-}: {
-  submission: SubmissionDTO;
-  currentValues: CurrentValues | null;
-  t: (key: string) => string;
-}): React.JSX.Element {
-  const isEdit = submission.action === 'edit' && currentValues !== null;
-
-  if (submission.type === 'reciter') {
-    const data = submission.data as ReciterSubmissionData;
-    if (isEdit) {
-      return (
-        <>
-          <FieldDiff label={t('fieldNameLabel')} current={currentValues!.name} proposed={data.name} />
-          <FieldDiff label={t('fieldSlugLabel')} current={currentValues!.slug} proposed={data.slug} />
-          <FieldDiff label={t('fieldArabicNameLabel')} current={currentValues!.arabicName} proposed={data.arabicName} />
-          <FieldDiff label={t('fieldCountryLabel')} current={currentValues!.country} proposed={data.country} />
-          <FieldDiff label={t('fieldBirthYearLabel')} current={currentValues!.birthYear} proposed={data.birthYear} />
-          <FieldDiff label={t('fieldDescriptionLabel')} current={currentValues!.description} proposed={data.description} />
-          <FieldDiff label={t('fieldAvatarUrlLabel')} current={currentValues!.avatarUrl} proposed={data.avatarUrl} />
-        </>
-      );
-    }
-    return (
-      <>
-        <DataPreview label={t('fieldNameLabel')} value={data.name} />
-        <DataPreview label={t('fieldSlugLabel')} value={data.slug} />
-        <DataPreview label={t('fieldArabicNameLabel')} value={data.arabicName} />
-        <DataPreview label={t('fieldCountryLabel')} value={data.country} />
-        <DataPreview label={t('fieldBirthYearLabel')} value={data.birthYear} />
-        <DataPreview label={t('fieldDescriptionLabel')} value={data.description} />
-        <DataPreview label={t('fieldAvatarUrlLabel')} value={data.avatarUrl} />
-      </>
-    );
-  }
-
-  if (submission.type === 'album') {
-    const data = submission.data as AlbumSubmissionData;
-    if (isEdit) {
-      return (
-        <>
-          <FieldDiff label={t('fieldTitleLabel')} current={currentValues!.title} proposed={data.title} />
-          <FieldDiff label={t('fieldSlugLabel')} current={currentValues!.slug} proposed={data.slug} />
-          <FieldDiff label={t('fieldReciterIdLabel')} current={currentValues!.reciterId} proposed={data.reciterId} />
-          <FieldDiff label={t('fieldYearLabel')} current={currentValues!.year} proposed={data.year} />
-          <FieldDiff label={t('fieldArtworkUrlLabel')} current={currentValues!.artworkUrl} proposed={data.artworkUrl} />
-          <FieldDiff label={t('fieldDescriptionLabel')} current={currentValues!.description} proposed={data.description} />
-        </>
-      );
-    }
-    return (
-      <>
-        <DataPreview label={t('fieldTitleLabel')} value={data.title} />
-        <DataPreview label={t('fieldSlugLabel')} value={data.slug} />
-        <DataPreview label={t('fieldReciterIdLabel')} value={data.reciterId} />
-        <DataPreview label={t('fieldYearLabel')} value={data.year} />
-        <DataPreview label={t('fieldArtworkUrlLabel')} value={data.artworkUrl} />
-        <DataPreview label={t('fieldDescriptionLabel')} value={data.description} />
-      </>
-    );
-  }
-
-  // track
-  const data = submission.data as TrackSubmissionData;
-  if (isEdit) {
-    const currentLyrics = currentValues!.lyrics ?? {};
-    const proposedLyrics = data.lyrics ?? {};
-    const allLanguages = Array.from(
-      new Set([...Object.keys(currentLyrics), ...Object.keys(proposedLyrics)]),
-    );
-    return (
-      <>
-        <FieldDiff label={t('fieldTitleLabel')} current={currentValues!.title} proposed={data.title} />
-        <FieldDiff label={t('fieldSlugLabel')} current={currentValues!.slug} proposed={data.slug} />
-        <FieldDiff label={t('fieldAlbumIdLabel')} current={currentValues!.albumId} proposed={data.albumId} />
-        <FieldDiff label={t('fieldTrackNumberLabel')} current={currentValues!.trackNumber} proposed={data.trackNumber} />
-        <FieldDiff label={t('fieldAudioUrlLabel')} current={currentValues!.audioUrl} proposed={data.audioUrl} />
-        <FieldDiff label={t('fieldYouTubeIdLabel')} current={currentValues!.youtubeId} proposed={data.youtubeId} />
-        <FieldDiff label={t('fieldDurationLabel')} current={currentValues!.duration} proposed={data.duration} />
-        {allLanguages.map((lang) => (
-          <FieldDiff
-            key={lang}
-            label={`${t('fieldLyricsLabel')} (${lang})`}
-            current={currentLyrics[lang]}
-            proposed={proposedLyrics[lang as keyof typeof proposedLyrics]}
-          />
-        ))}
-      </>
-    );
-  }
-  const proposedLyrics = data.lyrics ?? {};
-  return (
-    <>
-      <DataPreview label={t('fieldTitleLabel')} value={data.title} />
-      <DataPreview label={t('fieldSlugLabel')} value={data.slug} />
-      <DataPreview label={t('fieldAlbumIdLabel')} value={data.albumId} />
-      <DataPreview label={t('fieldTrackNumberLabel')} value={data.trackNumber} />
-      <DataPreview label={t('fieldAudioUrlLabel')} value={data.audioUrl} />
-      <DataPreview label={t('fieldYouTubeIdLabel')} value={data.youtubeId} />
-      <DataPreview label={t('fieldDurationLabel')} value={data.duration} />
-      {Object.entries(proposedLyrics).map(([lang, text]) => (
-        <DataPreview
-          key={lang}
-          label={`${t('fieldLyricsLabel')} (${lang})`}
-          value={text}
-        />
-      ))}
-    </>
-  );
-}

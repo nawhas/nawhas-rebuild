@@ -268,6 +268,39 @@ describe.skipIf(!dbAvailable)('Submission Router', () => {
     });
   });
 
+  // ── submission.getMine ────────────────────────────────────────────────────
+
+  describe('submission.getMine', () => {
+    it('owner fetches their own submission and gets the row', async () => {
+      const caller = makeSubmissionCaller(db, contributorId);
+      const created = await caller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'getMine Owner Test' },
+      });
+      seededSubmissionIds.push(created.id);
+
+      const fetched = await caller.getMine({ submissionId: created.id });
+      expect(fetched.id).toBe(created.id);
+      expect(fetched.submittedByUserId).toBe(contributorId);
+    });
+
+    it('foreign user calling getMine gets NOT_FOUND', async () => {
+      const ownerCaller = makeSubmissionCaller(db, contributorId);
+      const created = await ownerCaller.create({
+        type: 'reciter',
+        action: 'create',
+        data: { name: 'getMine Foreign Test' },
+      });
+      seededSubmissionIds.push(created.id);
+
+      const foreignCaller = makeSubmissionCaller(db, otherUserId);
+      await expect(
+        foreignCaller.getMine({ submissionId: created.id }),
+      ).rejects.toThrow('NOT_FOUND');
+    });
+  });
+
   // ── submission.get ────────────────────────────────────────────────────────
 
   describe('submission.get', () => {
