@@ -180,4 +180,40 @@ test.describe('Phase 2.4 W3 — contributor lifecycle', () => {
       page.getByRole('link', { name: /New Reciter/i }),
     ).toBeVisible();
   });
+
+  // -------------------------------------------------------------------------
+  // H2. Withdraw a pending access-request
+  // -------------------------------------------------------------------------
+  test('applicant can withdraw a pending application', async ({
+    page,
+    freshApplicant,
+  }) => {
+    await signIn(page, freshApplicant.email, freshApplicant.password);
+
+    // Submit an application via the UI (no reason — optional).
+    await gotoExpectOk(page, '/contribute/apply');
+    await page.getByRole('button', { name: /Submit application/i }).click();
+    await expect(page).toHaveURL(/\/contribute$/, { timeout: 15_000 });
+
+    // Navigate back to the apply page — now shows the pending state with the
+    // Withdraw button.
+    await page.goto('/contribute/apply');
+    await expect(
+      page.getByText(/Your application is pending review/i),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('button', { name: /Withdraw application/i }).click();
+
+    // Backstop the click with a DB poll (the client-withdraw button's onClick
+    // can be slow to land under dev hydration, but the route refresh is what
+    // the test asserts on).
+    await waitForAccessRequestStatus(freshApplicant.email, 'withdrawn');
+
+    // After withdrawal the page re-renders the empty apply form, exposing the
+    // textarea placeholder again.
+    await page.reload();
+    await expect(
+      page.getByPlaceholder(/Tell us a bit about how you'd like to help/i),
+    ).toBeVisible({ timeout: 10_000 });
+  });
 });
