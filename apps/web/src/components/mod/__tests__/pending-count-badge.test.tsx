@@ -29,6 +29,8 @@ describe('<PendingCountBadge>', () => {
 
   it('uses custom aria-label', () => {
     const { container } = render(<PendingCountBadge count={3} label="3 items pending review" />);
-    expect(container.firstChild?.getAttribute('aria-label')).toBe('3 items pending review');
+    expect((container.firstChild as HTMLElement | null)?.getAttribute('aria-label')).toBe(
+      '3 items pending review',
+    );
   });
 });
