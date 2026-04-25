@@ -125,7 +125,13 @@ test.describe('Audio playback — transport controls', () => {
     await gotoExpectOk(page,albumUrl(seedData));
     await page.getByRole('button', { name: `Play ${seedData.track.title}` }).click();
 
-    const seekSlider = page.getByRole('slider', { name: 'Seek' });
+    // Wait for the player bar to actually appear before looking for its
+    // controls. Without this, the seek slider lookup races against the
+    // PlayerBar's aria-hidden→false transition (which gates getByRole).
+    const playerBar = page.getByRole('region', { name: 'Audio player' });
+    await expect(playerBar.getByRole('button', { name: 'Pause' })).toBeVisible({ timeout: 10_000 });
+
+    const seekSlider = playerBar.getByRole('slider', { name: 'Seek' });
     await expect(seekSlider).toBeVisible();
     await expect(seekSlider).toHaveAttribute('aria-valuemin', '0');
 

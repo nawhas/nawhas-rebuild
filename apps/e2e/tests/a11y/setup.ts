@@ -45,9 +45,17 @@ export async function testPageAccessibility(
  * Assert that a page has no critical or serious violations
  * @param page - Playwright page object
  * @param pageName - Name of page for error reporting
+ * @param options - axe-core configuration (e.g. disable specific rules)
  */
-export async function assertPageAccessible(page: Page, pageName: string) {
-  const results = await testPageAccessibility(page);
+export async function assertPageAccessible(
+  page: Page,
+  pageName: string,
+  options?: {
+    exclude?: string[];
+    rules?: { [key: string]: { enabled: boolean } };
+  },
+) {
+  const results = await testPageAccessibility(page, options);
 
   const violations = results.violations.filter(
     (v) => v.impact === 'critical' || v.impact === 'serious'

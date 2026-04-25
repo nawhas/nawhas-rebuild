@@ -163,8 +163,13 @@ function searchUrlAllPage1(q: string): string {
  * worker's track.
  */
 function trackResultLink(page: Page, sd: SeedData): Locator {
+  // The search-results track-row link's aria-label is
+  // `View track ${title} from ${album} by ${reciter}` (set in
+  // search-results-content.tsx after the 7cccf8a a11y fix renamed it
+  // from "Play ${title}"). We anchor on `View track` and scope by the
+  // worker-specific track slug to avoid cross-worker strict-mode hits.
   return page
-    .getByRole('link', { name: new RegExp(`Play ${sd.track.title}`, 'i') })
+    .getByRole('link', { name: new RegExp(`View track ${sd.track.title}`, 'i') })
     .and(page.locator(`[href*="${sd.track.slug}"]`));
 }
 

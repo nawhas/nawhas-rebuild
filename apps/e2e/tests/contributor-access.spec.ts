@@ -238,8 +238,11 @@ test.describe('/mod — moderator can access', () => {
     await signIn(page, moderatorAccount.email, moderatorAccount.password);
     await gotoExpectOk(page,'/mod');
 
+    // Wave 3 Row 15 moved the page-level "Moderation Overview" h1 to a layout-
+    // level "Moderation" h1 shared across all /mod routes (the URL itself
+    // implies which sub-page the user is on). Match the layout heading.
     await expect(
-      page.getByRole('heading', { name: /Moderation Overview/i }),
+      page.getByRole('heading', { name: /^Moderation$/i }),
     ).toBeVisible({ timeout: 10_000 });
   });
 

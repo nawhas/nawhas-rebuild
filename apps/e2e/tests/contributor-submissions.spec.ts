@@ -45,10 +45,13 @@ interface SeedParents {
 async function insertContribSeedData(workerIndex: number): Promise<SeedParents> {
   const sql = postgres(DATABASE_URL, { max: 1, idle_timeout: 5 });
   const w = workerIndex;
+  // Both name and slug carry the worker index so parallel workers don't
+  // collide on the typeahead — `getByRole('option', { name: 'E2E Album Contrib' })`
+  // would otherwise match both workers' seeded albums and trip strict-mode.
   try {
     const [reciter] = await sql<{ id: string; name: string }[]>`
       INSERT INTO reciters (id, name, slug)
-      VALUES (gen_random_uuid(), 'E2E Reciter Contrib', ${'e2e-reciter-contrib-' + w})
+      VALUES (gen_random_uuid(), ${'E2E Reciter Contrib ' + w}, ${'e2e-reciter-contrib-' + w})
       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
       RETURNING id, name
     `;
@@ -56,7 +59,7 @@ async function insertContribSeedData(workerIndex: number): Promise<SeedParents> 
 
     const [album] = await sql<{ id: string; title: string }[]>`
       INSERT INTO albums (id, title, slug, reciter_id, year)
-      VALUES (gen_random_uuid(), 'E2E Album Contrib', ${'e2e-album-contrib-' + w}, ${reciter.id}, 2024)
+      VALUES (gen_random_uuid(), ${'E2E Album Contrib ' + w}, ${'e2e-album-contrib-' + w}, ${reciter.id}, 2024)
       ON CONFLICT (reciter_id, slug) DO UPDATE SET title = EXCLUDED.title
       RETURNING id, title
     `;
@@ -357,7 +360,10 @@ test.describe('New album submission form', () => {
     contributor,
     seedParents,
   }) => {
-    const albumTitle = `QA Album Pending ${suffix()}`;
+    // Test data deliberately avoids the words "Pending"/"Approved"/etc. so the
+    // strict-mode `getByText(/Pending/i)` assertion below is unambiguous (the
+    // title shouldn't share a substring with the status-badge text).
+    const albumTitle = `QA Album Submission ${suffix()}`;
 
     await signIn(page, contributor.email, contributor.password);
     await gotoExpectOk(page, '/contribute/album/new');
@@ -461,7 +467,8 @@ test.describe('New track submission form', () => {
     contributor,
     seedParents,
   }) => {
-    const trackTitle = `QA Track Pending ${suffix()}`;
+    // See album-test rationale above — title must not contain status words.
+    const trackTitle = `QA Track Submission ${suffix()}`;
 
     await signIn(page, contributor.email, contributor.password);
     await gotoExpectOk(page, '/contribute/track/new');
