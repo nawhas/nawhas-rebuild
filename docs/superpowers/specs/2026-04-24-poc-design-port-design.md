@@ -1,6 +1,6 @@
 # Phase 2.5 — POC Design Port (Design)
 
-**Status:** Design draft 2026-04-24 · Awaiting user review
+**Status:** ✅ Shipped 2026-04-25 (see "Shipped" section at the bottom)
 **Author:** Asif (brainstormed with Claude)
 **Scope:** Re-skin every currently-implemented surface of the rebuild to match the visual direction and behaviour established in the [`nawhas/new-design-poc`](https://github.com/nawhas/new-design-poc) prototype. Establishes the design system that all subsequent roadmap items inherit.
 
@@ -314,3 +314,18 @@ This is a top-level design for the POC re-skin. It does not enumerate every comm
 - Specify file-level changes per item (token names, file paths, test files).
 - Set explicit acceptance per item (renders, theme parity, e2e green).
 - Surface per-item dependencies (e.g. PlayerBar restyle blocks track page).
+
+---
+
+## Shipped 2026-04-25
+
+All four implementation plans landed on `phase-2.5-poc-reskin`:
+
+- `docs/superpowers/plans/2026-04-24-phase-2-5-foundation-and-components.md` — Phase A (tokens / fonts / theme) + Phase B (Footer / CoverArt / ReciterAvatar / TrackRow / Waveform / PlayerBar restyle).
+- `docs/superpowers/plans/2026-04-24-phase-2-5-pages-wave1-public-entities.md` — Home, reciters listing, reciter profile, albums listing, album detail, track detail.
+- `docs/superpowers/plans/2026-04-24-phase-2-5-pages-wave2-discovery-and-auth.md` — `/library/tracks`, `/search`, `(auth)/*` (6 surfaces).
+- `docs/superpowers/plans/2026-04-25-phase-2-5-pages-wave3-contribute-mod-protected-boundaries.md` — `(protected)/{profile, history, settings}`, `/contribute` (landing + 6 wizards + 11 form components), `/mod` (dashboard + queue/audit/users/submission detail + 9 components), `error.tsx` / `not-found.tsx` / 5 `loading.tsx`, plus a final mop-up of 14 chrome primitives that escaped W1/W2 explicit File maps.
+
+See the "What shipped" subsection of the Phase 2.5 entry in `2026-04-21-rebuild-roadmap.md` for the
+end-to-end list (a11y fixes, hover-bg rule codification, test coverage, vibrantColor cleanup,
+Lighthouse canary).
