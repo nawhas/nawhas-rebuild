@@ -165,6 +165,13 @@ describe.skipIf(!dbAvailable)('Moderation Router', () => {
       // review(approved) now writes canonical entity atomically → status='applied'
       expect(result.status).toBe('applied');
 
+      // Register the created reciter for cleanup.
+      const [createdReciter] = await db
+        .select()
+        .from(reciters)
+        .where(eq(reciters.slug, 'review-approve-sub'));
+      if (createdReciter) seededReciterIds.push(createdReciter.id);
+
       // Verify a review record was written.
       const reviews = await db
         .select()
