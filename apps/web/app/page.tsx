@@ -8,7 +8,6 @@ import { HeroSection } from '@/components/home/hero-section';
 import { PopularTracks } from '@/components/home/popular-tracks';
 import { QuoteBanner } from '@/components/home/quote-banner';
 import { SavedStrip } from '@/components/home/saved-strip';
-import { TopNawhasTable } from '@/components/home/top-nawhas-table';
 import { TrendingTracks } from '@/components/home/trending-tracks';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { setDefaultRequestLocale } from '@/i18n/request-locale';
@@ -37,14 +36,13 @@ const createCaller = createCallerFactory(appRouter);
  *   4. QuoteBanner — POC editorial pull-quote (hardcoded copy).
  *   5. FeaturedReciters — flat avatar grid with album/track counts.
  *   6. PopularTracks — POC 2-col card grid with cover + reciter + duration.
- *   7. TopNawhasTable — numbered ordered list with serif rank numerals.
  */
 export default async function HomePage(): Promise<React.JSX.Element> {
   setDefaultRequestLocale();
   const caller = createCaller({ db, session: null, user: null });
-  const [featured, topTracks] = await Promise.all([
+  const [featured, trendingTracks] = await Promise.all([
     caller.home.getFeatured(),
-    caller.home.getTopTracks({ limit: 10 }),
+    caller.home.getTopTracks({ limit: 5 }),
   ]);
 
   return (
@@ -53,12 +51,11 @@ export default async function HomePage(): Promise<React.JSX.Element> {
       <div className="py-10">
         <Container>
           <div className="flex flex-col gap-12">
-            <TrendingTracks tracks={topTracks.slice(0, 5)} />
+            <TrendingTracks tracks={trendingTracks} />
             <SavedStrip />
             <QuoteBanner />
             <FeaturedReciters reciters={featured.reciters} />
             <PopularTracks tracks={featured.tracks} />
-            <TopNawhasTable tracks={topTracks} />
           </div>
         </Container>
       </div>
