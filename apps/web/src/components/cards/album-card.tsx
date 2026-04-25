@@ -3,21 +3,34 @@ import { CoverArt } from '@nawhas/ui';
 import type { AlbumDTO } from '@nawhas/types';
 
 interface AlbumCardProps {
+  /** Required album shape — title / slug / year / artworkUrl. */
   album: AlbumDTO;
+  /** Reciter name to render under the title (e.g. on the /albums grid). */
+  reciterName?: string;
+  /** Track count to render in the meta line (e.g. on the /albums grid). */
+  trackCount?: number;
 }
 
 /**
- * Card displaying an album's cover art, title, and year.
- * Links to the album detail page.
+ * Album card primitive — cover art, title, and meta line linking to the
+ * album detail page.
  *
- * Server Component — no interactivity required.
+ * Variants by props:
+ *  - Bare (no extras) — used on home/recent-albums and reciter discography.
+ *  - With `reciterName` / `trackCount` — used on the /albums listing grid.
+ *
+ * Server Component — no interactivity.
  */
-export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
+export function AlbumCard({ album, reciterName, trackCount }: AlbumCardProps): React.JSX.Element {
+  const ariaLabel = reciterName
+    ? `View album: ${album.title} by ${reciterName}${album.year ? `, ${album.year}` : ''}`
+    : `View album: ${album.title}${album.year ? `, ${album.year}` : ''}`;
+
   return (
     <Link
       href={`/albums/${album.slug}`}
-      className="group flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-colors hover:border-[var(--border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
-      aria-label={`View album: ${album.title}${album.year ? `, ${album.year}` : ''}`}
+      className="group flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+      aria-label={ariaLabel}
     >
       <div className="aspect-square w-full overflow-hidden rounded-xl">
         <CoverArt
@@ -32,8 +45,21 @@ export function AlbumCard({ album }: AlbumCardProps): React.JSX.Element {
         <span className="line-clamp-2 text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)]">
           {album.title}
         </span>
-        {album.year && (
-          <span className="text-xs text-[var(--text-faint)]">{album.year}</span>
+        {reciterName && (
+          <span className="text-xs text-[var(--text-dim)]">{reciterName}</span>
+        )}
+        {(album.year != null || (trackCount != null && trackCount > 0)) && (
+          <div className="flex items-center gap-2 text-xs text-[var(--text-faint)]">
+            {album.year != null && <span>{album.year}</span>}
+            {album.year != null && trackCount != null && trackCount > 0 && (
+              <span aria-hidden="true">·</span>
+            )}
+            {trackCount != null && trackCount > 0 && (
+              <span>
+                {trackCount} {trackCount === 1 ? 'track' : 'tracks'}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </Link>
