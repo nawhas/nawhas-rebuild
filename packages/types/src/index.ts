@@ -362,3 +362,68 @@ export interface ReviewThreadDTO {
   reviews: ReviewThreadEntryDTO[];
   appliedAt: Date | null;
 }
+
+// ---------------------------------------------------------------------------
+// W3 — Contributor lifecycle
+// ---------------------------------------------------------------------------
+
+export const ACCESS_REQUEST_STATUSES = ['pending', 'approved', 'rejected', 'withdrawn'] as const;
+export type AccessRequestStatus = (typeof ACCESS_REQUEST_STATUSES)[number];
+
+export const TRUST_LEVELS = ['new', 'regular', 'trusted', 'maintainer'] as const;
+export type TrustLevel = (typeof TRUST_LEVELS)[number];
+
+export interface AccessRequestDTO {
+  id: string;
+  userId: string;
+  reason: string | null;
+  status: AccessRequestStatus;
+  reviewedBy: string | null;
+  reviewComment: string | null;
+  reviewedAt: Date | null;
+  withdrawnAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** Row in the moderator's /mod/access-requests queue (joined with applicant info). */
+export interface AccessRequestQueueItemDTO extends AccessRequestDTO {
+  applicantName: string;
+  applicantEmail: string;
+  applicantCreatedAt: Date;
+}
+
+export interface ContributorProfileDTO {
+  userId: string;
+  username: string;
+  name: string;
+  bio: string | null;
+  trustLevel: TrustLevel;
+  avatarInitials: string;
+  stats: {
+    total: number;
+    approved: number;
+    pending: number;
+    approvalRate: number; // 0..1, denominator excludes withdrawn
+  };
+}
+
+export interface ContributorHeatmapBucketDTO {
+  date: string; // YYYY-MM-DD (UTC)
+  count: number;
+}
+
+export interface ContributorDashboardStatsDTO {
+  total: number;
+  approved: number;
+  pending: number;
+  withdrawn: number;
+  approvalRate: number; // 0..1, denominator excludes withdrawn
+  last4WeeksBuckets: number[]; // 28 entries, oldest→newest, UTC days
+}
+
+export interface ResubmitContextDTO {
+  priorData: SubmissionData;
+  lastReviewComment: string | null;
+  lastReviewedAt: Date | null;
+}
