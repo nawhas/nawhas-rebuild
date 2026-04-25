@@ -43,7 +43,7 @@ export default async function ModOverviewPage(): Promise<React.JSX.Element> {
   return (
     <div>
       {/* Stat cards */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link
           href="/mod/queue"
           className="rounded-[16px] border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-colors hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"

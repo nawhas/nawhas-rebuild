@@ -70,9 +70,11 @@ export function LoadMoreQueue({ initialCursor }: LoadMoreQueueProps): React.JSX.
         </li>
       ))}
       {error && (
-        <p role="alert" className="mt-2 text-sm text-[var(--color-error-500)]">
-          {error}
-        </p>
+        <li>
+          <p role="alert" className="mt-2 text-sm text-[var(--color-error-500)]">
+            {error}
+          </p>
+        </li>
       )}
       {cursor && (
         <li className="mt-4 text-center">
