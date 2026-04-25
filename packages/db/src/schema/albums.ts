@@ -14,7 +14,6 @@ export const albums = pgTable(
     artworkUrl: text('artwork_url'),
     /** Album notes. App-enforced 1000 char cap. */
     description: text('description'),
-    vibrantColor: text('vibrant_color'),
     typesenseSyncedAt: timestamp('typesense_synced_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

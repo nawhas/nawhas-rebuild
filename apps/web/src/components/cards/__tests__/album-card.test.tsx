@@ -39,7 +39,6 @@ const album = {
   year: 2020,
   description: null,
   artworkUrl: null,
-  vibrantColor: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 } as Parameters<typeof AlbumCard>[0]['album'];

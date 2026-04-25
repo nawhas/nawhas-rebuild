@@ -13,7 +13,6 @@ function makeAlbum(id: string): AlbumDTO {
     reciterId: 'r1',
     year: 2020,
     artworkUrl: null,
-    vibrantColor: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   } as unknown as AlbumDTO;

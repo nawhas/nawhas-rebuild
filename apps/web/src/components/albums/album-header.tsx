@@ -10,11 +10,6 @@ interface AlbumHeaderProps {
  * Album detail header: large cover art, Fraunces title, linked reciter,
  * year, track count.
  *
- * The legacy per-album vibrant-color hero theming (DarkMuted extracted via
- * node-vibrant) is removed in favour of POC's flat surface. See spec
- * section "What gets thrown away" — per-album hero theming was legacy-only
- * and is not in the rebuild's POC direction.
- *
  * Server Component — no interactivity required.
  */
 export function AlbumHeader({ album }: AlbumHeaderProps): React.JSX.Element {
