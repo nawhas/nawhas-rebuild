@@ -1,0 +1,62 @@
+{{- if .Values.digestCronjob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nawhas-moderator-digest
+  namespace: {{ .Values.namespace }}
+spec:
+  schedule: {{ .Values.digestCronjob.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.digestCronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.digestCronjob.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+            seccompProfile:
+              type: RuntimeDefault
+
+          {{- if .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- range .Values.imagePullSecrets }}
+            - name: {{ . }}
+            {{- end }}
+          {{- end }}
+
+          containers:
+            - name: digest
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["pnpm", "--filter", "@nawhas/web", "tsx", "scripts/send-moderator-digest.ts"]
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.secretName }}
+              env:
+                {{- range $key, $value := .Values.env }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+                {{- end }}
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "256Mi"
+                  cpu: "200m"
+{{- end }}

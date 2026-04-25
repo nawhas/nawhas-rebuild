@@ -37,6 +37,13 @@ minio:
 seed:
   enabled: false   # set true on environments that need sample data
 
+# Hourly moderator digest cron. Disable in staging to keep MailHog quiet.
+digestCronjob:
+  enabled: true
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
 # One-shot Helm hook Job: reconcile Typesense collection schemas (create missing, recreate if outdated).
 # Runs before the seed hook (weight 5 vs 10). Disable only if you manage Typesense schemas entirely out-of-band.
 typesenseSchemaJob:
