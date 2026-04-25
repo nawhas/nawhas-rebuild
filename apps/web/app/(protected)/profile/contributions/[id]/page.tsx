@@ -16,6 +16,7 @@ import {
   SubmissionStatusBadge,
 } from '@/components/mod/badges';
 import { ChangesRequestedBanner } from '@/components/contribute/changes-requested-banner';
+import { WithdrawButton } from './withdraw-button';
 import type { SubmissionDTO, ResubmitContextDTO } from '@nawhas/types';
 
 export const dynamic = 'force-dynamic';
@@ -118,6 +119,12 @@ export default async function MyContributionDetailPage({
       </section>
 
       <ReviewThread thread={thread} variant="contributor" />
+
+      {(submission.status === 'pending' || submission.status === 'changes_requested') && (
+        <div className="mt-6">
+          <WithdrawButton id={submission.id} />
+        </div>
+      )}
     </main>
   );
 }

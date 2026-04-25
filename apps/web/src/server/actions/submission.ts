@@ -104,3 +104,12 @@ export async function fetchSubmission(id: string): Promise<SubmissionDTO> {
   const caller = await getAuthenticatedCaller('submission.fetchSubmission');
   return caller.submission.get({ id });
 }
+
+/**
+ * Withdraw the caller's own pending or changes_requested submission.
+ * Surfaces tRPC errors as a thrown Error (caller catches + toasts).
+ */
+export async function withdrawMySubmission(id: string): Promise<{ ok: true }> {
+  const caller = await getAuthenticatedCaller('submission.withdrawMySubmission');
+  return caller.submission.withdrawMine({ id });
+}
