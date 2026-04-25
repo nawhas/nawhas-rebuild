@@ -286,7 +286,7 @@ export const submissionRouter = router({
    * redacted to empty string and reviewer role to null.
    */
   getMyReviewThread: protectedProcedure
-    .input(z.object({ submissionId: z.string().uuid() }))
+    .input(z.object({ submissionId: z.uuid() }))
     .query(async ({ ctx, input }): Promise<ReviewThreadDTO> => {
       const [submission] = await ctx.db
         .select({
