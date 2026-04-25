@@ -25,7 +25,7 @@ export function SubmissionRow({ submission }: { submission: SubmissionDTO }): Re
         <Link
           href={href}
           prefetch={false}
-          className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+          className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:-outline-offset-2"
         >
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="truncate text-sm font-medium text-[var(--text)]">{label}</span>

@@ -137,7 +137,7 @@ export default async function SubmissionDetailPage({
       </div>
 
       {/* Metadata sidebar */}
-      <aside className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-6 sticky top-24 self-start">
+      <aside className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[16px] p-6 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto">
         <h2 className="font-serif text-[18px] font-medium text-[var(--text)] mb-4">
           Details
         </h2>

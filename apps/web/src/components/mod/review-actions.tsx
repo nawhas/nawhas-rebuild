@@ -70,6 +70,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
             type="button"
             onClick={() => handleAction(expanded)}
             disabled={isPending}
+            aria-busy={isPending || undefined}
             className={
               expanded === 'rejected'
                 ? 'rounded-[8px] bg-[var(--color-error-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-error-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-error-500)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
@@ -101,6 +102,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         type="button"
         onClick={() => handleAction('approved')}
         disabled={isPending}
+        aria-busy={isPending || undefined}
         className="rounded-[8px] bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? t('submitting') : t('approve')}
@@ -110,6 +112,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         type="button"
         onClick={() => handleAction('changes_requested')}
         disabled={isPending}
+        aria-busy={isPending || undefined}
         className="rounded-[8px] bg-[var(--input-bg)] border border-[var(--border)] px-5 py-2.5 text-sm font-medium text-[var(--text)] hover:border-[var(--border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {t('requestChanges')}
@@ -119,6 +122,7 @@ export function ReviewActions({ submissionId }: ReviewActionsProps): React.JSX.E
         type="button"
         onClick={() => handleAction('rejected')}
         disabled={isPending}
+        aria-busy={isPending || undefined}
         className="rounded-[8px] bg-[var(--color-error-600)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-error-700)] focus-visible:outline-2 focus-visible:outline-[var(--color-error-500)] focus-visible:outline-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {t('reject')}
