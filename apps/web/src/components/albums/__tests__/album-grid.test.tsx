@@ -26,9 +26,11 @@ vi.mock('@nawhas/ui', () => ({
 }));
 
 // Mock the server action — tests control what it resolves to.
-const mockFetchMoreAlbums = vi.fn<(cursor: string) => Promise<PaginatedResult<AlbumListItemDTO>>>();
+const mockFetchMoreAlbums = vi.fn<
+  (input: { cursor: string; year?: number }) => Promise<PaginatedResult<AlbumListItemDTO>>
+>();
 vi.mock('@/server/actions/albums', () => ({
-  fetchMoreAlbums: (cursor: string) => mockFetchMoreAlbums(cursor),
+  fetchMoreAlbums: (input: { cursor: string; year?: number }) => mockFetchMoreAlbums(input),
 }));
 
 function makeAlbum(id: string, title: string): AlbumListItemDTO {
@@ -87,7 +89,20 @@ describe('AlbumGrid', () => {
     fireEvent.click(screen.getByRole('button', { name: /load more/i }));
 
     await waitFor(() => {
-      expect(mockFetchMoreAlbums).toHaveBeenCalledWith('my-cursor');
+      expect(mockFetchMoreAlbums).toHaveBeenCalledWith({ cursor: 'my-cursor' });
+    });
+  });
+
+  it('threads the year filter into fetchMoreAlbums when set', async () => {
+    mockFetchMoreAlbums.mockResolvedValue({ items: [], nextCursor: null });
+
+    render(
+      <AlbumGrid initialItems={TWO_ALBUMS} initialCursor="cursor-abc" year={2020} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /load more/i }));
+
+    await waitFor(() => {
+      expect(mockFetchMoreAlbums).toHaveBeenCalledWith({ cursor: 'cursor-abc', year: 2020 });
     });
   });
 

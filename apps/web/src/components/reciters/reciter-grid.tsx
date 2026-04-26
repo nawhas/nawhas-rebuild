@@ -1,21 +1,23 @@
 'use client';
 
 import { useState, useTransition, useMemo } from 'react';
-import type { ReciterDTO } from '@nawhas/types';
+import type { ReciterFeaturedDTO } from '@nawhas/types';
 import { ReciterCard } from '@/components/cards/reciter-card';
 import { LoadMore } from '@/components/pagination/load-more';
 import { fetchMoreReciters } from '@/server/actions/reciters';
 
 interface ReciterGridProps {
-  initialItems: ReciterDTO[];
+  initialItems: ReciterFeaturedDTO[];
   initialCursor: string | null;
 }
 
 /**
  * Group reciters by their first letter (A–Z, '#' for non-alpha leading char).
  */
-function groupByLetter(reciters: ReciterDTO[]): Map<string, ReciterDTO[]> {
-  const groups = new Map<string, ReciterDTO[]>();
+function groupByLetter(
+  reciters: ReciterFeaturedDTO[],
+): Map<string, ReciterFeaturedDTO[]> {
+  const groups = new Map<string, ReciterFeaturedDTO[]>();
   for (const reciter of reciters) {
     const first = reciter.name.charAt(0).toUpperCase();
     const letter = /[A-Z]/.test(first) ? first : '#';
@@ -38,10 +40,11 @@ function groupByLetter(reciters: ReciterDTO[]): Map<string, ReciterDTO[]> {
  *
  * Client Component — manages accumulated items + cursor for "Load More".
  * Reciters are grouped client-side by leading letter; the nav scrolls to
- * the corresponding `<section id="letter-X">` block.
+ * the corresponding `<section id="letter-X">` block. Letter buttons use
+ * the POC pill-button styling (bordered surface, accent on hover).
  */
 export function ReciterGrid({ initialItems, initialCursor }: ReciterGridProps): React.JSX.Element {
-  const [items, setItems] = useState<ReciterDTO[]>(initialItems);
+  const [items, setItems] = useState<ReciterFeaturedDTO[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isPending, startTransition] = useTransition();
 
@@ -60,16 +63,16 @@ export function ReciterGrid({ initialItems, initialCursor }: ReciterGridProps): 
 
   return (
     <div className="flex flex-col gap-12">
-      {/* A–Z anchor nav */}
+      {/* A–Z anchor nav — POC pill-button styling */}
       <nav
         aria-label="Reciters by letter"
-        className="sticky top-16 z-10 flex flex-wrap gap-2 rounded-xl border border-[var(--border)] bg-[var(--header-bg)] px-4 py-2 backdrop-blur"
+        className="sticky top-16 z-10 flex flex-wrap gap-2 rounded-xl border border-[var(--border)] bg-[var(--header-bg)] px-3 py-2 backdrop-blur"
       >
         {letters.map((letter) => (
           <a
             key={letter}
             href={`#letter-${letter}`}
-            className="rounded-[6px] px-2 py-1 text-sm font-medium text-[var(--text-dim)] hover:bg-[var(--surface)] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
+            className="rounded-md border border-[var(--border)] bg-transparent px-3 py-1.5 text-[13px] font-medium text-[var(--text)] transition-colors hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
           >
             {letter}
           </a>

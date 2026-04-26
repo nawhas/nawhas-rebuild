@@ -24,9 +24,9 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Header / Navbar | ✅ | Aligned — gradient logo + Library link + short labels + Contribute pill + POC dropdown style |
 | Player bar | ⬜ | Close — Current has more features (queue, lazy load) |
 | Home | ✅ | Aligned — POC hero + 6-section roster (Trending / Saved / Quote / Top Reciters / Popular / TopNawhas); plays-count + trending data on roadmap |
-| Reciters list | ⬜ | Close — A–Z filter unclear |
+| Reciters list | ✅ | Aligned — anchor nav restyled to POC pills + counts on cards (counts via aggregated reciter.list) |
 | Reciter detail | ✅ | Aligned — 200px avatar grid, bio + location + counts + pills, new Popular Tracks section, larger initial discography page |
-| Albums list | ⬜ | Close — year filter removed |
+| Albums list | ✅ | Aligned — URL-driven year filter dropdown + paginated grid (server-side filter coexists with load-more) |
 | Album detail | ✅ | Aligned — dropped card chrome, eyebrow + description + action pills, accent-soft reciter link, +Add track in tracks header |
 | Track detail | ✅ | Aligned — kept nested URL; new POC hero, breadcrumb, sidebar, lyrics empty-state; YouTube simplified |
 | Library | ⬜ | Differs significantly (paradigm change) |
@@ -156,21 +156,23 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 5. Reciters list
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 
 **POC:** `src/app/reciters/page.tsx` (client)
-**Current:** `apps/web/app/reciters/page.tsx` + `src/components/reciters/reciter-grid.tsx`
+**Current:** `apps/web/app/reciters/page.tsx` + `apps/web/src/components/reciters/reciter-grid.tsx`
 
 **Findings:**
-- POC: sticky A–Z letter filter buttons + "All" + 4-col grid, all client-side filtered with `useMemo`.
-- Current: server-fetches first 24, client `ReciterGrid` does cursor-based load-more. A–Z filter not visible in page file.
-- Card content matches: avatar + name + "tracks · albums" count.
+- POC: client-side filterable A–Z letter buttons (clicking "B" filters list to B-prefix), 4-col grid, cards show "{N} tracks · {N} albums" subtitle.
+- Current was: A–Z **anchor nav** (clicking jumps to letter section), 2/3/4-col responsive grid via `<ReciterCard>`, no counts on cards.
 
-**Decisions needed:**
-- [ ] Restore A–Z letter filter, or keep load-more pagination?
-- [ ] Hybrid: keep load-more but add letter quick-jump?
+**Decision:**
+- [x] **Hybrid (user-chosen)** — keep Current's anchor-nav behavior + load-more pagination, restyle the letter buttons to POC's pill look (bordered, `var(--accent)` bg + white text on hover), and add POC's "{N} tracks · {N} albums" subtitle to each card. Backend: `reciter.list` now returns `ReciterFeaturedDTO[]` (with aggregated counts via `tracks⨝albums⨝reciters` group-by).
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Backend: `reciter.list` aggregates `albumCount` + `trackCount` per row — `apps/web/src/server/routers/reciter.ts`. Stub-DB unit test updated for the new chain (`leftJoin` + `groupBy`) — `apps/web/src/__tests__/reciter.test.ts`.
+- ✅ Server action `fetchMoreReciters` return type bumped to `PaginatedResult<ReciterFeaturedDTO>` — `apps/web/src/server/actions/reciters.ts`.
+- ✅ `ReciterCard` accepts `ReciterDTO | ReciterFeaturedDTO`; renders the counts subtitle when the richer shape is passed — `apps/web/src/components/cards/reciter-card.tsx`.
+- ✅ `ReciterGrid` typed against `ReciterFeaturedDTO[]`; A–Z anchor-nav buttons restyled to POC pill look (`border + transparent bg`, accent-on-hover) — `apps/web/src/components/reciters/reciter-grid.tsx`. Tests updated in `__tests__/reciter-grid.test.tsx`.
 
 ---
 
@@ -207,21 +209,25 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 7. Albums list
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 
 **POC:** `src/app/albums/page.tsx`
-**Current:** `apps/web/app/albums/page.tsx` + `src/components/albums/album-grid.tsx`
+**Current:** `apps/web/app/albums/page.tsx` + `apps/web/src/components/albums/album-grid.tsx`
 
 **Findings:**
-- POC: year-filter dropdown + 5-col grid. Reciter-filter code exists but isn't wired.
-- Current: server-fetches 24, client `AlbumGrid` load-more. No year filter visible.
-- Card content matches: cover + title + year (Current may add reciter name).
+- POC: year-filter dropdown + 5-col grid. Reciter-filter code stubbed but unwired.
+- Current was: paginated 2/3/4-col `<AlbumGrid>` with load-more. No filters.
 
-**Decisions needed:**
-- [ ] Restore year filter (POC) or keep load-more only (Current)?
-- [ ] Wire up reciter filter that POC stubbed out?
+**Decision:**
+- [x] **A** — add a server-side year filter (URL-driven via `?year=`) that coexists with pagination. Reciter filter skipped (POC's stub was unwired; can be added in a future iteration if needed).
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Backend: `album.list` accepts an optional `year` filter; new `album.listAvailableYears` procedure returns DISTINCT release years (newest-first) for the dropdown — `apps/web/src/server/routers/album.ts`.
+- ✅ Server action `fetchMoreAlbums` signature bumped from `(cursor: string)` to `({ cursor, year? })` so subsequent pages stay scoped to the same filter — `apps/web/src/server/actions/albums.ts`.
+- ✅ New `<YearFilter>` client component (URL-driven dropdown using `useRouter` + `useSearchParams` + `useTransition`) — `apps/web/src/components/albums/year-filter.tsx`.
+- ✅ `<AlbumGrid>` now takes `year?: number | null`, threads it into load-more, and resets accumulated state on filter change — `apps/web/src/components/albums/album-grid.tsx`. Tests updated in `__tests__/album-grid.test.tsx` (mock signature change + new year-threading test).
+- ✅ Page reads `?year=`, renders the filter alongside the title in a flex-row header, and shows a friendly empty-state card when the filter has no matches — `apps/web/app/albums/page.tsx`.
+- ✅ i18n: new `albumsPage.yearFilter.{label,allYears}` and `albumsPage.noResults` keys.
 
 ---
 

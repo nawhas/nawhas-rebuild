@@ -278,6 +278,13 @@
       "addAlbum": "Add album"
     }
   },
+  "albumsPage": {
+    "yearFilter": {
+      "label": "Year",
+      "allYears": "All years"
+    },
+    "noResults": "No albums match this filter."
+  },
   "albumDetail": {
     "eyebrow": "Album",
     "releasedPrefix": "Released",

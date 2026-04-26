@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, cleanup, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ReciterGrid } from '../reciter-grid';
-import type { ReciterDTO, PaginatedResult } from '@nawhas/types';
+import type { ReciterFeaturedDTO, PaginatedResult } from '@nawhas/types';
 
 // Mock next/link so it renders as a plain anchor.
 vi.mock('next/link', () => ({
@@ -21,16 +21,18 @@ vi.mock('next/link', () => ({
 }));
 
 // Mock the server action — tests control what it resolves to.
-const mockFetchMoreReciters = vi.fn<(cursor: string) => Promise<PaginatedResult<ReciterDTO>>>();
+const mockFetchMoreReciters = vi.fn<(cursor: string) => Promise<PaginatedResult<ReciterFeaturedDTO>>>();
 vi.mock('@/server/actions/reciters', () => ({
   fetchMoreReciters: (cursor: string) => mockFetchMoreReciters(cursor),
 }));
 
-function makeReciter(id: string, name: string): ReciterDTO {
+function makeReciter(id: string, name: string): ReciterFeaturedDTO {
   return {
     id,
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-'),
+    albumCount: 0,
+    trackCount: 0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -41,7 +43,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const TWO_RECITERS: ReciterDTO[] = [
+const TWO_RECITERS: ReciterFeaturedDTO[] = [
   makeReciter('1', 'Reciter One'),
   makeReciter('2', 'Reciter Two'),
 ];
@@ -70,7 +72,7 @@ describe('ReciterGrid', () => {
   });
 
   it('appends new reciters when Load More is clicked', async () => {
-    const nextPage: ReciterDTO[] = [makeReciter('3', 'Reciter Three')];
+    const nextPage: ReciterFeaturedDTO[] = [makeReciter('3', 'Reciter Three')];
     mockFetchMoreReciters.mockResolvedValue({ items: nextPage, nextCursor: null });
 
     render(<ReciterGrid initialItems={TWO_RECITERS} initialCursor="cursor-abc" />);

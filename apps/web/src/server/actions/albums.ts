@@ -11,11 +11,21 @@ const createCaller = createCallerFactory(appRouter);
 /**
  * Server action: fetch the next page of albums.
  * Used by the AlbumGrid client component for "Load More".
+ *
+ * Carries the optional year filter so subsequent pages stay scoped to the
+ * same filtered slice the user is browsing.
  */
-export async function fetchMoreAlbums(cursor: string): Promise<PaginatedResult<AlbumListItemDTO>> {
+export async function fetchMoreAlbums(input: {
+  cursor: string;
+  year?: number;
+}): Promise<PaginatedResult<AlbumListItemDTO>> {
   return withServerActionLogging('albums.fetchMoreAlbums', async () => {
     const caller = createCaller({ db, session: null, user: null });
-    return caller.album.list({ limit: 24, cursor });
+    return caller.album.list({
+      limit: 24,
+      cursor: input.cursor,
+      ...(input.year !== undefined ? { year: input.year } : {}),
+    });
   });
 }
 

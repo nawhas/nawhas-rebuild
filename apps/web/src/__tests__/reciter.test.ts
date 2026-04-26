@@ -30,12 +30,15 @@ function makeReciter(overrides: Partial<{
   };
 }
 
-// Build a stub DB whose select().from().where().orderBy().limit() chain
-// resolves to `rows`.
+// Build a stub DB whose
+// select(...).from(...).leftJoin(...).leftJoin(...).where(...).groupBy(...).orderBy(...).limit(...)
+// chain resolves to `rows`. Mirrors the aggregation query used by reciter.list.
 function makeStubDb(rows: ReturnType<typeof makeReciter>[]): Database {
   const chain = {
     from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
     limit: vi.fn().mockResolvedValue(rows),
   };

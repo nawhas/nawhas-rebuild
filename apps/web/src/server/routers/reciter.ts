@@ -3,14 +3,21 @@ import { and, asc, desc, eq, gt, lt, or, sql } from 'drizzle-orm';
 import { reciters, albums, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
-import type { PaginatedResult, ReciterDTO, ReciterWithAlbumsDTO } from '@nawhas/types';
+import type {
+  PaginatedResult,
+  ReciterFeaturedDTO,
+  ReciterWithAlbumsDTO,
+} from '@nawhas/types';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
 export const reciterRouter = router({
   /**
-   * Returns a paginated list of reciters ordered by creation date (newest first).
+   * Returns a paginated list of reciters ordered by creation date (newest first),
+   * enriched with `albumCount` + `trackCount` per row so list/grid cards can
+   * render the "{N} tracks · {N} albums" subtitle without an N+1 fetch.
+   *
    * Cursor encodes (createdAt, id); next page satisfies:
    *   (created_at < cursor_created_at) OR (created_at = cursor_created_at AND id > cursor_id)
    */
@@ -21,10 +28,10 @@ export const reciterRouter = router({
         cursor: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }): Promise<PaginatedResult<ReciterDTO>> => {
+    .query(async ({ ctx, input }): Promise<PaginatedResult<ReciterFeaturedDTO>> => {
       const limit = input.limit;
 
-      const where = input.cursor
+      const cursorWhere = input.cursor
         ? (() => {
             const { createdAt, id } = decodeCursor(input.cursor);
             return or(
@@ -35,9 +42,25 @@ export const reciterRouter = router({
         : undefined;
 
       const rows = await ctx.db
-        .select()
+        .select({
+          id: reciters.id,
+          name: reciters.name,
+          slug: reciters.slug,
+          arabicName: reciters.arabicName,
+          country: reciters.country,
+          birthYear: reciters.birthYear,
+          description: reciters.description,
+          avatarUrl: reciters.avatarUrl,
+          createdAt: reciters.createdAt,
+          updatedAt: reciters.updatedAt,
+          albumCount: sql<number>`count(distinct ${albums.id})::int`,
+          trackCount: sql<number>`count(distinct ${tracks.id})::int`,
+        })
         .from(reciters)
-        .where(where)
+        .leftJoin(albums, eq(albums.reciterId, reciters.id))
+        .leftJoin(tracks, eq(tracks.albumId, albums.id))
+        .where(cursorWhere)
+        .groupBy(reciters.id)
         .orderBy(desc(reciters.createdAt), asc(reciters.id))
         .limit(limit + 1);
 

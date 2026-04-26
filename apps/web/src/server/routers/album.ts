@@ -20,12 +20,14 @@ export const albumRouter = router({
       z.object({
         limit: z.number().int().min(1).max(MAX_LIMIT).optional().default(DEFAULT_LIMIT),
         cursor: z.string().optional(),
+        /** Optional release-year filter for the catalogue list page. */
+        year: z.number().int().min(1900).max(2200).optional(),
       }),
     )
     .query(async ({ ctx, input }): Promise<PaginatedResult<AlbumListItemDTO>> => {
       const limit = input.limit;
 
-      const where = input.cursor
+      const cursorWhere = input.cursor
         ? (() => {
             const { createdAt, id } = decodeCursor(input.cursor);
             return or(
@@ -34,6 +36,13 @@ export const albumRouter = router({
             );
           })()
         : undefined;
+
+      const yearWhere = input.year !== undefined ? eq(albums.year, input.year) : undefined;
+
+      const conditions = [cursorWhere, yearWhere].filter(
+        (c): c is NonNullable<typeof c> => c !== undefined,
+      );
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await ctx.db
         .select({
@@ -62,6 +71,21 @@ export const albumRouter = router({
         hasMore && lastItem ? encodeCursor(lastItem.createdAt, lastItem.id) : null;
 
       return { items: items.map((r) => ({ ...r, trackCount: Number(r.trackCount) })), nextCursor };
+    }),
+
+  /**
+   * Returns the distinct release years present in the catalogue, ordered
+   * newest-first. Used to populate the year filter dropdown on /albums.
+   * Excludes albums with `year IS NULL`.
+   */
+  listAvailableYears: publicProcedure
+    .query(async ({ ctx }): Promise<number[]> => {
+      const rows = await ctx.db
+        .selectDistinct({ year: albums.year })
+        .from(albums)
+        .where(isNotNull(albums.year))
+        .orderBy(desc(albums.year));
+      return rows.map((r) => r.year).filter((y): y is number => y !== null);
     }),
 
   /**
