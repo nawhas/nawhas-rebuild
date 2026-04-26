@@ -69,17 +69,24 @@ export default async function ContributorProfilePage({
         </div>
       </section>
 
-      <section className="mt-10 grid grid-cols-3 gap-4">
+      <section className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { label: 'Total', value: profile.stats.total },
-          { label: 'Approved', value: profile.stats.approved },
-          { label: 'Pending', value: profile.stats.pending },
+          { label: 'Total', value: profile.stats.total, placeholder: false },
+          { label: 'Approved', value: profile.stats.approved, placeholder: false },
+          { label: 'Pending', value: profile.stats.pending, placeholder: false },
+          // Total Plays — POC stat slot. Placeholder until the play-count
+          // data source lands (tracked as a Phase 2.6 follow-up alongside
+          // Trending / PopularTracks plays).
+          { label: 'Total Plays', value: '—', placeholder: true },
         ].map((stat) => (
           <div
             key={stat.label}
             className="rounded-[12px] border border-[var(--border)] bg-[var(--surface)] p-5 text-center"
           >
-            <div className="font-serif text-3xl font-semibold text-[var(--text)]">
+            <div
+              className={`font-serif text-3xl font-semibold ${stat.placeholder ? 'text-[var(--text-faint)]' : 'text-[var(--text)]'}`}
+              aria-label={stat.placeholder ? `${stat.label}: not yet available` : undefined}
+            >
               {stat.value}
             </div>
             <div className="mt-1 text-xs uppercase tracking-wide text-[var(--text-faint)]">

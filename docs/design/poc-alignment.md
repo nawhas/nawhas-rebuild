@@ -22,7 +22,7 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Fonts (Inter / Fraunces / Noto Nastaliq) | ✅ | Exact match |
 | Footer | ✅ | Exact match in structure |
 | Header / Navbar | ✅ | Aligned — gradient logo + Library link + short labels + Contribute pill + POC dropdown style |
-| Player bar | ⬜ | Close — Current has more features (queue, lazy load) |
+| Player bar | ✅ | Aligned — POC white-circle play button + close affordance, all production controls retained |
 | Home | ✅ | Aligned — POC hero + 6-section roster (Trending / Saved / Quote / Top Reciters / Popular / TopNawhas); plays-count + trending data on roadmap |
 | Reciters list | ✅ | Aligned — anchor nav restyled to POC pills + counts on cards (counts via aggregated reciter.list) |
 | Reciter detail | ✅ | Aligned — 200px avatar grid, bio + location + counts + pills, new Popular Tracks section, larger initial discography page |
@@ -30,9 +30,9 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Album detail | ✅ | Aligned — dropped card chrome, eyebrow + description + action pills, accent-soft reciter link, +Add track in tracks header |
 | Track detail | ✅ | Aligned — kept nested URL; new POC hero, breadcrumb, sidebar, lyrics empty-state; YouTube simplified |
 | Library | ⬜ | Differs significantly (paradigm change) |
-| Dashboard | ⬜ | Close — sidebar widget differs |
-| Contributor profile | ⬜ | Close — one stat removed |
-| Changes feed | ⬜ | Close — filter sidebar removed |
+| Dashboard | ✅ | Aligned — Most Needed sidebar restored visually; real counts on roadmap |
+| Contributor profile | ✅ | Aligned — 4-stat grid restored with Total Plays placeholder; real count on roadmap |
+| Changes feed | ✅ | Aligned — type-filter sidebar restored (URL-driven, hierarchy order) |
 | Submit / Contribute | ⬜ | Differs significantly (IA change) |
 | Moderation | ⬜ | Differs significantly (IA change) |
 
@@ -94,22 +94,21 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 3. Player bar
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 
 **POC:** `src/components/MiniPlayer.tsx`
 **Current:** `apps/web/src/components/player/PlayerBar.tsx` + `PlayerBarLazy.tsx`
 
 **Findings:**
-- Layout matches: fixed bottom, 3-column (track info | play+progress | close).
-- Colors match: dark overlay, accent red progress bar.
-- Current adds queue panel + now-playing modal (PlayerPanels) — POC has none.
-- Current lazy-loads (`next/dynamic({ ssr: false })`) — POC inlines.
-- Current has PlayerBarSpacer to reserve layout height — POC uses `paddingBottom: "100px"` on body.
+- POC is a minimal prototype (track info | play/pause + progress | close button).
+- Current is a richer production player — shuffle, prev/next, volume, queue toggle, mobile overlay, save button, listening-history hook, keyboard shortcuts.
 
-**Decisions needed:**
-- [ ] Keep Current's queue panel + now-playing modal? (POC doesn't show these)
+**Decision:**
+- [x] **C — Hybrid**: keep all production controls, but adopt POC's specific visual treatment (white-circle play button with dark glyph, plus a "close" button that fully dismisses the player).
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Player store: new `stop()` action that clears `currentTrack`/`queue`/`isPlaying`/`position`/`duration`/`currentLyrics` and closes the queue + mobile overlay — `apps/web/src/store/player.ts`.
+- ✅ PlayerBar: play button restyled to POC's white-on-dark (`bg-[var(--text)] text-[var(--bg)]`); new close button on the far right uses the existing `nav.dismissPlayer` i18n key — `apps/web/src/components/player/PlayerBar.tsx`.
 
 ---
 
@@ -323,61 +322,63 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 11. Dashboard
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 
 **POC:** `src/app/dashboard/page.tsx`
 **Current:** `apps/web/app/(protected)/dashboard/page.tsx`
 
 **Findings:**
-- Layout matches: 2-col (main + 280px sidebar) with 4-stat grid + submission tabs.
-- Current uses `ContributorHero` component + i18n + real data.
-- POC has "Most Needed" sidebar (Translations / Lyrics / Metadata). Current dropped it.
-- Current adds "View profile" link to public contributor page.
+- Main layout already matched (2-col, ContributorHero, 4-stat grid, submission tabs, Quick Actions sidebar). "View profile" link was a Current addition we kept.
+- POC's "Most Needed" sidebar (Translations / Lyrics / Metadata + counts) was missing.
 
-**Decisions needed:**
-- [ ] Restore "Most Needed" sidebar?
-- [ ] Keep "View profile" link in addition?
+**Decision:**
+- [x] **B — visual restoration with placeholders.** New `<MostNeededPanel>` rendered below Quick Actions in the dashboard sidebar, showing the three categories with `—` counts until real backend aggregations land. Tracked as a Phase 2.6 follow-up in the roadmap.
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Inline `MostNeededPanel` (async server component) added to `apps/web/app/(protected)/dashboard/page.tsx`. Uses new `dashboard.mostNeeded.*` i18n keys.
+- 📌 Roadmap entry under Phase 2.6: real counts via a new `dashboard.mostNeeded` tRPC procedure (definitions and "where do rows link" left open until the data lands).
 
 ---
 
 ## 12. Contributor public profile
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 
 **POC:** `src/app/contributor/[slug]/page.tsx`
 **Current:** `apps/web/app/contributor/[username]/page.tsx`
 
 **Findings:**
-- Layout matches: avatar (200px POC) + 3-col stat grid + heatmap + badges.
-- POC stats: Total / Approved / Pending / **Total Plays**. Current: dropped "Total Plays".
-- Current uses `ContributorHero` (shared with Dashboard) + server-fetched heatmap.
-- Badges visually identical (emoji pills).
+- Main layout already matched (ContributorHero + heatmap + stat grid + badges).
+- POC stats grid had 4 cards (Total / Approved / Pending / **Total Plays**); Current was 3 (Total Plays dropped because we don't have play-count data).
 
-**Decisions needed:**
-- [ ] Restore "Total Plays" stat?
+**Decision:**
+- [x] **A — visual restoration with placeholder.** Stats grid bumped from `grid-cols-3` to `grid-cols-2 md:grid-cols-4`; new "Total Plays" card renders `—` in `var(--text-faint)` with an aria-label clarifying "not yet available". Real count lands when the play-count aggregation does — the existing Phase 2.6 follow-up in the roadmap is extended to call out this slot too.
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Stats grid updated with placeholder Total Plays card — `apps/web/app/contributor/[username]/page.tsx`.
+- 📌 Roadmap: extended the Trending / PopularTracks plays-count follow-up to also cover this stat.
 
 ---
 
 ## 13. Changes feed
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 
 **POC:** `src/app/changes/page.tsx`
 **Current:** `apps/web/app/changes/page.tsx`
 
 **Findings:**
-- Layout matches: 2-col (main + 280px sidebar) with date-grouped change cards.
-- POC has type-filter sidebar (All / Lyrics / Metadata / etc). Current dropped it.
-- Current extracted `ChangesDaySection` component.
+- Date-grouped change cards already matched (`<ChangesDaySection>`).
+- POC has a "Filter by Type" right rail; Current was single-column with no filter.
 
-**Decisions needed:**
-- [ ] Restore type-filter sidebar?
+**Decision:**
+- [x] **A — full restoration** with the filter ordered by catalogue hierarchy (broadest → most granular): **All Changes → Reciters → Albums → Tracks**. URL-driven via `?type=` (same pattern as the Albums year filter).
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Backend: `home.recentChanges` accepts an optional `type` enum (`'reciter' | 'album' | 'track'`) that adds `eq(auditLog.targetType, ...)` to the WHERE clause — `apps/web/src/server/routers/home.ts`.
+- ✅ New client component `<ChangesTypeFilter>` — URL-driven filter buttons with `useTransition` spinner — `apps/web/src/components/changes/changes-type-filter.tsx`.
+- ✅ Page rewritten to a 2-col grid (`1fr_240px`) with the filter sidebar; reads `?type=` and passes through to the procedure; new `emptyForFilter` empty state when a filter has zero matches — `apps/web/app/changes/page.tsx`.
+- ✅ i18n: new `changes.filter.{heading,all,reciters,albums,tracks}` keys + `changes.emptyForFilter`.
 
 ---
 

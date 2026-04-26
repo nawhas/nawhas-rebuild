@@ -140,6 +140,7 @@ export function PlayerBar(): React.JSX.Element {
 
   const pause = usePlayerStore((s) => s.pause);
   const resume = usePlayerStore((s) => s.resume);
+  const stop = usePlayerStore((s) => s.stop);
   const next = usePlayerStore((s) => s.next);
   const previous = usePlayerStore((s) => s.previous);
   const setPosition = usePlayerStore((s) => s.setPosition);
@@ -314,13 +315,14 @@ export function PlayerBar(): React.JSX.Element {
             <PreviousIcon />
           </button>
 
-          {/* Play / Pause — primary CTA in POC accent. */}
+          {/* Play / Pause — POC treatment: white circle with dark glyph,
+              high contrast against the dark player bar. */}
           <button
             type="button"
             onClick={isPlaying ? pause : resume}
             aria-label={isPlaying ? t('pause') : t('play')}
             tabIndex={isVisible ? 0 : -1}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface)]"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--text)] text-[var(--bg)] transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface)]"
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -387,8 +389,28 @@ export function PlayerBar(): React.JSX.Element {
           >
             <QueueIcon />
           </button>
+
+          {/* Close — dismiss the player (POC treatment, persists production
+              shuffle/queue/volume affordances). */}
+          <button
+            type="button"
+            onClick={stop}
+            aria-label={t('dismissPlayer')}
+            tabIndex={isVisible ? 0 : -1}
+            className="rounded p-1.5 text-[var(--text-dim)] transition-colors hover:bg-[var(--bg)] hover:text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--surface)]"
+          >
+            <CloseIcon />
+          </button>
         </div>
       </div>
     </div>
+  );
+}
+
+function CloseIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+      <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+    </svg>
   );
 }

@@ -773,11 +773,34 @@ A-implementation:
 - Same play-count source unblocks the "Most Popular Tracks" card
   subtitle (currently shows duration as a placeholder; POC shows a
   "{N} plays" count).
+- Same source also unblocks the **Total Plays** stat on the public
+  contributor profile (`/contributor/[username]`) — the slot is rendered
+  today as a 4th stat card with a `—` placeholder so the layout matches
+  POC; backfill the count once the play-count aggregation exists.
 
 Blocked on having real play-count data in production. Sequencing: queue
 this immediately after Phase 2.6's home-page section is done; can run
 in parallel with Phase 3 launch prep since it doesn't touch
 data-migration or SEO.
+
+#### Follow-up: real "Most Needed" counts on the contributor dashboard
+
+`<MostNeededPanel>` on the contributor dashboard currently renders three
+placeholder rows (Translations / Lyrics / Metadata) with `—` for the
+count. Real counts need a new tRPC procedure that aggregates:
+
+- **Lyrics** — tracks with zero lyrics rows.
+- **Translations** — tracks with lyrics in only one language (i.e.
+  another language slot is empty and worth contributing).
+- **Metadata** — albums missing a release year (or some richer
+  "incomplete metadata" rule once we settle on what counts).
+
+Open question: should each row link somewhere actionable (e.g. a
+filtered `/contribute` queue) or stay as informational stats? Both UX
+patterns work; deferring the call until the underlying definitions are
+stable.
+
+Low priority — pure dashboard polish, not a launch blocker.
 
 #### Follow-up: editable / rotating quote banner
 

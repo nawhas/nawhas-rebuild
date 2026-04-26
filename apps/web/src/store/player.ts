@@ -27,6 +27,8 @@ interface PlayerActions {
   play: (track: TrackDTO) => void;
   pause: () => void;
   resume: () => void;
+  /** Dismiss the player: clear the current track and queue, reset position. */
+  stop: () => void;
   next: () => void;
   previous: () => void;
   addToQueue: (track: TrackDTO) => void;
@@ -106,6 +108,20 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
     if (get().currentTrack !== null) {
       set({ isPlaying: true });
     }
+  },
+
+  stop() {
+    set({
+      currentTrack: null,
+      queue: [],
+      queueIndex: -1,
+      isPlaying: false,
+      position: 0,
+      duration: 0,
+      currentLyrics: [],
+      isQueueOpen: false,
+      isMobileOverlayOpen: false,
+    });
   },
 
   next() {

@@ -133,12 +133,21 @@ export const homeRouter = router({
       z.object({
         limit: z.number().int().min(1).max(50).optional().default(20),
         cursor: z.string().optional(),
+        /**
+         * Optional entity-type filter. Scopes the feed to a single
+         * `targetType` so /changes can offer the POC "Filter by Type"
+         * sidebar (Reciters / Albums / Tracks).
+         */
+        type: z.enum(['reciter', 'album', 'track']).optional(),
       }),
     )
     .query(async ({ ctx, input }): Promise<PaginatedResult<RecentChangeDTO>> => {
       const limit = input.limit;
 
       const conditions: SQL[] = [eq(auditLog.action, 'submission.applied')];
+      if (input.type) {
+        conditions.push(eq(auditLog.targetType, input.type));
+      }
       if (input.cursor) {
         const { createdAt, id } = decodeCursor(input.cursor);
         conditions.push(

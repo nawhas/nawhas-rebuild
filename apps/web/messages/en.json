@@ -811,7 +811,15 @@
     "verbAddTrack": "added a track",
     "verbEditTrack": "edited a track",
     "loadMore": "Load more",
-    "empty": "No changes yet."
+    "empty": "No changes yet.",
+    "emptyForFilter": "No changes match this filter.",
+    "filter": {
+      "heading": "Filter by Type",
+      "all": "All Changes",
+      "reciters": "Reciters",
+      "albums": "Albums",
+      "tracks": "Tracks"
+    }
   },
   "common": {
     "save": "Save to library",
@@ -850,6 +858,12 @@
     "quickActionsHeading": "Quick Actions",
     "newSubmission": "New submission",
     "viewProfile": "View profile",
-    "loading": "Loading\u2026"
+    "loading": "Loading\u2026",
+    "mostNeeded": {
+      "heading": "Most Needed",
+      "translations": "Translations",
+      "lyrics": "Lyrics",
+      "metadata": "Metadata"
+    }
   }
 }

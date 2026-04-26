@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { Button } from '@nawhas/ui';
 import { db } from '@nawhas/db';
 import { auth } from '@/lib/auth';
@@ -112,8 +113,45 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
               </Button>
             )}
           </div>
+
+          <MostNeededPanel />
         </aside>
       </div>
     </main>
+  );
+}
+
+/**
+ * "Most Needed" sidebar panel — POC visual restoration.
+ *
+ * Shows three contribution categories (Translations / Lyrics / Metadata)
+ * with placeholder counts (`—`). Real counts are tracked as a Phase 2.6
+ * follow-up in the rebuild roadmap; the panel is intentionally inert
+ * until those backend aggregations land.
+ *
+ * Server Component — pure presentation, async only because next-intl's
+ * server-side `getTranslations` returns a Promise.
+ */
+async function MostNeededPanel(): Promise<React.JSX.Element> {
+  const t = await getTranslations('dashboard.mostNeeded');
+  const items = [t('translations'), t('lyrics'), t('metadata')];
+
+  return (
+    <div className="rounded-[12px] border border-[var(--border)] bg-[var(--surface)] p-5">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-faint)]">
+        {t('heading')}
+      </h3>
+      <ul className="flex flex-col">
+        {items.map((label, idx) => (
+          <li
+            key={label}
+            className={`flex items-center justify-between py-2 text-xs text-[var(--text)] ${idx < items.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
+          >
+            <span>{label}</span>
+            <span aria-hidden="true" className="text-[var(--text-faint)]">—</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
