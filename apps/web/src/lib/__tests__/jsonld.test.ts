@@ -20,6 +20,8 @@ function makeReciter(overrides: Partial<ReciterWithAlbumsDTO> = {}): ReciterWith
     name: 'Bassim Al-Karbalaei',
     slug: 'bassim-al-karbalaei',
     albums: [],
+    albumCount: 0,
+    trackCount: 0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     ...overrides,

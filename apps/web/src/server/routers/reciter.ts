@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { and, asc, desc, eq, gt, lt, or } from 'drizzle-orm';
-import { reciters, albums } from '@nawhas/db';
+import { and, asc, desc, eq, gt, lt, or, sql } from 'drizzle-orm';
+import { reciters, albums, tracks } from '@nawhas/db';
 import { router, publicProcedure } from '../trpc/trpc';
 import { encodeCursor, decodeCursor } from '../lib/cursor';
 import type { PaginatedResult, ReciterDTO, ReciterWithAlbumsDTO } from '@nawhas/types';
@@ -51,7 +51,12 @@ export const reciterRouter = router({
     }),
 
   /**
-   * Returns a single reciter by slug, including their albums ordered by year desc.
+   * Returns a single reciter by slug, including their albums ordered by year desc,
+   * plus aggregated `albumCount` and `trackCount` for the profile-header stats line.
+   *
+   * Track count is computed via a single tracks⨝albums aggregation rather than
+   * loading every track row through the relational API — relevant only for the
+   * profile-header stats and we don't need the rows themselves here.
    */
   getBySlug: publicProcedure
     .input(z.object({ slug: z.string().min(1) }))
@@ -65,6 +70,18 @@ export const reciterRouter = router({
         },
       });
 
-      return reciter ?? null;
+      if (!reciter) return null;
+
+      const [counts] = await ctx.db
+        .select({ trackCount: sql<number>`count(${tracks.id})::int` })
+        .from(tracks)
+        .innerJoin(albums, eq(tracks.albumId, albums.id))
+        .where(eq(albums.reciterId, reciter.id));
+
+      return {
+        ...reciter,
+        albumCount: reciter.albums.length,
+        trackCount: counts?.trackCount ?? 0,
+      };
     }),
 });

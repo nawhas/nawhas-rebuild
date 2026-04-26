@@ -25,7 +25,7 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 | Player bar | ⬜ | Close — Current has more features (queue, lazy load) |
 | Home | ✅ | Aligned — POC hero + 6-section roster (Trending / Saved / Quote / Top Reciters / Popular / TopNawhas); plays-count + trending data on roadmap |
 | Reciters list | ⬜ | Close — A–Z filter unclear |
-| Reciter detail | ⬜ | URL path changed; layout close |
+| Reciter detail | ✅ | Aligned — 200px avatar grid, bio + location + counts + pills, new Popular Tracks section, larger initial discography page |
 | Albums list | ⬜ | Close — year filter removed |
 | Album detail | ✅ | Aligned — dropped card chrome, eyebrow + description + action pills, accent-soft reciter link, +Add track in tracks header |
 | Track detail | ✅ | Aligned — kept nested URL; new POC hero, breadcrumb, sidebar, lyrics empty-state; YouTube simplified |
@@ -176,23 +176,32 @@ Tracks page-by-page comparison between the new design POC at `/home/asif/dev/naw
 
 ## 6. Reciter detail
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done — all 4 decisions resolved
 
 **POC:** `src/app/reciter/[slug]/page.tsx` — URL `/reciter/[slug]`
 **Current:** `apps/web/app/reciters/[slug]/page.tsx` — URL `/reciters/[slug]` (plural)
 
 **Findings:**
-- URL changed: singular `/reciter` → plural `/reciters`. **This is a breaking link change.**
-- Layout close: hero (avatar + bio + counts + verified badge) + Popular Tracks + Albums.
-- POC: hardcoded "Popular Tracks" 3-col grid + Albums 4-col grid (shows all).
-- Current: `ReciterHeader` + `ReciterDiscography` (paginated, cursor-based).
-- "Suggest edit" / "Add album" buttons present in both.
+- URL — plural `/reciters` already canonical (matches our nested URL strategy). POC singular was a prototype detail.
+- POC header: 200px avatar + name + verified pill + bio + 📍 location + "{N} Albums · {N} Tracks" stats + "Suggest edit" / "Add album" pills. Current had: 96px avatar + name + album count only — no bio, no location, no track count, no pills.
+- POC has a "Popular Tracks" section (3-col grid of 6 tracks) between header and discography. Current didn't.
+- POC's Albums grid is plain 4-col showing all. Current uses paginated `<ReciterDiscography>` (cursor-based).
+- Verified badge skipped — no DB column for it.
 
-**Decisions needed:**
-- [ ] Confirm `/reciters/[slug]` (plural) is the correct final URL — or revert to `/reciter`?
-- [ ] Keep ReciterDiscography pagination, or show all like POC?
+**Decisions:**
+- [x] **D1: Header content + layout** — Match POC fully. Backend: extended `ReciterWithAlbumsDTO` with `albumCount` + `trackCount`; `reciter.getBySlug` aggregates the track count via a single `tracks⨝albums` join. Header rewrites to a 2-col grid `[200px_1fr]` with bio, country (rendered with a 📍 pin icon), both stat counts, and Suggest edit / Add album pills. Verified badge skipped (no DB column).
+- [x] **D2: Popular Tracks section** — Match POC fully. New `track.getPopularByReciter({ reciterSlug, limit })` procedure (newest-first proxy until real popularity windowing lands; same Phase 2.6 follow-up as home Trending). New `<ReciterPopularTracks>` component renders a 3-col responsive grid (cover + title + album year). `TrackListItemDTO` extended with `albumYear: number | null` (added to both `trackListItemColumns` projections in track + home routers).
+- [x] **D3: Discography page size** — Hybrid (C). Bumped initial page size 12 → 24 so most reciters' full catalogues land in the first SSR payload; load-more pagination retained for the long tail.
+- [x] **D4: Section heading sizing** — Keep Current's `font-serif text-2xl font-medium`. Site-wide consistency over per-page POC fidelity.
 
-**Action items:** _TBD_
+**Action items:**
+- ✅ Type: `ReciterWithAlbumsDTO` gained `albumCount` + `trackCount`; `TrackListItemDTO` gained `albumYear`. — `packages/types/src/index.ts`.
+- ✅ Backend: `reciter.getBySlug` now aggregates counts; new `track.getPopularByReciter` procedure. — `apps/web/src/server/routers/reciter.ts`, `apps/web/src/server/routers/track.ts`. Both `trackListItemColumns` projections in track + home routers updated to select `albums.year` as `albumYear`.
+- ✅ Header rewrite: `apps/web/src/components/reciters/reciter-header.tsx` (now async server component, 200px avatar grid, bio + location + counts + pills). Tests rewritten in `__tests__/reciter-header.test.tsx`.
+- ✅ Popular Tracks: new `apps/web/src/components/reciters/reciter-popular-tracks.tsx` + test in `__tests__/reciter-popular-tracks.test.tsx`. Wired between header and discography in `apps/web/app/reciters/[slug]/page.tsx`.
+- ✅ Page: parallel-fetches album page + popular tracks; bumped initial album page size 12 → 24. — `apps/web/app/reciters/[slug]/page.tsx`.
+- ✅ i18n: new `reciter.header` and `reciter.popularTracks` keys.
+- ✅ Test fixture: `jsonld.test.ts` `makeReciter` updated to include the new count fields.
 
 ---
 

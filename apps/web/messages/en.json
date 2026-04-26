@@ -266,6 +266,16 @@
       "empty": "No albums available yet.",
       "loadMore": "Load more albums",
       "loadingMore": "Loading…"
+    },
+    "popularTracks": {
+      "heading": "Popular Tracks"
+    },
+    "header": {
+      "albumsLabel": "Albums",
+      "tracksLabel": "Tracks",
+      "locationLabel": "Location",
+      "suggestEdit": "Suggest edit",
+      "addAlbum": "Add album"
     }
   },
   "albumDetail": {

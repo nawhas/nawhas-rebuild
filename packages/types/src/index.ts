@@ -47,6 +47,10 @@ export interface ReciterDTO {
 
 export interface ReciterWithAlbumsDTO extends ReciterDTO {
   albums: AlbumDTO[];
+  /** Total albums attributed to this reciter. Equal to `albums.length`. */
+  albumCount: number;
+  /** Total tracks across all of this reciter's albums. Aggregated server-side. */
+  trackCount: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +127,7 @@ export interface TrackListItemDTO extends TrackDTO {
   reciterName: string;
   albumSlug: string;
   albumTitle: string;
+  albumYear: number | null;
 }
 
 // ---------------------------------------------------------------------------

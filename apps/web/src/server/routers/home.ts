@@ -31,6 +31,7 @@ const trackListItemColumns = {
   reciterName: reciters.name,
   albumSlug: albums.slug,
   albumTitle: albums.title,
+  albumYear: albums.year,
 } as const;
 
 export const homeRouter = router({

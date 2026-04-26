@@ -20,10 +20,13 @@ const trackListItemColumns = {
   reciterName: reciters.name,
   albumSlug: albums.slug,
   albumTitle: albums.title,
+  albumYear: albums.year,
 } as const;
 
 const RELATED_TRACKS_DEFAULT_LIMIT = 8;
 const RELATED_TRACKS_MAX_LIMIT = 16;
+const POPULAR_BY_RECITER_DEFAULT_LIMIT = 6;
+const POPULAR_BY_RECITER_MAX_LIMIT = 12;
 
 export const trackRouter = router({
   /**
@@ -154,6 +157,42 @@ export const trackRouter = router({
         .innerJoin(albums, eq(tracks.albumId, albums.id))
         .innerJoin(reciters, eq(albums.reciterId, reciters.id))
         .where(and(eq(albums.reciterId, base.reciterId), ne(tracks.id, input.trackId)))
+        .orderBy(desc(tracks.createdAt))
+        .limit(input.limit);
+    }),
+
+  /**
+   * Returns top tracks for a given reciter — used by the "Popular Tracks"
+   * section on the reciter detail page.
+   *
+   * Popularity proxy: newest tracks first (matches getFeatured / getTopTracks
+   * convention) until real play-count data lands. Same Phase 2.6 follow-up
+   * as the home-page Trending section will swap in a windowed popularity
+   * source.
+   *
+   * Returns an empty array for unknown reciter slugs — the page upstream
+   * already 404s on bad slugs, so we don't propagate that here.
+   */
+  getPopularByReciter: publicProcedure
+    .input(
+      z.object({
+        reciterSlug: z.string().min(1),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(POPULAR_BY_RECITER_MAX_LIMIT)
+          .optional()
+          .default(POPULAR_BY_RECITER_DEFAULT_LIMIT),
+      }),
+    )
+    .query(async ({ ctx, input }): Promise<TrackListItemDTO[]> => {
+      return ctx.db
+        .select(trackListItemColumns)
+        .from(tracks)
+        .innerJoin(albums, eq(tracks.albumId, albums.id))
+        .innerJoin(reciters, eq(albums.reciterId, reciters.id))
+        .where(eq(reciters.slug, input.reciterSlug))
         .orderBy(desc(tracks.createdAt))
         .limit(input.limit);
     }),

@@ -5,6 +5,7 @@ import { createCallerFactory } from '@/server/trpc/trpc';
 import { appRouter } from '@/server/trpc/router';
 import { Container } from '@/components/layout/container';
 import { ReciterHeader } from '@/components/reciters/reciter-header';
+import { ReciterPopularTracks } from '@/components/reciters/reciter-popular-tracks';
 import { ReciterDiscography } from '@/components/reciters/reciter-discography';
 import { buildMetadata, siteUrl } from '@/lib/metadata';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -43,7 +44,11 @@ export async function generateMetadata({ params }: ReciterPageProps): Promise<Me
  * Server Component — fetches a single reciter with their albums via tRPC server-side
  * caller and renders the header and discography sections.
  */
-const INITIAL_ALBUM_PAGE_SIZE = 12;
+// Initial album page size — bumped from 12 → 24 so most reciters' full
+// catalogues land in the first SSR'd payload without needing load-more,
+// while paginating the long tail for prolific reciters. Max accepted by
+// `album.listByReciter` is 100.
+const INITIAL_ALBUM_PAGE_SIZE = 24;
 
 export default async function ReciterPage({ params }: ReciterPageProps): Promise<React.JSX.Element> {
   setDefaultRequestLocale();
@@ -55,17 +60,23 @@ export default async function ReciterPage({ params }: ReciterPageProps): Promise
     notFound();
   }
 
-  const initialPage = await caller.album.listByReciter({
-    reciterSlug: slug,
-    limit: INITIAL_ALBUM_PAGE_SIZE,
-  });
+  const [initialPage, popularTracks] = await Promise.all([
+    caller.album.listByReciter({
+      reciterSlug: slug,
+      limit: INITIAL_ALBUM_PAGE_SIZE,
+    }),
+    caller.track.getPopularByReciter({ reciterSlug: slug, limit: 6 }),
+  ]);
 
   return (
     <div className="py-10">
       <JsonLd data={buildReciterJsonLd(reciter)} />
       <Container>
         <ReciterHeader reciter={reciter} />
-        <div className="mt-8">
+        <div className="mt-12">
+          <ReciterPopularTracks tracks={popularTracks} />
+        </div>
+        <div className="mt-12">
           <ReciterDiscography
             reciterSlug={slug}
             initialAlbums={initialPage.items}
